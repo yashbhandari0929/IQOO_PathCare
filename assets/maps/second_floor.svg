@@ -1,0 +1,257 @@
+<svg width="1000" height="800" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="1000" height="800" fill="#f5f5f5"/>
+  
+  <!-- Title -->
+  <text x="500" y="30" text-anchor="middle" font-size="24" font-weight="bold" fill="#1976d2">
+    SECOND FLOOR
+  </text>
+  
+  <!-- Elevator -->
+  <rect id="elevator_second" x="380" y="60" width="240" height="120" 
+        fill="#e1bee7" stroke="#7b1fa2" stroke-width="4" rx="5"/>
+  <text x="500" y="95" text-anchor="middle" font-size="20" font-weight="bold" fill="#6a1b9a">
+    Elevator
+  </text>
+  <text x="500" y="125" text-anchor="middle" font-size="40">🛗</text>
+  <text x="500" y="155" text-anchor="middle" font-size="12" fill="#555">
+    From 1st Floor / Ground
+  </text>
+  
+  <!-- Vertical corridor -->
+  <rect x="485" y="180" width="30" height="60" fill="#e0e0e0"/>
+  
+  <!-- Central Corridor -->
+  <rect id="corridor_central_2f" x="250" y="240" width="500" height="80" 
+        fill="#eeeeee" stroke="#999" stroke-width="2" rx="5"/>
+  <text x="500" y="285" text-anchor="middle" font-size="18" font-weight="bold" fill="#666">
+    Radiology Department
+  </text>
+  
+  <!-- LEFT SIDE ROOMS -->
+  
+  <!-- Room 201 - X-Ray -->
+  <rect id="room_201" x="50" y="160" width="180" height="140" 
+        fill="#e3f2fd" stroke="#1976d2" stroke-width="4" rx="5"/>
+  <text x="140" y="190" text-anchor="middle" font-size="18" font-weight="bold" fill="#0d47a1">
+    Room 201
+  </text>
+  <text x="140" y="210" text-anchor="middle" font-size="14" fill="#555">
+    2F-201
+  </text>
+  <text x="140" y="235" text-anchor="middle" font-size="32">📷</text>
+  <text x="140" y="260" text-anchor="middle" font-size="13" fill="#555">
+    X-Ray Imaging
+  </text>
+  <text x="140" y="280" text-anchor="middle" font-size="12" font-weight="bold" fill="#2e7d32">
+    Capacity: 3 patients
+  </text>
+  
+  <!-- Room 202 - CT Scan -->
+  <rect id="room_202" x="50" y="320" width="180" height="140" 
+        fill="#e3f2fd" stroke="#1976d2" stroke-width="4" rx="5"/>
+  <text x="140" y="350" text-anchor="middle" font-size="18" font-weight="bold" fill="#0d47a1">
+    Room 202
+  </text>
+  <text x="140" y="370" text-anchor="middle" font-size="14" fill="#555">
+    2F-202
+  </text>
+  <text x="140" y="395" text-anchor="middle" font-size="32">📷</text>
+  <text x="140" y="420" text-anchor="middle" font-size="13" fill="#555">
+    CT Scan
+  </text>
+  <text x="140" y="440" text-anchor="middle" font-size="12" font-weight="bold" fill="#2e7d32">
+    Capacity: 2 patients
+  </text>
+  
+  <!-- Room 203 - MRI -->
+  <rect id="room_203" x="50" y="480" width="180" height="140" 
+        fill="#e3f2fd" stroke="#1976d2" stroke-width="4" rx="5"/>
+  <text x="140" y="510" text-anchor="middle" font-size="18" font-weight="bold" fill="#0d47a1">
+    Room 203
+  </text>
+  <text x="140" y="530" text-anchor="middle" font-size="14" fill="#555">
+    2F-203
+  </text>
+  <text x="140" y="555" text-anchor="middle" font-size="32">📷</text>
+  <text x="140" y="580" text-anchor="middle" font-size="13" fill="#555">
+    MRI Scan
+  </text>
+  <text x="140" y="600" text-anchor="middle" font-size="12" font-weight="bold" fill="#2e7d32">
+    Capacity: 1 patient
+  </text>
+  
+  <!-- RIGHT SIDE ROOMS -->
+  
+  <!-- Room 204 - Ultrasound -->
+  <rect id="room_204" x="770" y="160" width="180" height="140" 
+        fill="#fff3e0" stroke="#f57c00" stroke-width="4" rx="5"/>
+  <text x="860" y="190" text-anchor="middle" font-size="18" font-weight="bold" fill="#e65100">
+    Room 204
+  </text>
+  <text x="860" y="210" text-anchor="middle" font-size="14" fill="#555">
+    2F-204
+  </text>
+  <text x="860" y="235" text-anchor="middle" font-size="32">📷</text>
+  <text x="860" y="260" text-anchor="middle" font-size="13" fill="#555">
+    Ultrasound
+  </text>
+  <text x="860" y="280" text-anchor="middle" font-size="12" font-weight="bold" fill="#2e7d32">
+    Capacity: 2 patients
+  </text>
+  
+  <!-- Room 205 - Mammogram -->
+  <rect id="room_205" x="770" y="320" width="180" height="140" 
+        fill="#fff3e0" stroke="#f57c00" stroke-width="4" rx="5"/>
+  <text x="860" y="350" text-anchor="middle" font-size="18" font-weight="bold" fill="#e65100">
+    Room 205
+  </text>
+  <text x="860" y="370" text-anchor="middle" font-size="14" fill="#555">
+    2F-205
+  </text>
+  <text x="860" y="395" text-anchor="middle" font-size="32">📷</text>
+  <text x="860" y="420" text-anchor="middle" font-size="13" fill="#555">
+    Mammography
+  </text>
+  <text x="860" y="440" text-anchor="middle" font-size="12" font-weight="bold" fill="#2e7d32">
+    Capacity: 1 patient
+  </text>
+  
+  <!-- Room 206 - DEXA -->
+  <rect id="room_206" x="770" y="480" width="180" height="140" 
+        fill="#fff3e0" stroke="#f57c00" stroke-width="4" rx="5"/>
+  <text x="860" y="510" text-anchor="middle" font-size="18" font-weight="bold" fill="#e65100">
+    Room 206
+  </text>
+  <text x="860" y="530" text-anchor="middle" font-size="14" fill="#555">
+    2F-206
+  </text>
+  <text x="860" y="555" text-anchor="middle" font-size="32">📷</text>
+  <text x="860" y="580" text-anchor="middle" font-size="13" fill="#555">
+    DEXA / Bone Density
+  </text>
+  <text x="860" y="600" text-anchor="middle" font-size="12" font-weight="bold" fill="#2e7d32">
+    Capacity: 1 patient
+  </text>
+  
+  <!-- Waiting Area -->
+  <rect id="waiting_area_2f" x="350" y="480" width="300" height="100" 
+        fill="#e8f5e9" stroke="#388e3c" stroke-width="3" rx="5"/>
+  <text x="500" y="520" text-anchor="middle" font-size="16" font-weight="bold" fill="#2e7d32">
+    Waiting Area
+  </text>
+  <text x="500" y="550" text-anchor="middle" font-size="24">🪑</text>
+  
+  <!-- Preparation Room -->
+  <rect id="prep_room" x="350" y="600" width="140" height="80" 
+        fill="#f3e5f5" stroke="#8e24aa" stroke-width="3" rx="5"/>
+  <text x="420" y="635" text-anchor="middle" font-size="14" font-weight="bold" fill="#6a1b9a">
+    Prep Room
+  </text>
+  <text x="420" y="660" text-anchor="middle" font-size="24">👔</text>
+  
+  <!-- Restrooms -->
+  <rect id="restroom_2f" x="510" y="600" width="140" height="80" 
+        fill="#c8e6c9" stroke="#388e3c" stroke-width="3" rx="5"/>
+  <text x="580" y="635" text-anchor="middle" font-size="14" font-weight="bold" fill="#2e7d32">
+    Restrooms
+  </text>
+  <text x="580" y="660" text-anchor="middle" font-size="24">🚻</text>
+  
+  <!-- NAVIGATION PATHS (initially transparent) -->
+  
+  <!-- Path: Elevator to Room 201 -->
+  <path id="path_elevator_to_room_201"
+        d="M 380,120 L 280,120 L 230,120 L 230,230"
+        stroke="transparent"
+        stroke-width="10"
+        fill="none"
+        stroke-linecap="round"
+        stroke-linejoin="round"/>
+  
+  <!-- Path: Elevator to Room 202 -->
+  <path id="path_elevator_to_room_202"
+        d="M 380,120 L 280,120 L 230,120 L 230,390"
+        stroke="transparent"
+        stroke-width="10"
+        fill="none"
+        stroke-linecap="round"
+        stroke-linejoin="round"/>
+  
+  <!-- Path: Elevator to Room 203 -->
+  <path id="path_elevator_to_room_203"
+        d="M 380,120 L 280,120 L 230,120 L 230,550"
+        stroke="transparent"
+        stroke-width="10"
+        fill="none"
+        stroke-linecap="round"
+        stroke-linejoin="round"/>
+  
+  <!-- Path: Elevator to Room 204 -->
+  <path id="path_elevator_to_room_204"
+        d="M 620,120 L 720,120 L 770,120 L 770,230"
+        stroke="transparent"
+        stroke-width="10"
+        fill="none"
+        stroke-linecap="round"
+        stroke-linejoin="round"/>
+  
+  <!-- Path: Elevator to Room 205 -->
+  <path id="path_elevator_to_room_205"
+        d="M 620,120 L 720,120 L 770,120 L 770,390"
+        stroke="transparent"
+        stroke-width="10"
+        fill="none"
+        stroke-linecap="round"
+        stroke-linejoin="round"/>
+  
+  <!-- Path: Elevator to Room 206 -->
+  <path id="path_elevator_to_room_206"
+        d="M 620,120 L 720,120 L 770,120 L 770,550"
+        stroke="transparent"
+        stroke-width="10"
+        fill="none"
+        stroke-linecap="round"
+        stroke-linejoin="round"/>
+  
+  <!-- MARKERS (initially hidden) -->
+  
+  <!-- Current Location Marker -->
+  <g id="current_location_marker_2f" opacity="0">
+    <circle cx="0" cy="0" r="14" fill="#2196f3" opacity="0.3"/>
+    <circle cx="0" cy="0" r="8" fill="#1976d2"/>
+    <circle cx="0" cy="0" r="3" fill="#ffffff"/>
+  </g>
+  
+  <!-- Destination Marker -->
+  <g id="destination_marker_2f" opacity="0">
+    <circle cx="0" cy="0" r="20" fill="#4caf50" opacity="0.2">
+      <animate attributeName="r" values="20;30;20" dur="1.5s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="0" cy="0" r="12" fill="#4caf50">
+      <animate attributeName="r" values="12;16;12" dur="1.5s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="0" cy="0" r="6" fill="#ffffff"/>
+  </g>
+  
+  <!-- Legend -->
+  <g id="legend_2f">
+    <rect x="20" y="680" width="200" height="100" fill="white" stroke="#999" stroke-width="2" rx="5"/>
+    <text x="30" y="700" font-size="14" font-weight="bold" fill="#333">Legend:</text>
+    
+    <circle cx="35" cy="720" r="6" fill="#2196f3"/>
+    <text x="50" y="725" font-size="12" fill="#333">Your Location</text>
+    
+    <circle cx="35" cy="740" r="6" fill="#4caf50"/>
+    <text x="50" y="745" font-size="12" fill="#333">Destination</text>
+    
+    <line x1="30" y1="760" x2="60" y2="760" stroke="#2196f3" stroke-width="4"/>
+    <text x="70" y="765" font-size="12" fill="#333">Your Path</text>
+  </g>
+  
+  <!-- Floor indicator -->
+  <rect x="850" y="20" width="130" height="40" fill="#1976d2" stroke="#0d47a1" stroke-width="2" rx="5"/>
+  <text x="915" y="45" text-anchor="middle" font-size="16" font-weight="bold" fill="white">
+    SECOND FLOOR
+  </text>
+</svg>

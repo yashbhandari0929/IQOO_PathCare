@@ -1,0 +1,265 @@
+<svg width="1000" height="800" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="1000" height="800" fill="#f5f5f5"/>
+  
+  <!-- Title -->
+  <text x="500" y="30" text-anchor="middle" font-size="24" font-weight="bold" fill="#1976d2">
+    FIRST FLOOR
+  </text>
+  
+  <!-- Elevator -->
+  <rect id="elevator_first" x="380" y="60" width="240" height="120" 
+        fill="#e1bee7" stroke="#7b1fa2" stroke-width="4" rx="5"/>
+  <text x="500" y="95" text-anchor="middle" font-size="20" font-weight="bold" fill="#6a1b9a">
+    Elevator
+  </text>
+  <text x="500" y="125" text-anchor="middle" font-size="40">🛗</text>
+  <text x="500" y="155" text-anchor="middle" font-size="12" fill="#555">
+    From Ground / To 2nd Floor
+  </text>
+  
+  <!-- Vertical corridor -->
+  <rect x="485" y="180" width="30" height="60" fill="#e0e0e0"/>
+  
+  <!-- Central Corridor -->
+  <rect id="corridor_central" x="250" y="240" width="500" height="80" 
+        fill="#eeeeee" stroke="#999" stroke-width="2" rx="5"/>
+  <text x="500" y="285" text-anchor="middle" font-size="18" font-weight="bold" fill="#666">
+    Main Corridor
+  </text>
+  
+  <!-- LEFT SIDE ROOMS (Cardiology) -->
+  
+  <!-- Room 105 - ECG -->
+  <rect id="room_105" x="50" y="160" width="180" height="140" 
+        fill="#ffcdd2" stroke="#c62828" stroke-width="4" rx="5"/>
+  <text x="140" y="190" text-anchor="middle" font-size="18" font-weight="bold" fill="#b71c1c">
+    Room 105
+  </text>
+  <text x="140" y="210" text-anchor="middle" font-size="14" fill="#555">
+    1F-105
+  </text>
+  <text x="140" y="235" text-anchor="middle" font-size="32">❤️</text>
+  <text x="140" y="260" text-anchor="middle" font-size="13" fill="#555">
+    ECG Test
+  </text>
+  <text x="140" y="280" text-anchor="middle" font-size="12" font-weight="bold" fill="#2e7d32">
+    Capacity: 2 patients
+  </text>
+  
+  <!-- Room 106 - Echo -->
+  <rect id="room_106" x="50" y="320" width="180" height="140" 
+        fill="#ffcdd2" stroke="#c62828" stroke-width="4" rx="5"/>
+  <text x="140" y="350" text-anchor="middle" font-size="18" font-weight="bold" fill="#b71c1c">
+    Room 106
+  </text>
+  <text x="140" y="370" text-anchor="middle" font-size="14" fill="#555">
+    1F-106
+  </text>
+  <text x="140" y="395" text-anchor="middle" font-size="32">❤️</text>
+  <text x="140" y="420" text-anchor="middle" font-size="13" fill="#555">
+    Echocardiography
+  </text>
+  <text x="140" y="440" text-anchor="middle" font-size="12" font-weight="bold" fill="#2e7d32">
+    Capacity: 1 patient
+  </text>
+  
+  <!-- Room 107 - TMT -->
+  <rect id="room_107" x="50" y="480" width="180" height="140" 
+        fill="#ffcdd2" stroke="#c62828" stroke-width="4" rx="5"/>
+  <text x="140" y="510" text-anchor="middle" font-size="18" font-weight="bold" fill="#b71c1c">
+    Room 107
+  </text>
+  <text x="140" y="530" text-anchor="middle" font-size="14" fill="#555">
+    1F-107
+  </text>
+  <text x="140" y="555" text-anchor="middle" font-size="32">❤️</text>
+  <text x="140" y="580" text-anchor="middle" font-size="13" fill="#555">
+    TMT / Stress Test
+  </text>
+  <text x="140" y="600" text-anchor="middle" font-size="12" font-weight="bold" fill="#2e7d32">
+    Capacity: 1 patient
+  </text>
+  
+  <!-- RIGHT SIDE ROOMS (Ophthalmology & Neurology) -->
+  
+  <!-- Room 110 - Vision Test -->
+  <rect id="room_110" x="770" y="160" width="180" height="140" 
+        fill="#bbdefb" stroke="#1565c0" stroke-width="4" rx="5"/>
+  <text x="860" y="190" text-anchor="middle" font-size="18" font-weight="bold" fill="#0d47a1">
+    Room 110
+  </text>
+  <text x="860" y="210" text-anchor="middle" font-size="14" fill="#555">
+    1F-110
+  </text>
+  <text x="860" y="235" text-anchor="middle" font-size="32">👁️</text>
+  <text x="860" y="260" text-anchor="middle" font-size="13" fill="#555">
+    Vision Test
+  </text>
+  <text x="860" y="280" text-anchor="middle" font-size="12" font-weight="bold" fill="#2e7d32">
+    Capacity: 2 patients
+  </text>
+  
+  <!-- Room 111 - Retinal Scan -->
+  <rect id="room_111" x="770" y="320" width="180" height="140" 
+        fill="#bbdefb" stroke="#1565c0" stroke-width="4" rx="5"/>
+  <text x="860" y="350" text-anchor="middle" font-size="18" font-weight="bold" fill="#0d47a1">
+    Room 111
+  </text>
+  <text x="860" y="370" text-anchor="middle" font-size="14" fill="#555">
+    1F-111
+  </text>
+  <text x="860" y="395" text-anchor="middle" font-size="32">👁️</text>
+  <text x="860" y="420" text-anchor="middle" font-size="13" fill="#555">
+    Retinal Imaging
+  </text>
+  <text x="860" y="440" text-anchor="middle" font-size="12" font-weight="bold" fill="#2e7d32">
+    Capacity: 1 patient
+  </text>
+  
+  <!-- Room 115 - EEG -->
+  <rect id="room_115" x="770" y="480" width="180" height="140" 
+        fill="#c5cae9" stroke="#3f51b5" stroke-width="4" rx="5"/>
+  <text x="860" y="510" text-anchor="middle" font-size="18" font-weight="bold" fill="#1a237e">
+    Room 115
+  </text>
+  <text x="860" y="530" text-anchor="middle" font-size="14" fill="#555">
+    1F-115
+  </text>
+  <text x="860" y="555" text-anchor="middle" font-size="32">🧠</text>
+  <text x="860" y="580" text-anchor="middle" font-size="13" fill="#555">
+    EEG / Neurology
+  </text>
+  <text x="860" y="600" text-anchor="middle" font-size="12" font-weight="bold" fill="#2e7d32">
+    Capacity: 1 patient
+  </text>
+  
+  <!-- Waiting Area -->
+  <rect id="waiting_area_1f" x="350" y="480" width="300" height="100" 
+        fill="#e8f5e9" stroke="#388e3c" stroke-width="3" rx="5"/>
+  <text x="500" y="520" text-anchor="middle" font-size="16" font-weight="bold" fill="#2e7d32">
+    Waiting Area
+  </text>
+  <text x="500" y="550" text-anchor="middle" font-size="24">🪑</text>
+  
+  <!-- Stairs -->
+  <rect id="stairs_1f" x="350" y="640" width="140" height="100" 
+        fill="#b3e5fc" stroke="#0277bd" stroke-width="3" rx="5"/>
+  <text x="420" y="675" text-anchor="middle" font-size="16" font-weight="bold" fill="#01579b">
+    Stairs
+  </text>
+  <text x="420" y="705" text-anchor="middle" font-size="32">🪜</text>
+  
+  <!-- Restrooms -->
+  <rect id="restroom_1f" x="510" y="640" width="140" height="100" 
+        fill="#c8e6c9" stroke="#388e3c" stroke-width="3" rx="5"/>
+  <text x="580" y="675" text-anchor="middle" font-size="16" font-weight="bold" fill="#2e7d32">
+    Restrooms
+  </text>
+  <text x="580" y="705" text-anchor="middle" font-size="28">🚻</text>
+  
+  <!-- NAVIGATION PATHS (initially transparent) -->
+  
+  <!-- Path: Elevator to Room 105 -->
+  <path id="path_elevator_to_room_105"
+        d="M 380,120 L 280,120 L 230,120 L 230,230"
+        stroke="transparent"
+        stroke-width="10"
+        fill="none"
+        stroke-linecap="round"
+        stroke-linejoin="round"/>
+  
+  <!-- Path: Elevator to Room 106 -->
+  <path id="path_elevator_to_room_106"
+        d="M 380,120 L 280,120 L 230,120 L 230,390"
+        stroke="transparent"
+        stroke-width="10"
+        fill="none"
+        stroke-linecap="round"
+        stroke-linejoin="round"/>
+  
+  <!-- Path: Elevator to Room 107 -->
+  <path id="path_elevator_to_room_107"
+        d="M 380,120 L 280,120 L 230,120 L 230,550"
+        stroke="transparent"
+        stroke-width="10"
+        fill="none"
+        stroke-linecap="round"
+        stroke-linejoin="round"/>
+  
+  <!-- Path: Elevator to Room 110 -->
+  <path id="path_elevator_to_room_110"
+        d="M 620,120 L 720,120 L 770,120 L 770,230"
+        stroke="transparent"
+        stroke-width="10"
+        fill="none"
+        stroke-linecap="round"
+        stroke-linejoin="round"/>
+  
+  <!-- Path: Elevator to Room 111 -->
+  <path id="path_elevator_to_room_111"
+        d="M 620,120 L 720,120 L 770,120 L 770,390"
+        stroke="transparent"
+        stroke-width="10"
+        fill="none"
+        stroke-linecap="round"
+        stroke-linejoin="round"/>
+  
+  <!-- Path: Elevator to Room 115 -->
+  <path id="path_elevator_to_room_115"
+        d="M 620,120 L 720,120 L 770,120 L 770,550"
+        stroke="transparent"
+        stroke-width="10"
+        fill="none"
+        stroke-linecap="round"
+        stroke-linejoin="round"/>
+  
+  <!-- Path: Room 105 to Room 106 (same side) -->
+  <path id="path_room_105_to_room_106"
+        d="M 140,300 L 140,320"
+        stroke="transparent"
+        stroke-width="10"
+        fill="none"
+        stroke-linecap="round"/>
+  
+  <!-- MARKERS (initially hidden) -->
+  
+  <!-- Current Location Marker -->
+  <g id="current_location_marker_1f" opacity="0">
+    <circle cx="0" cy="0" r="14" fill="#2196f3" opacity="0.3"/>
+    <circle cx="0" cy="0" r="8" fill="#1976d2"/>
+    <circle cx="0" cy="0" r="3" fill="#ffffff"/>
+  </g>
+  
+  <!-- Destination Marker -->
+  <g id="destination_marker_1f" opacity="0">
+    <circle cx="0" cy="0" r="20" fill="#4caf50" opacity="0.2">
+      <animate attributeName="r" values="20;30;20" dur="1.5s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="0" cy="0" r="12" fill="#4caf50">
+      <animate attributeName="r" values="12;16;12" dur="1.5s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="0" cy="0" r="6" fill="#ffffff"/>
+  </g>
+  
+  <!-- Legend -->
+  <g id="legend_1f">
+    <rect x="20" y="680" width="200" height="100" fill="white" stroke="#999" stroke-width="2" rx="5"/>
+    <text x="30" y="700" font-size="14" font-weight="bold" fill="#333">Legend:</text>
+    
+    <circle cx="35" cy="720" r="6" fill="#2196f3"/>
+    <text x="50" y="725" font-size="12" fill="#333">Your Location</text>
+    
+    <circle cx="35" cy="740" r="6" fill="#4caf50"/>
+    <text x="50" y="745" font-size="12" fill="#333">Destination</text>
+    
+    <line x1="30" y1="760" x2="60" y2="760" stroke="#2196f3" stroke-width="4"/>
+    <text x="70" y="765" font-size="12" fill="#333">Your Path</text>
+  </g>
+  
+  <!-- Floor indicator -->
+  <rect x="850" y="20" width="130" height="40" fill="#1976d2" stroke="#0d47a1" stroke-width="2" rx="5"/>
+  <text x="915" y="45" text-anchor="middle" font-size="16" font-weight="bold" fill="white">
+    FIRST FLOOR
+  </text>
+</svg>
