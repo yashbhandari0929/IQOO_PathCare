@@ -30,6 +30,7 @@ import 'room_selection_screen.dart';
 import 'patient_list_screen_v3.dart';
 import 'doctor_analysis_screen.dart';
 import 'doctor_settings_screen.dart';
+import '../patient/chatbot_screen.dart'; // Added chatbot screen import
 
 class DoctorDashboardScreen extends StatefulWidget {
   const DoctorDashboardScreen({Key? key}) : super(key: key);
@@ -317,7 +318,53 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
           ),
         ],
       ),
-      body: _currentTabIndex == 0 ? _buildHomeTab() : _buildAnalyticsTab(),
+      body: Stack(
+        children: [
+          _currentTabIndex == 0 ? _buildHomeTab() : _buildAnalyticsTab(),
+          // Floating Chatbot Button
+          if (_currentTabIndex == 0)
+            Positioned(
+              bottom: 20,
+              right: 20,
+              child: GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => ChatbotScreen(
+                        patientName: _doctorProfile?['full_name'] ?? 'Doctor',
+                      ),
+                    ),
+                  );
+                },
+                child: Container(
+                  width: 60,
+                  height: 60,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [Colors.blue.shade400, Colors.blue.shade700],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.blue.withOpacity(0.5),
+                        blurRadius: 12,
+                        offset: Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Icon(
+                    Icons.smart_toy_rounded,
+                    color: Colors.white,
+                    size: 32,
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentTabIndex,
         onTap: (index) {

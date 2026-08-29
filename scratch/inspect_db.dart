@@ -7,12 +7,9 @@ void main() async {
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpxeHhxZmtwaXF5cmt6ZGZldnNpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAwNDE0MzksImV4cCI6MjA4NTYxNzQzOX0.xnqxEIH05OIlPeAjE2J5lkvi25hlncEK7-S2rrsCIXQ');
   
   try {
-    final response = await supabase
-        .from('messages')
-        .select()
-        .limit(1)
-        .order('id', ascending: false);
-    print("Messages: $response");
+    // Attempt to select from pg_extension to check if vector exists
+    final ext = await supabase.rpc('hello_world'); // Or just test connectivity
+    print('Ping: $ext');
   } catch (e) {
     print('error: $e');
   }

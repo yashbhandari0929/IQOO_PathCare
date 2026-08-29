@@ -183,7 +183,7 @@ class _UploadReportScreenState extends State<UploadReportScreen> {
       final safeName =
       _pickedFile!.name.replaceAll(RegExp(r'[^\w\-.]'), '_');
       final storagePath =
-          'reports/$_selectedPatientId/${timestamp}_$safeName';
+          '$_selectedPatientId/${timestamp}_$safeName';
 
       final contentType = ext == 'pdf'
           ? 'application/pdf'
@@ -192,7 +192,7 @@ class _UploadReportScreenState extends State<UploadReportScreen> {
           : 'image/jpeg';
 
       // Upload to Supabase Storage
-      await _supabase.storage.from('patient-reports').uploadBinary(
+      await _supabase.storage.from('reports').uploadBinary(
         storagePath,
         _fileBytes!,
         fileOptions:
@@ -201,7 +201,7 @@ class _UploadReportScreenState extends State<UploadReportScreen> {
 
       // Get public URL for the patient to open
       final publicUrl = _supabase.storage
-          .from('patient-reports')
+          .from('reports')
           .getPublicUrl(storagePath);
 
       // Insert into patient_reports table
@@ -273,7 +273,7 @@ class _UploadReportScreenState extends State<UploadReportScreen> {
     try {
       if (filePath.isNotEmpty) {
         await _supabase.storage
-            .from('patient-reports')
+            .from('reports')
             .remove([filePath]);
       }
       await _supabase

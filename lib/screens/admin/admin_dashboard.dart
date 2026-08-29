@@ -5,6 +5,7 @@ import 'add_doctor_screen.dart';
 import 'manage_doctors_screen.dart';
 import 'blood_bank.dart';
 import 'settings_screen.dart';
+import '../patient/chatbot_screen.dart'; // Added chatbot screen import
 
 final supabase = Supabase.instance.client;
 
@@ -118,16 +119,18 @@ class _AdminDashboardState extends State<AdminDashboard> {
           ),
         ],
       ),
-      body: isLoading
-          ? Center(child: CircularProgressIndicator())
-          : RefreshIndicator(
-        onRefresh: () async {
-          await _loadAdminData();
-          await _loadStats();
-        },
-        child: SingleChildScrollView(
-          padding: EdgeInsets.all(16),
-          child: Column(
+      body: Stack(
+        children: [
+          isLoading
+              ? Center(child: CircularProgressIndicator())
+              : RefreshIndicator(
+            onRefresh: () async {
+              await _loadAdminData();
+              await _loadStats();
+            },
+            child: SingleChildScrollView(
+              padding: EdgeInsets.all(16),
+              child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Welcome Card
@@ -264,6 +267,49 @@ class _AdminDashboardState extends State<AdminDashboard> {
             ],
           ),
         ),
+      ),
+      // Floating Chatbot Button
+      Positioned(
+        bottom: 20,
+        right: 20,
+        child: GestureDetector(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => ChatbotScreen(
+                  patientName: adminUsername,
+                ),
+              ),
+            );
+          },
+          child: Container(
+            width: 60,
+            height: 60,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Colors.blue.shade400, Colors.blue.shade700],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.blue.withOpacity(0.5),
+                  blurRadius: 12,
+                  offset: Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Icon(
+              Icons.smart_toy_rounded,
+              color: Colors.white,
+              size: 32,
+            ),
+          ),
+        ),
+      ),
+      ],
       ),
     );
   }

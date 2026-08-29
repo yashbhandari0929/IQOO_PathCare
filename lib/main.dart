@@ -10,8 +10,11 @@ import 'services/cart_service.dart';
 import 'screens/admin/admin_dashboard.dart';
 import 'screens/doctor/doctor_dashboard.dart'; // ✅ Make sure this import exists
 
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await dotenv.load(fileName: ".env");
 
   // Initialize Supabase
   await Supabase.initialize(

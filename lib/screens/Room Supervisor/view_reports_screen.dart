@@ -125,7 +125,7 @@ class _SupervisorViewReportsScreenState
     try {
       if (filePath.isNotEmpty) {
         await _supabase.storage
-            .from('patient-reports')
+            .from('reports')
             .remove([filePath]);
       }
       await _supabase
