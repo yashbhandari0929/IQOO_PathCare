@@ -63,7 +63,6 @@ class _FloorMapPainter extends CustomPainter {
 
   void _paintGroundFloor(Canvas canvas, Size size) {
     final double width = size.width;
-    final double height = size.height;
 
     // Paint styles
     final wallPaint = Paint()
@@ -72,12 +71,12 @@ class _FloorMapPainter extends CustomPainter {
       ..style = PaintingStyle.stroke;
 
     final pathPaint = Paint()
-      ..color = Colors.blue.withOpacity(0.3)
+      ..color = Colors.blue.withValues(alpha: 0.3)
       ..strokeWidth = 8
       ..style = PaintingStyle.stroke;
 
     final highlightPaint = Paint()
-      ..color = Colors.green.withOpacity(0.3)
+      ..color = Colors.green.withValues(alpha: 0.3)
       ..style = PaintingStyle.fill;
 
     final roomPaint = Paint()
@@ -109,16 +108,33 @@ class _FloorMapPainter extends CustomPainter {
     }
     canvas.drawRect(labARect, roomPaint);
     canvas.drawRect(labARect, wallPaint);
-    _drawText(canvas, 'Lab A\n🔬\nPathology', labARect.center, Colors.black, 12);
+    _drawText(
+      canvas,
+      'Lab A\n🔬\nPathology',
+      labARect.center,
+      Colors.black,
+      12,
+    );
 
     // Draw Lab B (right side)
-    final labBRect = Rect.fromLTWH(width - 50 - width * 0.25, 220, width * 0.25, 80);
+    final labBRect = Rect.fromLTWH(
+      width - 50 - width * 0.25,
+      220,
+      width * 0.25,
+      80,
+    );
     if (highlightRoom == 'Lab B') {
       canvas.drawRect(labBRect, highlightPaint);
     }
     canvas.drawRect(labBRect, roomPaint);
     canvas.drawRect(labBRect, wallPaint);
-    _drawText(canvas, 'Lab B\n🔬\nPathology', labBRect.center, Colors.black, 12);
+    _drawText(
+      canvas,
+      'Lab B\n🔬\nPathology',
+      labBRect.center,
+      Colors.black,
+      12,
+    );
 
     // Draw Elevator (bottom center)
     final elevatorRect = Rect.fromLTWH(width * 0.42, 320, width * 0.16, 50);
@@ -159,7 +175,6 @@ class _FloorMapPainter extends CustomPainter {
 
   void _paint1stFloor(Canvas canvas, Size size) {
     final double width = size.width;
-    final double height = size.height;
 
     final wallPaint = Paint()
       ..color = Colors.grey[800]!
@@ -171,7 +186,7 @@ class _FloorMapPainter extends CustomPainter {
       ..style = PaintingStyle.fill;
 
     final highlightPaint = Paint()
-      ..color = Colors.green.withOpacity(0.3)
+      ..color = Colors.green.withValues(alpha: 0.3)
       ..style = PaintingStyle.fill;
 
     // Draw Elevator (top center)
@@ -191,28 +206,90 @@ class _FloorMapPainter extends CustomPainter {
 
     // LEFT SIDE ROOMS
     final room105 = Rect.fromLTWH(50, 150, width * 0.22, 60);
-    _drawRoom(canvas, room105, 'Room 105\n❤️ ECG', highlightRoom == 'Room 105', roomPaint, wallPaint, highlightPaint);
+    _drawRoom(
+      canvas,
+      room105,
+      'Room 105\n❤️ ECG',
+      highlightRoom == 'Room 105',
+      roomPaint,
+      wallPaint,
+      highlightPaint,
+    );
 
     final room106 = Rect.fromLTWH(50, 220, width * 0.22, 60);
-    _drawRoom(canvas, room106, 'Room 106\n❤️ Echo', highlightRoom == 'Room 106', roomPaint, wallPaint, highlightPaint);
+    _drawRoom(
+      canvas,
+      room106,
+      'Room 106\n❤️ Echo',
+      highlightRoom == 'Room 106',
+      roomPaint,
+      wallPaint,
+      highlightPaint,
+    );
 
     final room107 = Rect.fromLTWH(50, 290, width * 0.22, 60);
-    _drawRoom(canvas, room107, 'Room 107\n❤️ TMT', highlightRoom == 'Room 107', roomPaint, wallPaint, highlightPaint);
+    _drawRoom(
+      canvas,
+      room107,
+      'Room 107\n❤️ TMT',
+      highlightRoom == 'Room 107',
+      roomPaint,
+      wallPaint,
+      highlightPaint,
+    );
 
     // RIGHT SIDE ROOMS
-    final room110 = Rect.fromLTWH(width - 50 - width * 0.22, 150, width * 0.22, 60);
-    _drawRoom(canvas, room110, 'Room 110\n👁️ Vision', highlightRoom == 'Room 110', roomPaint, wallPaint, highlightPaint);
+    final room110 = Rect.fromLTWH(
+      width - 50 - width * 0.22,
+      150,
+      width * 0.22,
+      60,
+    );
+    _drawRoom(
+      canvas,
+      room110,
+      'Room 110\n👁️ Vision',
+      highlightRoom == 'Room 110',
+      roomPaint,
+      wallPaint,
+      highlightPaint,
+    );
 
-    final room111 = Rect.fromLTWH(width - 50 - width * 0.22, 220, width * 0.22, 60);
-    _drawRoom(canvas, room111, 'Room 111\n👁️ Retinal', highlightRoom == 'Room 111', roomPaint, wallPaint, highlightPaint);
+    final room111 = Rect.fromLTWH(
+      width - 50 - width * 0.22,
+      220,
+      width * 0.22,
+      60,
+    );
+    _drawRoom(
+      canvas,
+      room111,
+      'Room 111\n👁️ Retinal',
+      highlightRoom == 'Room 111',
+      roomPaint,
+      wallPaint,
+      highlightPaint,
+    );
 
-    final room115 = Rect.fromLTWH(width - 50 - width * 0.22, 290, width * 0.22, 60);
-    _drawRoom(canvas, room115, 'Room 115\n🧠 EEG', highlightRoom == 'Room 115', roomPaint, wallPaint, highlightPaint);
+    final room115 = Rect.fromLTWH(
+      width - 50 - width * 0.22,
+      290,
+      width * 0.22,
+      60,
+    );
+    _drawRoom(
+      canvas,
+      room115,
+      'Room 115\n🧠 EEG',
+      highlightRoom == 'Room 115',
+      roomPaint,
+      wallPaint,
+      highlightPaint,
+    );
   }
 
   void _paint2ndFloor(Canvas canvas, Size size) {
     final double width = size.width;
-    final double height = size.height;
 
     final wallPaint = Paint()
       ..color = Colors.grey[800]!
@@ -224,7 +301,7 @@ class _FloorMapPainter extends CustomPainter {
       ..style = PaintingStyle.fill;
 
     final highlightPaint = Paint()
-      ..color = Colors.green.withOpacity(0.3)
+      ..color = Colors.green.withValues(alpha: 0.3)
       ..style = PaintingStyle.fill;
 
     // Draw Elevator (top center)
@@ -244,27 +321,97 @@ class _FloorMapPainter extends CustomPainter {
 
     // LEFT SIDE ROOMS
     final room201 = Rect.fromLTWH(50, 150, width * 0.22, 60);
-    _drawRoom(canvas, room201, 'Room 201\n📷 X-Ray', highlightRoom == 'Room 201', roomPaint, wallPaint, highlightPaint);
+    _drawRoom(
+      canvas,
+      room201,
+      'Room 201\n📷 X-Ray',
+      highlightRoom == 'Room 201',
+      roomPaint,
+      wallPaint,
+      highlightPaint,
+    );
 
     final room202 = Rect.fromLTWH(50, 220, width * 0.22, 60);
-    _drawRoom(canvas, room202, 'Room 202\n📷 CT Scan', highlightRoom == 'Room 202', roomPaint, wallPaint, highlightPaint);
+    _drawRoom(
+      canvas,
+      room202,
+      'Room 202\n📷 CT Scan',
+      highlightRoom == 'Room 202',
+      roomPaint,
+      wallPaint,
+      highlightPaint,
+    );
 
     final room203 = Rect.fromLTWH(50, 290, width * 0.22, 60);
-    _drawRoom(canvas, room203, 'Room 203\n📷 MRI', highlightRoom == 'Room 203', roomPaint, wallPaint, highlightPaint);
+    _drawRoom(
+      canvas,
+      room203,
+      'Room 203\n📷 MRI',
+      highlightRoom == 'Room 203',
+      roomPaint,
+      wallPaint,
+      highlightPaint,
+    );
 
     // RIGHT SIDE ROOMS
-    final room204 = Rect.fromLTWH(width - 50 - width * 0.22, 150, width * 0.22, 60);
-    _drawRoom(canvas, room204, 'Room 204\n📷 Ultrasound', highlightRoom == 'Room 204', roomPaint, wallPaint, highlightPaint);
+    final room204 = Rect.fromLTWH(
+      width - 50 - width * 0.22,
+      150,
+      width * 0.22,
+      60,
+    );
+    _drawRoom(
+      canvas,
+      room204,
+      'Room 204\n📷 Ultrasound',
+      highlightRoom == 'Room 204',
+      roomPaint,
+      wallPaint,
+      highlightPaint,
+    );
 
-    final room205 = Rect.fromLTWH(width - 50 - width * 0.22, 220, width * 0.22, 60);
-    _drawRoom(canvas, room205, 'Room 205\n📷 Mammogram', highlightRoom == 'Room 205', roomPaint, wallPaint, highlightPaint);
+    final room205 = Rect.fromLTWH(
+      width - 50 - width * 0.22,
+      220,
+      width * 0.22,
+      60,
+    );
+    _drawRoom(
+      canvas,
+      room205,
+      'Room 205\n📷 Mammogram',
+      highlightRoom == 'Room 205',
+      roomPaint,
+      wallPaint,
+      highlightPaint,
+    );
 
-    final room206 = Rect.fromLTWH(width - 50 - width * 0.22, 290, width * 0.22, 60);
-    _drawRoom(canvas, room206, 'Room 206\n📷 DEXA', highlightRoom == 'Room 206', roomPaint, wallPaint, highlightPaint);
+    final room206 = Rect.fromLTWH(
+      width - 50 - width * 0.22,
+      290,
+      width * 0.22,
+      60,
+    );
+    _drawRoom(
+      canvas,
+      room206,
+      'Room 206\n📷 DEXA',
+      highlightRoom == 'Room 206',
+      roomPaint,
+      wallPaint,
+      highlightPaint,
+    );
   }
 
-  void _drawRoom(Canvas canvas, Rect rect, String label, bool highlight,
-      Paint roomPaint, Paint wallPaint, Paint highlightPaint) {
+  void _drawRoom(
+    Canvas canvas,
+    Rect rect,
+    String label,
+    bool highlight,
+    Paint roomPaint,
+    Paint wallPaint,
+    Paint highlightPaint,
+  ) {
     if (highlight) {
       canvas.drawRect(rect, highlightPaint);
     }
@@ -273,7 +420,13 @@ class _FloorMapPainter extends CustomPainter {
     _drawText(canvas, label, rect.center, Colors.black, 10);
   }
 
-  void _drawText(Canvas canvas, String text, Offset position, Color color, double fontSize) {
+  void _drawText(
+    Canvas canvas,
+    String text,
+    Offset position,
+    Color color,
+    double fontSize,
+  ) {
     final textSpan = TextSpan(
       text: text,
       style: TextStyle(

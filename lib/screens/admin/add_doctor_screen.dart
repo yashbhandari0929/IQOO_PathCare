@@ -45,8 +45,6 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
     setState(() => _isLoading = true);
 
     try {
-      print('Creating doctor account...');
-
       // Sign up doctor (no email confirmation needed now)
       final response = await supabase.auth.signUp(
         email: _emailController.text.trim(),
@@ -55,8 +53,6 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
 
       if (response.user != null) {
         final userId = response.user!.id;
-        print('User created: $userId');
-
         // Insert doctor profile
         await supabase.from('doctors').insert({
           'auth_id': userId,
@@ -69,9 +65,6 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
           'is_active': true,
           'verified_by_admin': true,
         });
-
-        print('Doctor profile created!');
-
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -83,8 +76,6 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
         }
       }
     } on AuthException catch (e) {
-      print('Auth Error: ${e.message}');
-
       // If user already exists, that's ok
       if (e.message.contains('already registered')) {
         _showError('This email is already registered');
@@ -92,7 +83,6 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
         _showError('Auth error: ${e.message}');
       }
     } catch (e) {
-      print('Error: $e');
       _showError('Failed: ${e.toString()}');
     } finally {
       if (mounted) setState(() => _isLoading = false);
@@ -160,10 +150,7 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
                 Text(
                   'Fill in the details to add a new doctor',
                   textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey[600],
-                  ),
+                  style: TextStyle(fontSize: 14, color: Colors.grey[600]),
                 ),
                 SizedBox(height: 30),
 
@@ -197,8 +184,9 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
                     if (value == null || value.isEmpty) {
                       return 'Please enter email';
                     }
-                    if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$')
-                        .hasMatch(value)) {
+                    if (!RegExp(
+                      r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
+                    ).hasMatch(value)) {
                       return 'Please enter a valid email';
                     }
                     return null;
@@ -231,20 +219,23 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
                     labelText: 'Department',
                     prefixIcon: Icon(Icons.business_outlined),
                   ),
-                  items: [
-                    'Cardiology',
-                    'Radiology',
-                    'Pathology',
-                    'Ophthalmology',
-                    'General Medicine',
-                    'Orthopedics',
-                    'Neurology'
-                  ]
-                      .map((dept) => DropdownMenuItem(
-                    value: dept,
-                    child: Text(dept),
-                  ))
-                      .toList(),
+                  items:
+                      [
+                            'Cardiology',
+                            'Radiology',
+                            'Pathology',
+                            'Ophthalmology',
+                            'General Medicine',
+                            'Orthopedics',
+                            'Neurology',
+                          ]
+                          .map(
+                            (dept) => DropdownMenuItem(
+                              value: dept,
+                              child: Text(dept),
+                            ),
+                          )
+                          .toList(),
                   onChanged: (value) {
                     setState(() => _selectedDepartment = value);
                   },
@@ -338,7 +329,9 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
                       ),
                       onPressed: () {
                         setState(
-                                () => _obscureConfirmPassword = !_obscureConfirmPassword);
+                          () => _obscureConfirmPassword =
+                              !_obscureConfirmPassword,
+                        );
                       },
                     ),
                   ),
@@ -361,25 +354,27 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
                     onPressed: _isLoading ? null : _addDoctor,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.orange,
-                      disabledBackgroundColor: Colors.orange.withOpacity(0.6),
+                      disabledBackgroundColor: Colors.orange.withValues(
+                        alpha: 0.6,
+                      ),
                     ),
                     child: _isLoading
                         ? SizedBox(
-                      height: 24,
-                      width: 24,
-                      child: CircularProgressIndicator(
-                        color: Colors.white,
-                        strokeWidth: 2,
-                      ),
-                    )
+                            height: 24,
+                            width: 24,
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                              strokeWidth: 2,
+                            ),
+                          )
                         : Text(
-                      'ADD DOCTOR',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 1,
-                      ),
-                    ),
+                            'ADD DOCTOR',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 1,
+                            ),
+                          ),
                   ),
                 ),
                 SizedBox(height: 16),

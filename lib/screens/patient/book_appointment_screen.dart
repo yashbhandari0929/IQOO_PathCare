@@ -60,9 +60,10 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
       // This applies only when the selected date is TODAY.
       // For future dates, all returned slots are shown as-is.
       final now = DateTime.now();
-      final isToday = _selectedDate.year  == now.year  &&
+      final isToday =
+          _selectedDate.year == now.year &&
           _selectedDate.month == now.month &&
-          _selectedDate.day   == now.day;
+          _selectedDate.day == now.day;
 
       final cutoff = now.add(const Duration(minutes: 30));
 
@@ -73,13 +74,16 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
         final parts = slot.split(':');
         if (parts.length < 2) return true;
 
-        final slotHour   = int.tryParse(parts[0]) ?? 0;
+        final slotHour = int.tryParse(parts[0]) ?? 0;
         final slotMinute = int.tryParse(parts[1]) ?? 0;
 
         // Build a DateTime for this slot on today's date
         final slotDateTime = DateTime(
-          now.year, now.month, now.day,
-          slotHour, slotMinute,
+          now.year,
+          now.month,
+          now.day,
+          slotHour,
+          slotMinute,
         );
 
         // Only include if slot starts 30+ minutes from now
@@ -89,11 +93,10 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
 
       setState(() {
         _availableTimeSlots = filtered;
-        _selectedTimeSlot   = null;
-        _isLoadingSlots     = false;
+        _selectedTimeSlot = null;
+        _isLoadingSlots = false;
       });
     } catch (e) {
-      print('Error loading slots: $e');
       setState(() => _isLoadingSlots = false);
     }
   }
@@ -206,7 +209,9 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
                         ),
                       ),
                       SizedBox(height: 8),
-                      Text('Date: ${_selectedDate.day}/${_selectedDate.month}/${_selectedDate.year}'),
+                      Text(
+                        'Date: ${_selectedDate.day}/${_selectedDate.month}/${_selectedDate.year}',
+                      ),
                       Text('Time: ${_formatTimeSlot(_selectedTimeSlot!)}'),
                       Text('Tests: ${testIds.length}'),
                     ],
@@ -220,9 +225,7 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
                   Navigator.of(context).pop(); // Close dialog
                   Navigator.of(context).pop(); // Go back to home
                 },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue,
-                ),
+                style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
                 child: Text('Done'),
               ),
             ],
@@ -237,7 +240,6 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
         );
       }
     } catch (e) {
-      print('Booking error: $e');
       setState(() => _isBooking = false);
 
       ScaffoldMessenger.of(context).showSnackBar(
@@ -261,273 +263,271 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
       ),
       body: cartService.itemCount == 0
           ? Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.shopping_cart_outlined, size: 80, color: Colors.grey),
-            SizedBox(height: 20),
-            Text(
-              'Your cart is empty',
-              style: TextStyle(fontSize: 18, color: Colors.grey[600]),
-            ),
-            SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () => Navigator.pop(context),
-              child: Text('Add Tests'),
-            ),
-          ],
-        ),
-      )
-          : SingleChildScrollView(
-        padding: EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Cart Summary
-            Container(
-              padding: EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.blue.shade50,
-                borderRadius: BorderRadius.circular(12),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.shopping_cart_outlined,
+                    size: 80,
+                    color: Colors.grey,
+                  ),
+                  SizedBox(height: 20),
+                  Text(
+                    'Your cart is empty',
+                    style: TextStyle(fontSize: 18, color: Colors.grey[600]),
+                  ),
+                  SizedBox(height: 20),
+                  ElevatedButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: Text('Add Tests'),
+                  ),
+                ],
               ),
+            )
+          : SingleChildScrollView(
+              padding: EdgeInsets.all(16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    'Your Tests',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
+                  // Cart Summary
+                  Container(
+                    padding: EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.blue.shade50,
+                      borderRadius: BorderRadius.circular(12),
                     ),
-                  ),
-                  SizedBox(height: 12),
-                  ...cartService.items.map((item) => Padding(
-                    padding: EdgeInsets.only(bottom: 8),
-                    child: Row(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Icon(Icons.check_circle,
-                            color: Colors.green, size: 18),
-                        SizedBox(width: 8),
-                        Expanded(child: Text(item.name)),
                         Text(
-                          '₹${item.price.toStringAsFixed(0)}',
+                          'Your Tests',
                           style: TextStyle(
+                            fontSize: 18,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
+                        SizedBox(height: 12),
+                        ...cartService.items.map(
+                          (item) => Padding(
+                            padding: EdgeInsets.only(bottom: 8),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  Icons.check_circle,
+                                  color: Colors.green,
+                                  size: 18,
+                                ),
+                                SizedBox(width: 8),
+                                Expanded(child: Text(item.name)),
+                                Text(
+                                  '₹${item.price.toStringAsFixed(0)}',
+                                  style: TextStyle(fontWeight: FontWeight.bold),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        Divider(),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'Total:',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            Text(
+                              '₹${cartService.totalPrice.toStringAsFixed(0)}',
+                              style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.blue,
+                              ),
+                            ),
+                          ],
+                        ),
                       ],
                     ),
-                  )),
-                  Divider(),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'Total:',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
+                  ),
+                  SizedBox(height: 24),
+
+                  // Date Selection
+                  Text(
+                    'Select Date',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  SizedBox(height: 12),
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.05),
+                          blurRadius: 10,
+                          offset: Offset(0, 2),
                         ),
-                      ),
-                      Text(
-                        '₹${cartService.totalPrice.toStringAsFixed(0)}',
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
+                      ],
+                    ),
+                    child: TableCalendar(
+                      firstDay: DateTime.now(),
+                      lastDay: DateTime.now().add(Duration(days: 90)),
+                      focusedDay: _focusedDay,
+                      selectedDayPredicate: (day) =>
+                          isSameDay(_selectedDate, day),
+                      onDaySelected: (selectedDay, focusedDay) {
+                        if (!isSameDay(_selectedDate, selectedDay)) {
+                          setState(() {
+                            _selectedDate = selectedDay;
+                            _focusedDay = focusedDay;
+                          });
+                          _loadAvailableSlots();
+                        }
+                      },
+                      calendarStyle: CalendarStyle(
+                        selectedDecoration: BoxDecoration(
                           color: Colors.blue,
+                          shape: BoxShape.circle,
+                        ),
+                        todayDecoration: BoxDecoration(
+                          color: Colors.blue.shade200,
+                          shape: BoxShape.circle,
                         ),
                       ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            SizedBox(height: 24),
-
-            // Date Selection
-            Text(
-              'Select Date',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            SizedBox(height: 12),
-            Container(
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
-                    blurRadius: 10,
-                    offset: Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: TableCalendar(
-                firstDay: DateTime.now(),
-                lastDay: DateTime.now().add(Duration(days: 90)),
-                focusedDay: _focusedDay,
-                selectedDayPredicate: (day) =>
-                    isSameDay(_selectedDate, day),
-                onDaySelected: (selectedDay, focusedDay) {
-                  if (!isSameDay(_selectedDate, selectedDay)) {
-                    setState(() {
-                      _selectedDate = selectedDay;
-                      _focusedDay = focusedDay;
-                    });
-                    _loadAvailableSlots();
-                  }
-                },
-                calendarStyle: CalendarStyle(
-                  selectedDecoration: BoxDecoration(
-                    color: Colors.blue,
-                    shape: BoxShape.circle,
-                  ),
-                  todayDecoration: BoxDecoration(
-                    color: Colors.blue.shade200,
-                    shape: BoxShape.circle,
-                  ),
-                ),
-                headerStyle: HeaderStyle(
-                  formatButtonVisible: false,
-                  titleCentered: true,
-                ),
-              ),
-            ),
-            SizedBox(height: 24),
-
-            // Time Slot Selection
-            Text(
-              'Select Time',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            SizedBox(height: 12),
-
-            if (_isLoadingSlots)
-              Center(
-                child: Padding(
-                  padding: EdgeInsets.all(32),
-                  child: CircularProgressIndicator(),
-                ),
-              )
-            else if (_availableTimeSlots.isEmpty)
-              Container(
-                padding: EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: Colors.orange.shade50,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Row(
-                  children: [
-                    Icon(Icons.info_outline, color: Colors.orange),
-                    SizedBox(width: 12),
-                    Expanded(
-                      child: Text(
-                        'No available slots for this date. Please select another date.',
-                        style: TextStyle(color: Colors.orange.shade900),
+                      headerStyle: HeaderStyle(
+                        formatButtonVisible: false,
+                        titleCentered: true,
                       ),
                     ),
-                  ],
-                ),
-              )
-            else
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: _availableTimeSlots.map((slot) {
-                  final isSelected = _selectedTimeSlot == slot;
-                  return ChoiceChip(
-                    label: Text(_formatTimeSlot(slot)),
-                    selected: isSelected,
-                    onSelected: (selected) {
-                      setState(() {
-                        _selectedTimeSlot = selected ? slot : null;
-                      });
-                    },
-                    selectedColor: Colors.blue,
-                    backgroundColor: Colors.grey[200],
-                    labelStyle: TextStyle(
-                      color: isSelected ? Colors.white : Colors.black,
-                      fontWeight: isSelected
-                          ? FontWeight.bold
-                          : FontWeight.normal,
-                    ),
-                  );
-                }).toList(),
-              ),
-            SizedBox(height: 24),
+                  ),
+                  SizedBox(height: 24),
 
-            // Special Instructions
-            Text(
-              'Special Instructions (Optional)',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
+                  // Time Slot Selection
+                  Text(
+                    'Select Time',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  SizedBox(height: 12),
+
+                  if (_isLoadingSlots)
+                    Center(
+                      child: Padding(
+                        padding: EdgeInsets.all(32),
+                        child: CircularProgressIndicator(),
+                      ),
+                    )
+                  else if (_availableTimeSlots.isEmpty)
+                    Container(
+                      padding: EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        color: Colors.orange.shade50,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(Icons.info_outline, color: Colors.orange),
+                          SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              'No available slots for this date. Please select another date.',
+                              style: TextStyle(color: Colors.orange.shade900),
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
+                  else
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: _availableTimeSlots.map((slot) {
+                        final isSelected = _selectedTimeSlot == slot;
+                        return ChoiceChip(
+                          label: Text(_formatTimeSlot(slot)),
+                          selected: isSelected,
+                          onSelected: (selected) {
+                            setState(() {
+                              _selectedTimeSlot = selected ? slot : null;
+                            });
+                          },
+                          selectedColor: Colors.blue,
+                          backgroundColor: Colors.grey[200],
+                          labelStyle: TextStyle(
+                            color: isSelected ? Colors.white : Colors.black,
+                            fontWeight: isSelected
+                                ? FontWeight.bold
+                                : FontWeight.normal,
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                  SizedBox(height: 24),
+
+                  // Special Instructions
+                  Text(
+                    'Special Instructions (Optional)',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  SizedBox(height: 12),
+                  TextField(
+                    controller: _instructionsController,
+                    maxLines: 3,
+                    decoration: InputDecoration(
+                      hintText: 'Any special requirements or notes...',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 80),
+                ],
               ),
             ),
-            SizedBox(height: 12),
-            TextField(
-              controller: _instructionsController,
-              maxLines: 3,
-              decoration: InputDecoration(
-                hintText: 'Any special requirements or notes...',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-            ),
-            SizedBox(height: 80),
-          ],
-        ),
-      ),
       bottomNavigationBar: cartService.itemCount == 0
           ? null
           : Container(
-        padding: EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black12,
-              blurRadius: 10,
-              offset: Offset(0, -2),
-            ),
-          ],
-        ),
-        child: SafeArea(
-          child: ElevatedButton(
-            onPressed: _isBooking ? null : _bookAppointment,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.blue,
-              padding: EdgeInsets.symmetric(vertical: 16),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
-            child: _isBooking
-                ? SizedBox(
-              height: 20,
-              width: 20,
-              child: CircularProgressIndicator(
+              padding: EdgeInsets.all(16),
+              decoration: BoxDecoration(
                 color: Colors.white,
-                strokeWidth: 2,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black12,
+                    blurRadius: 10,
+                    offset: Offset(0, -2),
+                  ),
+                ],
               ),
-            )
-                : Text(
-              'Confirm Booking',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
+              child: SafeArea(
+                child: ElevatedButton(
+                  onPressed: _isBooking ? null : _bookAppointment,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blue,
+                    padding: EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: _isBooking
+                      ? SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2,
+                          ),
+                        )
+                      : Text(
+                          'Confirm Booking',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                ),
               ),
             ),
-          ),
-        ),
-      ),
     );
   }
 }

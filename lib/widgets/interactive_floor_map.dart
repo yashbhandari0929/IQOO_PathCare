@@ -401,12 +401,14 @@ class _InteractiveFloorMapState extends State<InteractiveFloorMap> {
 
   void _zoomIn() {
     final matrix = _transformationController.value.clone();
+    // ignore: deprecated_member_use
     matrix.scale(1.2);
     _transformationController.value = matrix;
   }
 
   void _zoomOut() {
     final matrix = _transformationController.value.clone();
+    // ignore: deprecated_member_use
     matrix.scale(0.8);
     _transformationController.value = matrix;
   }

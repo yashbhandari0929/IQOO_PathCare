@@ -39,10 +39,7 @@ class CartScreen extends StatelessWidget {
                   SizedBox(height: 10),
                   Text(
                     'Add tests or packages to get started',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey[500],
-                    ),
+                    style: TextStyle(fontSize: 14, color: Colors.grey[500]),
                   ),
                   SizedBox(height: 30),
                   ElevatedButton(
@@ -100,9 +97,7 @@ class CartScreen extends StatelessWidget {
                                 borderRadius: BorderRadius.circular(10),
                               ),
                               child: Icon(
-                                isPackage
-                                    ? Icons.card_giftcard
-                                    : Icons.science,
+                                isPackage ? Icons.card_giftcard : Icons.science,
                                 color: isPackage ? Colors.green : Colors.blue,
                                 size: 28,
                               ),
@@ -180,8 +175,7 @@ class CartScreen extends StatelessWidget {
                                     await cartService.removeItem(item.id);
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       SnackBar(
-                                        content:
-                                        Text('${item.name} removed'),
+                                        content: Text('${item.name} removed'),
                                         backgroundColor: Colors.orange,
                                         behavior: SnackBarBehavior.floating,
                                         duration: Duration(seconds: 1),
@@ -302,10 +296,12 @@ class CartScreen extends StatelessWidget {
                             builder: (context) => AlertDialog(
                               title: Text('Clear Cart?'),
                               content: Text(
-                                  'Are you sure you want to remove all items?'),
+                                'Are you sure you want to remove all items?',
+                              ),
                               actions: [
                                 TextButton(
-                                  onPressed: () => Navigator.pop(context, false),
+                                  onPressed: () =>
+                                      Navigator.pop(context, false),
                                   child: Text('Cancel'),
                                 ),
                                 TextButton(

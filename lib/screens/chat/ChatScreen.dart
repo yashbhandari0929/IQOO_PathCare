@@ -47,47 +47,49 @@ class _ChatScreenState extends State<ChatScreen> {
     _channel = supabase
         .channel('messages_channel')
         .onPostgresChanges(
-      event: PostgresChangeEvent.insert,
-      schema: 'public',
-      table: 'messages',
-      callback: (payload) {
-        final newMsg = payload.newRecord;
-        if ((newMsg['sender_id'] == widget.senderId &&
-            newMsg['receiver_id'] == widget.receiverId) ||
-            (newMsg['sender_id'] == widget.receiverId &&
-                newMsg['receiver_id'] == widget.senderId)) {
-          setState(() {
-            _messages.add(Map<String, dynamic>.from(newMsg));
-          });
-          _scrollToBottom();
-        }
-      },
-    )
+          event: PostgresChangeEvent.insert,
+          schema: 'public',
+          table: 'messages',
+          callback: (payload) {
+            final newMsg = payload.newRecord;
+            if ((newMsg['sender_id'] == widget.senderId &&
+                    newMsg['receiver_id'] == widget.receiverId) ||
+                (newMsg['sender_id'] == widget.receiverId &&
+                    newMsg['receiver_id'] == widget.senderId)) {
+              setState(() {
+                _messages.add(Map<String, dynamic>.from(newMsg));
+              });
+              _scrollToBottom();
+            }
+          },
+        )
         .onPostgresChanges(
-      event: PostgresChangeEvent.delete,
-      schema: 'public',
-      table: 'messages',
-      callback: (payload) {
-        final deletedId = payload.oldRecord['id'];
-        setState(() {
-          _messages.removeWhere((m) => m['id'] == deletedId);
-        });
-      },
-    )
+          event: PostgresChangeEvent.delete,
+          schema: 'public',
+          table: 'messages',
+          callback: (payload) {
+            final deletedId = payload.oldRecord['id'];
+            setState(() {
+              _messages.removeWhere((m) => m['id'] == deletedId);
+            });
+          },
+        )
         .onPostgresChanges(
-      event: PostgresChangeEvent.update,
-      schema: 'public',
-      table: 'messages',
-      callback: (payload) {
-        final updatedMsg = payload.newRecord;
-        setState(() {
-          final idx = _messages.indexWhere((m) => m['id'] == updatedMsg['id']);
-          if (idx != -1) {
-            _messages[idx] = Map<String, dynamic>.from(updatedMsg);
-          }
-        });
-      },
-    )
+          event: PostgresChangeEvent.update,
+          schema: 'public',
+          table: 'messages',
+          callback: (payload) {
+            final updatedMsg = payload.newRecord;
+            setState(() {
+              final idx = _messages.indexWhere(
+                (m) => m['id'] == updatedMsg['id'],
+              );
+              if (idx != -1) {
+                _messages[idx] = Map<String, dynamic>.from(updatedMsg);
+              }
+            });
+          },
+        )
         .subscribe();
   }
 
@@ -97,8 +99,8 @@ class _ChatScreenState extends State<ChatScreen> {
           .from('messages')
           .select()
           .or(
-        'and(sender_id.eq.${widget.senderId},receiver_id.eq.${widget.receiverId}),and(sender_id.eq.${widget.receiverId},receiver_id.eq.${widget.senderId})',
-      )
+            'and(sender_id.eq.${widget.senderId},receiver_id.eq.${widget.receiverId}),and(sender_id.eq.${widget.receiverId},receiver_id.eq.${widget.senderId})',
+          )
           .order('timestamp', ascending: true);
 
       setState(() {
@@ -151,7 +153,8 @@ class _ChatScreenState extends State<ChatScreen> {
 
       await supabase
           .from('messages')
-          .update({'deleted_for': deletedFor}).eq('id', msg['id']);
+          .update({'deleted_for': deletedFor})
+          .eq('id', msg['id']);
 
       setState(() {
         final idx = _messages.indexWhere((m) => m['id'] == msg['id']);
@@ -292,10 +295,7 @@ class _ChatScreenState extends State<ChatScreen> {
               Navigator.pop(ctx);
               _deleteForEveryone(msg);
             },
-            child: const Text(
-              'Delete',
-              style: TextStyle(color: Colors.white),
-            ),
+            child: const Text('Delete', style: TextStyle(color: Colors.white)),
           ),
         ],
       ),
@@ -327,8 +327,9 @@ class _ChatScreenState extends State<ChatScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final visibleMessages =
-    _messages.where((msg) => _isVisibleToMe(msg)).toList();
+    final visibleMessages = _messages
+        .where((msg) => _isVisibleToMe(msg))
+        .toList();
 
     return Scaffold(
       appBar: AppBar(
@@ -344,21 +345,21 @@ class _ChatScreenState extends State<ChatScreen> {
                 ? const Center(child: CircularProgressIndicator())
                 : visibleMessages.isEmpty
                 ? Center(
-              child: Text(
-                'No messages yet',
-                style: TextStyle(color: Colors.grey[500]),
-              ),
-            )
+                    child: Text(
+                      'No messages yet',
+                      style: TextStyle(color: Colors.grey[500]),
+                    ),
+                  )
                 : ListView.builder(
-              controller: _scrollController,
-              padding: const EdgeInsets.all(16),
-              itemCount: visibleMessages.length,
-              itemBuilder: (context, index) {
-                final msg = visibleMessages[index];
-                final isMe = msg['sender_id'] == widget.senderId;
-                return _buildMessageBubble(msg, isMe);
-              },
-            ),
+                    controller: _scrollController,
+                    padding: const EdgeInsets.all(16),
+                    itemCount: visibleMessages.length,
+                    itemBuilder: (context, index) {
+                      final msg = visibleMessages[index];
+                      final isMe = msg['sender_id'] == widget.senderId;
+                      return _buildMessageBubble(msg, isMe);
+                    },
+                  ),
           ),
           _buildMessageInput(),
         ],
@@ -368,13 +369,17 @@ class _ChatScreenState extends State<ChatScreen> {
 
   Widget _buildMessageBubble(Map<String, dynamic> msg, bool isMe) {
     String timeStr = msg['timestamp'] ?? msg['created_at'] ?? '';
-    
+
     // Convert Supabase UTC timestamps to local timezone
-    if (timeStr.isNotEmpty && !timeStr.endsWith('Z') && !timeStr.contains('+')) {
+    if (timeStr.isNotEmpty &&
+        !timeStr.endsWith('Z') &&
+        !timeStr.contains('+')) {
       timeStr += 'Z'; // Force UTC if missing timezone indicator
     }
-    
-    final localTime = timeStr.isNotEmpty ? DateTime.parse(timeStr).toLocal() : DateTime.now();
+
+    final localTime = timeStr.isNotEmpty
+        ? DateTime.parse(timeStr).toLocal()
+        : DateTime.now();
     final formattedTime = DateFormat('HH:mm').format(localTime);
 
     return GestureDetector(
@@ -397,7 +402,7 @@ class _ChatScreenState extends State<ChatScreen> {
             ),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.06),
+                color: Colors.black.withValues(alpha: 0.06),
                 blurRadius: 4,
                 offset: const Offset(0, 2),
               ),
@@ -435,7 +440,7 @@ class _ChatScreenState extends State<ChatScreen> {
         color: Colors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.2),
+            color: Colors.grey.withValues(alpha: 0.2),
             blurRadius: 8,
             offset: const Offset(0, -2),
           ),

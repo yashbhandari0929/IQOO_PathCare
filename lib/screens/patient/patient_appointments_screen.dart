@@ -19,11 +19,11 @@ class _PatientAppointmentsScreenState extends State<PatientAppointmentsScreen>
   late TabController _tabController;
   final BookingService _bookingService = BookingService();
 
-  List<Map<String, dynamic>> _upcomingAppointments   = [];
-  List<Map<String, dynamic>> _completedAppointments  = [];
-  List<Map<String, dynamic>> _cancelledAppointments  = [];
+  List<Map<String, dynamic>> _upcomingAppointments = [];
+  List<Map<String, dynamic>> _completedAppointments = [];
+  List<Map<String, dynamic>> _cancelledAppointments = [];
 
-  bool    _isLoading = true;
+  bool _isLoading = true;
   String? _patientId;
 
   @override
@@ -56,7 +56,6 @@ class _PatientAppointmentsScreenState extends State<PatientAppointmentsScreen>
         await _loadAppointments();
       }
     } catch (e) {
-      print('Error loading patient ID: $e');
       setState(() => _isLoading = false);
     }
   }
@@ -67,8 +66,7 @@ class _PatientAppointmentsScreenState extends State<PatientAppointmentsScreen>
     setState(() => _isLoading = true);
 
     try {
-      final now   = DateTime.now();
-      final today = DateTime(now.year, now.month, now.day);
+      final now = DateTime.now();
 
       // Load ALL appointments — no status filter here.
       // booking_service.getPatientAppointments returns every row
@@ -77,13 +75,11 @@ class _PatientAppointmentsScreenState extends State<PatientAppointmentsScreen>
         patientId: _patientId!,
       );
 
-      List<Map<String, dynamic>> upcoming  = [];
+      List<Map<String, dynamic>> upcoming = [];
       List<Map<String, dynamic>> completed = [];
       List<Map<String, dynamic>> cancelled = [];
 
       for (var appointment in appointments) {
-        final appointmentDate =
-        DateTime.parse(appointment['appointment_date'] as String);
         final status = appointment['status'] as String;
 
         if (status == 'cancelled') {
@@ -92,8 +88,7 @@ class _PatientAppointmentsScreenState extends State<PatientAppointmentsScreen>
               ? DateTime.parse(appointment['cancelled_at'] as String)
               : null;
 
-          if (cancelledAt != null &&
-              now.difference(cancelledAt).inDays <= 7) {
+          if (cancelledAt != null && now.difference(cancelledAt).inDays <= 7) {
             cancelled.add(appointment);
           }
         } else if (status == 'completed') {
@@ -125,13 +120,12 @@ class _PatientAppointmentsScreenState extends State<PatientAppointmentsScreen>
       });
 
       setState(() {
-        _upcomingAppointments  = upcoming;
+        _upcomingAppointments = upcoming;
         _completedAppointments = completed;
         _cancelledAppointments = cancelled;
-        _isLoading             = false;
+        _isLoading = false;
       });
     } catch (e) {
-      print('Error loading appointments: $e');
       setState(() => _isLoading = false);
     }
   }
@@ -151,16 +145,17 @@ class _PatientAppointmentsScreenState extends State<PatientAppointmentsScreen>
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Yes, Cancel',
-                style: TextStyle(color: Colors.red)),
+            child: const Text(
+              'Yes, Cancel',
+              style: TextStyle(color: Colors.red),
+            ),
           ),
         ],
       ),
     );
 
     if (confirm == true) {
-      final success =
-      await _bookingService.cancelAppointment(appointmentId);
+      final success = await _bookingService.cancelAppointment(appointmentId);
 
       if (success) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -182,17 +177,27 @@ class _PatientAppointmentsScreenState extends State<PatientAppointmentsScreen>
   }
 
   String _formatDate(String dateStr) {
-    final date   = DateTime.parse(dateStr);
+    final date = DateTime.parse(dateStr);
     final months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
     ];
     return '${date.day} ${months[date.month - 1]}, ${date.year}';
   }
 
   String _formatTime(String timeStr) {
-    final parts  = timeStr.split(':');
-    final hour   = int.parse(parts[0]);
+    final parts = timeStr.split(':');
+    final hour = int.parse(parts[0]);
     final minute = parts[1];
     final period = hour >= 12 ? 'PM' : 'AM';
     final hour12 = hour > 12 ? hour - 12 : (hour == 0 ? 12 : hour);
@@ -215,31 +220,32 @@ class _PatientAppointmentsScreenState extends State<PatientAppointmentsScreen>
   }
 
   Widget _buildAppointmentCard(
-      Map<String, dynamic> appointment, bool canCancel) {
-    final appointmentTests =
-        appointment['appointment_tests'] as List? ?? [];
+    Map<String, dynamic> appointment,
+    bool canCancel,
+  ) {
+    final appointmentTests = appointment['appointment_tests'] as List? ?? [];
     final testCount = appointmentTests.length;
-    final status    = appointment['status'] as String;
+    final status = appointment['status'] as String;
 
     final completedTests = appointmentTests
         .where((test) => test['status'] == 'completed')
         .length;
 
-    Color    statusColor;
+    Color statusColor;
     IconData statusIcon;
 
     switch (status) {
       case 'completed':
         statusColor = Colors.green;
-        statusIcon  = Icons.check_circle;
+        statusIcon = Icons.check_circle;
         break;
       case 'cancelled':
         statusColor = Colors.red;
-        statusIcon  = Icons.cancel;
+        statusIcon = Icons.cancel;
         break;
       default:
         statusColor = Colors.blue;
-        statusIcon  = Icons.schedule;
+        statusIcon = Icons.schedule;
     }
 
     return GestureDetector(
@@ -252,13 +258,13 @@ class _PatientAppointmentsScreenState extends State<PatientAppointmentsScreen>
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
+              color: Colors.black.withValues(alpha: 0.05),
               blurRadius: 5,
               offset: const Offset(0, 2),
             ),
           ],
           border: Border.all(
-            color: statusColor.withOpacity(0.3),
+            color: statusColor.withValues(alpha: 0.3),
             width: 2,
           ),
         ),
@@ -270,7 +276,7 @@ class _PatientAppointmentsScreenState extends State<PatientAppointmentsScreen>
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: statusColor.withOpacity(0.1),
+                    color: statusColor.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Icon(statusIcon, color: statusColor, size: 24),
@@ -291,13 +297,18 @@ class _PatientAppointmentsScreenState extends State<PatientAppointmentsScreen>
                       const SizedBox(height: 4),
                       Row(
                         children: [
-                          const Icon(Icons.access_time,
-                              size: 14, color: Colors.grey),
+                          const Icon(
+                            Icons.access_time,
+                            size: 14,
+                            color: Colors.grey,
+                          ),
                           const SizedBox(width: 4),
                           Text(
                             _formatTime(appointment['appointment_time']),
                             style: TextStyle(
-                                fontSize: 14, color: Colors.grey[600]),
+                              fontSize: 14,
+                              color: Colors.grey[600],
+                            ),
                           ),
                         ],
                       ),
@@ -306,9 +317,11 @@ class _PatientAppointmentsScreenState extends State<PatientAppointmentsScreen>
                 ),
                 Container(
                   padding: const EdgeInsets.symmetric(
-                      horizontal: 12, vertical: 6),
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
                   decoration: BoxDecoration(
-                    color: statusColor.withOpacity(0.1),
+                    color: statusColor.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(
@@ -339,7 +352,9 @@ class _PatientAppointmentsScreenState extends State<PatientAppointmentsScreen>
                   const SizedBox(width: 8),
                   Container(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 8, vertical: 2),
+                      horizontal: 8,
+                      vertical: 2,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.green.shade50,
                       borderRadius: BorderRadius.circular(8),
@@ -360,7 +375,9 @@ class _PatientAppointmentsScreenState extends State<PatientAppointmentsScreen>
                   const SizedBox(width: 8),
                   Container(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 8, vertical: 2),
+                      horizontal: 8,
+                      vertical: 2,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.green.shade50,
                       borderRadius: BorderRadius.circular(8),
@@ -444,60 +461,60 @@ class _PatientAppointmentsScreenState extends State<PatientAppointmentsScreen>
           child: _isLoading
               ? const Center(child: CircularProgressIndicator())
               : RefreshIndicator(
-            onRefresh: _loadAppointments,
-            child: TabBarView(
-              controller: _tabController,
-              children: [
-                // ── Upcoming Tab ─────────────────────────────────
-                _upcomingAppointments.isEmpty
-                    ? _buildEmptyState(
-                  'No upcoming appointments',
-                  Icons.calendar_today,
-                )
-                    : ListView.builder(
-                  padding: const EdgeInsets.all(16),
-                  itemCount: _upcomingAppointments.length,
-                  itemBuilder: (context, index) =>
-                      _buildAppointmentCard(
-                        _upcomingAppointments[index],
-                        true, // can cancel
-                      ),
-                ),
+                  onRefresh: _loadAppointments,
+                  child: TabBarView(
+                    controller: _tabController,
+                    children: [
+                      // ── Upcoming Tab ─────────────────────────────────
+                      _upcomingAppointments.isEmpty
+                          ? _buildEmptyState(
+                              'No upcoming appointments',
+                              Icons.calendar_today,
+                            )
+                          : ListView.builder(
+                              padding: const EdgeInsets.all(16),
+                              itemCount: _upcomingAppointments.length,
+                              itemBuilder: (context, index) =>
+                                  _buildAppointmentCard(
+                                    _upcomingAppointments[index],
+                                    true, // can cancel
+                                  ),
+                            ),
 
-                // ── Completed Tab ────────────────────────────────
-                _completedAppointments.isEmpty
-                    ? _buildEmptyState(
-                  'No completed appointments',
-                  Icons.check_circle_outline,
-                )
-                    : ListView.builder(
-                  padding: const EdgeInsets.all(16),
-                  itemCount: _completedAppointments.length,
-                  itemBuilder: (context, index) =>
-                      _buildAppointmentCard(
-                        _completedAppointments[index],
-                        false, // cannot cancel
-                      ),
-                ),
+                      // ── Completed Tab ────────────────────────────────
+                      _completedAppointments.isEmpty
+                          ? _buildEmptyState(
+                              'No completed appointments',
+                              Icons.check_circle_outline,
+                            )
+                          : ListView.builder(
+                              padding: const EdgeInsets.all(16),
+                              itemCount: _completedAppointments.length,
+                              itemBuilder: (context, index) =>
+                                  _buildAppointmentCard(
+                                    _completedAppointments[index],
+                                    false, // cannot cancel
+                                  ),
+                            ),
 
-                // ── Cancelled Tab ────────────────────────────────
-                _cancelledAppointments.isEmpty
-                    ? _buildEmptyState(
-                  'No cancelled appointments',
-                  Icons.cancel_outlined,
-                )
-                    : ListView.builder(
-                  padding: const EdgeInsets.all(16),
-                  itemCount: _cancelledAppointments.length,
-                  itemBuilder: (context, index) =>
-                      _buildAppointmentCard(
-                        _cancelledAppointments[index],
-                        false, // cannot cancel
-                      ),
+                      // ── Cancelled Tab ────────────────────────────────
+                      _cancelledAppointments.isEmpty
+                          ? _buildEmptyState(
+                              'No cancelled appointments',
+                              Icons.cancel_outlined,
+                            )
+                          : ListView.builder(
+                              padding: const EdgeInsets.all(16),
+                              itemCount: _cancelledAppointments.length,
+                              itemBuilder: (context, index) =>
+                                  _buildAppointmentCard(
+                                    _cancelledAppointments[index],
+                                    false, // cannot cancel
+                                  ),
+                            ),
+                    ],
+                  ),
                 ),
-              ],
-            ),
-          ),
         ),
       ],
     );

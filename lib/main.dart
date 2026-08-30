@@ -18,13 +18,8 @@ Future<void> main() async {
 
   // Initialize Supabase
   await Supabase.initialize(
-    //url: 'https://bjxfmcskpasnuenvxjex.supabase.co', // Replace with your Supabase URL
-    //anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJqeGZtY3NrcGFzbnVlbnZ4amV4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg5OTMyODEsImV4cCI6MjA4NDU2OTI4MX0.FgTVQwqRHR7T5x5S2yfbqx5Da1Pqb-2HvoGVP5p_YLU', // Replace with your Supabase anon key
-    /*url: 'https://dlrzfleivroxgfsludmy.supabase.co',
-    anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRscnpmbGVpdnJveGdmc2x1ZG15Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkzNDM4ODgsImV4cCI6MjA4NDkxOTg4OH0._LqcMtiHo7cKi0oJKGhcAKQSRglIKpRVFbEd2xwm9fU',*/
-    url: 'https://zqxxqfkpiqyrkzdfevsi.supabase.co',
-    anonKey:
-        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpxeHhxZmtwaXF5cmt6ZGZldnNpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAwNDE0MzksImV4cCI6MjA4NTYxNzQzOX0.xnqxEIH05OIlPeAjE2J5lkvi25hlncEK7-S2rrsCIXQ',
+    url: dotenv.env['SUPABASE_URL']!,
+    anonKey: dotenv.env['SUPABASE_ANON_KEY']!,
   );
 
   // Load cart from storage

@@ -42,7 +42,6 @@ class _SupervisorDashboardState extends State<SupervisorDashboard> {
         });
       }
     } catch (e) {
-      print('❌ Error loading supervisor data: $e');
       if (mounted) setState(() => _isLoading = false);
     }
   }
@@ -76,141 +75,144 @@ class _SupervisorDashboardState extends State<SupervisorDashboard> {
       body: _isLoading
           ? const Center(child: CircularProgressIndicator(color: Colors.teal))
           : SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // ── Welcome Card ───────────────────────────────────────
-            Container(
-              width: double.infinity,
               padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Colors.teal, Color(0xFF00897B)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.teal.withOpacity(0.3),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: Row(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // ── Welcome Card ───────────────────────────────────────
                   Container(
-                    width: 60,
-                    height: 60,
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.2),
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(
-                      Icons.supervisor_account,
-                      color: Colors.white,
-                      size: 34,
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'Welcome back,',
-                          style: TextStyle(
-                              color: Colors.white70, fontSize: 14),
+                      gradient: const LinearGradient(
+                        colors: [Colors.teal, Color(0xFF00897B)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.teal.withValues(alpha: 0.3),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
                         ),
-                        Text(
-                          _supervisorData?['name'] ?? 'Supervisor',
-                          style: const TextStyle(
+                      ],
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 60,
+                          height: 60,
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.2),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.supervisor_account,
                             color: Colors.white,
-                            fontSize: 22,
-                            fontWeight: FontWeight.bold,
+                            size: 34,
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Welcome back,',
+                                style: TextStyle(
+                                  color: Colors.white70,
+                                  fontSize: 14,
+                                ),
+                              ),
+                              Text(
+                                _supervisorData?['name'] ?? 'Supervisor',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ],
                     ),
                   ),
+
+                  const SizedBox(height: 28),
+
+                  const Text(
+                    'Quick Actions',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87,
+                    ),
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  // ── Grid ───────────────────────────────────────────────
+                  GridView.count(
+                    crossAxisCount: 2,
+                    crossAxisSpacing: 16,
+                    mainAxisSpacing: 16,
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    children: [
+                      // Upload Report → admin/upload_report_screen.dart
+                      _buildDashboardCard(
+                        title: 'Upload Report',
+                        subtitle: 'Submit patient reports',
+                        icon: Icons.upload_file,
+                        color: Colors.teal,
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const UploadReportScreen(),
+                            ),
+                          );
+                        },
+                      ),
+
+                      _buildDashboardCard(
+                        title: 'View Reports',
+                        subtitle: 'Browse submitted reports',
+                        icon: Icons.folder_open,
+                        color: Colors.teal,
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) =>
+                                  const SupervisorViewReportsScreen(),
+                            ),
+                          );
+                        },
+                      ),
+
+                      // NEW: Patient Messages Card
+                      _buildDashboardCard(
+                        title: 'Patient Messages',
+                        subtitle: 'Chat with patients',
+                        icon: Icons.chat_bubble_outline,
+                        color: Colors.orange,
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => SupervisorChatScreen(),
+                            ),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
                 ],
               ),
             ),
-
-            const SizedBox(height: 28),
-
-            const Text(
-              'Quick Actions',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Colors.black87,
-              ),
-            ),
-
-            const SizedBox(height: 16),
-
-            // ── Grid ───────────────────────────────────────────────
-            GridView.count(
-              crossAxisCount: 2,
-              crossAxisSpacing: 16,
-              mainAxisSpacing: 16,
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              children: [
-                // Upload Report → admin/upload_report_screen.dart
-                _buildDashboardCard(
-                  title: 'Upload Report',
-                  subtitle: 'Submit patient reports',
-                  icon: Icons.upload_file,
-                  color: Colors.teal,
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const UploadReportScreen(),
-                      ),
-                    );
-                  },
-                ),
-
-                _buildDashboardCard(
-                  title: 'View Reports',
-                  subtitle: 'Browse submitted reports',
-                  icon: Icons.folder_open,
-                  color: Colors.teal,
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const SupervisorViewReportsScreen(),
-                      ),
-                    );
-                  },
-                ),
-
-                // NEW: Patient Messages Card
-                _buildDashboardCard(
-                  title: 'Patient Messages',
-                  subtitle: 'Chat with patients',
-                  icon: Icons.chat_bubble_outline,
-                  color: Colors.orange,
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => SupervisorChatScreen(),
-                      ),
-                    );
-                  },
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
     );
   }
 
@@ -236,7 +238,7 @@ class _SupervisorDashboardState extends State<SupervisorDashboard> {
                 width: 56,
                 height: 56,
                 decoration: BoxDecoration(
-                  color: color.withOpacity(0.12),
+                  color: color.withValues(alpha: 0.12),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(icon, color: color, size: 28),
@@ -255,8 +257,7 @@ class _SupervisorDashboardState extends State<SupervisorDashboard> {
               Text(
                 subtitle,
                 textAlign: TextAlign.center,
-                style:
-                TextStyle(fontSize: 11, color: Colors.grey[600]),
+                style: TextStyle(fontSize: 11, color: Colors.grey[600]),
               ),
             ],
           ),

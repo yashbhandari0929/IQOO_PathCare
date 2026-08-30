@@ -11,7 +11,9 @@ class BookingService {
     required String startTime,
   }) async {
     try {
-      print('🔍 Checking availability for ${testIds.length} tests at $startTime');
+      print(
+        '🔍 Checking availability for ${testIds.length} tests at $startTime',
+      );
 
       // Get test details with room information
       final testsData = await supabase
@@ -19,7 +21,9 @@ class BookingService {
           .select('id, name, room_number, avg_duration_minutes')
           .inFilter('id', testIds);
 
-      List<Map<String, dynamic>> tests = List<Map<String, dynamic>>.from(testsData);
+      List<Map<String, dynamic>> tests = List<Map<String, dynamic>>.from(
+        testsData,
+      );
 
       // Calculate time slots for each test
       DateTime currentTime = DateTime.parse('2000-01-01 $startTime');
@@ -33,8 +37,10 @@ class BookingService {
           'test_id': test['id'],
           'test_name': test['name'],
           'room_number': test['room_number'],
-          'start_time': '${currentTime.hour.toString().padLeft(2, '0')}:${currentTime.minute.toString().padLeft(2, '0')}:00',
-          'end_time': '${endTime.hour.toString().padLeft(2, '0')}:${endTime.minute.toString().padLeft(2, '0')}:00',
+          'start_time':
+              '${currentTime.hour.toString().padLeft(2, '0')}:${currentTime.minute.toString().padLeft(2, '0')}:00',
+          'end_time':
+              '${endTime.hour.toString().padLeft(2, '0')}:${endTime.minute.toString().padLeft(2, '0')}:00',
           'duration': duration,
         });
 
@@ -70,7 +76,8 @@ class BookingService {
             if (bookedCount >= capacity) {
               return {
                 'available': false,
-                'message': 'Room ${roomNumber} is full at ${allocation['start_time']}',
+                'message':
+                    'Room ${roomNumber} is full at ${allocation['start_time']}',
                 'conflict_test': allocation['test_name'],
               };
             }
@@ -84,15 +91,12 @@ class BookingService {
         'allocations': allocations,
         'total_duration': allocations.fold<int>(
           0,
-              (sum, item) => sum + (item['duration'] as int),
+          (sum, item) => sum + (item['duration'] as int),
         ),
       };
     } catch (e) {
       print('❌ Error checking availability: $e');
-      return {
-        'available': false,
-        'message': 'Error checking availability: $e',
-      };
+      return {'available': false, 'message': 'Error checking availability: $e'};
     }
   }
 
@@ -106,7 +110,8 @@ class BookingService {
     // Generate time slots from 9 AM to 5 PM (every 15 minutes)
     for (int hour = 9; hour < 17; hour++) {
       for (int minute = 0; minute < 60; minute += 15) {
-        final timeStr = '${hour.toString().padLeft(2, '0')}:${minute.toString().padLeft(2, '0')}:00';
+        final timeStr =
+            '${hour.toString().padLeft(2, '0')}:${minute.toString().padLeft(2, '0')}:00';
         timeSlots.add(timeStr);
       }
     }
@@ -157,12 +162,12 @@ class BookingService {
       final appointmentData = await supabase
           .from('appointments')
           .insert({
-        'patient_id': patientId,
-        'appointment_date': date.toIso8601String().split('T')[0],
-        'appointment_time': startTime,
-        'status': 'scheduled',
-        'special_instructions': specialInstructions,
-      })
+            'patient_id': patientId,
+            'appointment_date': date.toIso8601String().split('T')[0],
+            'appointment_time': startTime,
+            'status': 'scheduled',
+            'special_instructions': specialInstructions,
+          })
           .select()
           .single();
 
@@ -233,10 +238,7 @@ class BookingService {
       };
     } catch (e) {
       print('❌ Error booking appointment: $e');
-      return {
-        'success': false,
-        'message': 'Error booking appointment: $e',
-      };
+      return {'success': false, 'message': 'Error booking appointment: $e'};
     }
   }
 
@@ -248,14 +250,19 @@ class BookingService {
     try {
       var query = supabase
           .from('appointments')
-          .select('*, appointment_tests!inner(*, test_rooms!appointment_tests_assigned_room_id_fkey(*))')
+          .select(
+            '*, appointment_tests!inner(*, test_rooms!appointment_tests_assigned_room_id_fkey(*))',
+          )
           .eq('patient_id', patientId);
 
       if (status != null) {
         query = query.eq('status', status);
       }
 
-      final appointments = await query.order('appointment_date', ascending: false);
+      final appointments = await query.order(
+        'appointment_date',
+        ascending: false,
+      );
 
       return List<Map<String, dynamic>>.from(appointments);
     } catch (e) {
@@ -268,19 +275,22 @@ class BookingService {
   Future<bool> cancelAppointment(String appointmentId) async {
     try {
       // Update appointment status
-      await supabase.from('appointments').update({
-        'status': 'cancelled',
-        'cancelled_at': DateTime.now().toIso8601String(),
-      }).eq('id', appointmentId);
+      await supabase
+          .from('appointments')
+          .update({
+            'status': 'cancelled',
+            'cancelled_at': DateTime.now().toIso8601String(),
+          })
+          .eq('id', appointmentId);
 
       // Release time slots
       await supabase
           .from('test_time_slots')
           .update({
-        'is_booked': false,
-        'booked_by_appointment_id': null,
-        'booked_by_patient_id': null,
-      })
+            'is_booked': false,
+            'booked_by_appointment_id': null,
+            'booked_by_patient_id': null,
+          })
           .eq('booked_by_appointment_id', appointmentId);
 
       return true;
@@ -299,10 +309,13 @@ class BookingService {
   }) async {
     try {
       // Update the test status to completed
-      await supabase.from('appointment_tests').update({
-        'status': 'completed',
-        'completed_at': DateTime.now().toIso8601String(),
-      }).eq('id', appointmentTestId);
+      await supabase
+          .from('appointment_tests')
+          .update({
+            'status': 'completed',
+            'completed_at': DateTime.now().toIso8601String(),
+          })
+          .eq('id', appointmentTestId);
 
       print('✅ Test $appointmentTestId marked as completed');
 
@@ -332,22 +345,27 @@ class BookingService {
 
       // Check if all tests are completed
       bool allCompleted = appointmentTests.every(
-              (test) => test['status'] == 'completed'
+        (test) => test['status'] == 'completed',
       );
 
       if (allCompleted) {
         // Update appointment status to completed
-        await supabase.from('appointments').update({
-          'status': 'completed',
-          'completed_at': DateTime.now().toIso8601String(),
-        }).eq('id', appointmentId);
+        await supabase
+            .from('appointments')
+            .update({
+              'status': 'completed',
+              'completed_at': DateTime.now().toIso8601String(),
+            })
+            .eq('id', appointmentId);
 
         print('✅ Appointment $appointmentId auto-completed - all tests done!');
       } else {
         final completedCount = appointmentTests
             .where((test) => test['status'] == 'completed')
             .length;
-        print('📊 Progress: $completedCount/${appointmentTests.length} tests completed');
+        print(
+          '📊 Progress: $completedCount/${appointmentTests.length} tests completed',
+        );
       }
     } catch (e) {
       print('❌ Error auto-completing appointment: $e');
@@ -361,7 +379,9 @@ class BookingService {
     try {
       final tests = await supabase
           .from('appointment_tests')
-          .select('*, tests(*), test_rooms!appointment_tests_assigned_room_id_fkey(*)')
+          .select(
+            '*, tests(*), test_rooms!appointment_tests_assigned_room_id_fkey(*)',
+          )
           .eq('appointment_id', appointmentId)
           .order('test_order');
 

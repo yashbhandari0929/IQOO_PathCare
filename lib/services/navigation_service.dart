@@ -44,42 +44,39 @@ class QueuePositionResult {
 class NavigationService {
   // ── Optimal Test Sequence ─────────────────────────────────────────────────
   Future<List<Map<String, dynamic>>> getOptimalTestSequence(
-      String appointmentId) async {
+    String appointmentId,
+  ) async {
     try {
-      final result = await supabase.rpc('get_optimal_test_order',
-          params: {'p_appointment_id': appointmentId});
+      final result = await supabase.rpc(
+        'get_optimal_test_order',
+        params: {'p_appointment_id': appointmentId},
+      );
       if (result != null && result is List) {
         return List<Map<String, dynamic>>.from(result);
       }
       return await getTestSequence(appointmentId);
     } catch (e) {
-      print('Error getting optimal test sequence: $e');
       return await getTestSequence(appointmentId);
     }
   }
 
   Future<List<Map<String, dynamic>>> getTestSequence(
-      String appointmentId) async {
+    String appointmentId,
+  ) async {
     try {
-      print('🔍 Fetching test sequence for appointment: $appointmentId');
       final testsData = await supabase
           .from('appointment_tests')
           .select(
-        '*,'
+            '*,'
             'tests(*),'
             'appointments(*),'
             'test_rooms!appointment_tests_assigned_room_id_fkey(*)',
-      )
+          )
           .eq('appointment_id', appointmentId)
           .order('test_order');
-
-      print('📋 Found ${testsData.length} tests');
-      for (var t in testsData) {
-        print('   ${t['test_name']} — ${t['status']}');
-      }
+      for (var t in testsData) {}
       return List<Map<String, dynamic>>.from(testsData);
     } catch (e) {
-      print('❌ Error fetching test sequence: $e');
       return [];
     }
   }
@@ -87,14 +84,15 @@ class NavigationService {
   // ── PRE-ARRIVAL: general room busyness ────────────────────────────────────
   Future<Map<String, dynamic>?> getRoomQueueInfo(String roomNumber) async {
     try {
-      final result = await supabase
-          .rpc('get_room_queue_info', params: {'p_room_number': roomNumber});
+      final result = await supabase.rpc(
+        'get_room_queue_info',
+        params: {'p_room_number': roomNumber},
+      );
       if (result != null && result is List && result.isNotEmpty) {
         return result[0] as Map<String, dynamic>;
       }
       return null;
     } catch (e) {
-      print('Error fetching room queue info: $e');
       return null;
     }
   }
@@ -119,8 +117,6 @@ class NavigationService {
     required String appointmentTestId,
   }) async {
     try {
-      print('📊 Computing queue position — test: $appointmentTestId  room: $roomId');
-
       // Fetch all patients currently waiting (status=reached) in this room,
       // ordered by when they physically arrived (reached_at ascending).
       final rows = await supabase
@@ -133,8 +129,6 @@ class NavigationService {
       final list = rows as List;
       final total = list.length;
 
-      print('📊 Reached patients in room: $total → ${list.map((r) => r['id']).toList()}');
-
       // Find our index in the arrival-ordered list.
       int position = 1; // default: first (or alone)
       for (int i = 0; i < list.length; i++) {
@@ -146,7 +140,8 @@ class NavigationService {
 
       // If our row isn't in the list at all (edge case: status not yet
       // written to DB when realtime fires), default to last position.
-      if (total > 0 && position == 1 &&
+      if (total > 0 &&
+          position == 1 &&
           !list.any((r) => r['id'] == appointmentTestId)) {
         position = total + 1;
       }
@@ -159,11 +154,8 @@ class NavigationService {
         total: effectiveTotal,
         estimatedWaitMinutes: waitMinutes,
       );
-
-      print('📊 Result: $result');
       return result;
     } catch (e) {
-      print('❌ Error computing queue position: $e');
       // Safe fallback — show patient as first so they're not misled
       return const QueuePositionResult(
         position: 1,
@@ -185,7 +177,6 @@ class NavigationService {
           .eq('status', 'reached');
       return (rows as List).length;
     } catch (e) {
-      print('Error fetching room waiting count: $e');
       return 0;
     }
   }
@@ -217,11 +208,14 @@ class NavigationService {
         double totalMinutes = 0;
         int counted = 0;
         for (final r in list) {
-          final reached   = DateTime.tryParse(r['reached_at'] as String? ?? '');
-          final completed = DateTime.tryParse(r['completed_at'] as String? ?? '');
+          final reached = DateTime.tryParse(r['reached_at'] as String? ?? '');
+          final completed = DateTime.tryParse(
+            r['completed_at'] as String? ?? '',
+          );
           if (reached != null && completed != null) {
             final mins = completed.difference(reached).inSeconds / 60.0;
-            if (mins > 0 && mins < 120) { // sanity check: ignore outliers
+            if (mins > 0 && mins < 120) {
+              // sanity check: ignore outliers
               totalMinutes += mins;
               counted++;
             }
@@ -229,7 +223,7 @@ class NavigationService {
         }
         if (counted > 0) {
           final avgMins = (totalMinutes / counted).ceil();
-          print('📊 Smart ETA: avg ${avgMins}min from $counted completed tests');
+
           return patientsAhead * avgMins;
         }
       }
@@ -237,17 +231,20 @@ class NavigationService {
       // Fallback to hardcoded defaults
       return _estimateWaitMinutes(patientsAhead, roomId);
     } catch (e) {
-      print('Error computing smart ETA: $e');
       return _estimateWaitMinutes(patientsAhead, roomId);
     }
   }
 
   int _estimateWaitMinutes(int patientsAhead, String roomIdOrNumber) {
     int mpp;
-    if (roomIdOrNumber.startsWith('Lab'))          mpp = 5;
-    else if (roomIdOrNumber.startsWith('Room 1'))  mpp = 10;
-    else if (roomIdOrNumber.startsWith('Room 2'))  mpp = 15;
-    else                                           mpp = 8;
+    if (roomIdOrNumber.startsWith('Lab'))
+      mpp = 5;
+    else if (roomIdOrNumber.startsWith('Room 1'))
+      mpp = 10;
+    else if (roomIdOrNumber.startsWith('Room 2'))
+      mpp = 15;
+    else
+      mpp = 8;
     return patientsAhead * mpp;
   }
 
@@ -261,7 +258,6 @@ class NavigationService {
     required String status,
   }) async {
     try {
-      print('🔄 Updating $appointmentTestId → $status');
       final updates = <String, dynamic>{'status': status};
       if (status == 'reached') {
         updates['reached_at'] = DateTime.now().toIso8601String();
@@ -277,11 +273,8 @@ class NavigationService {
           .select();
 
       if (response == null || (response is List && response.isEmpty)) {
-        print('❌ No rows updated');
         return false;
       }
-      print('✅ Status updated to $status');
-
       // ── ADDED ─────────────────────────────────────────────────────────────
       // After marking a test completed, check whether ALL tests in the
       // parent appointment are now done and flip appointment.status to
@@ -294,7 +287,6 @@ class NavigationService {
 
       return true;
     } catch (e, st) {
-      print('❌ Error: $e\n$st');
       return false;
     }
   }
@@ -305,7 +297,6 @@ class NavigationService {
       final result = await supabase.from('current_queue_status').select();
       return List<Map<String, dynamic>>.from(result);
     } catch (e) {
-      print('Error fetching queue status: $e');
       return [];
     }
   }
@@ -322,27 +313,41 @@ class NavigationService {
       if (fromFloor == toFloor) {
         final id = _getPathId(fromLocation, toLocation, fromFloor);
         if (id.isNotEmpty) {
-          segments.add(PathSegment(
-              floor: fromFloor, pathId: id,
-              fromLocation: fromLocation, toLocation: toLocation));
+          segments.add(
+            PathSegment(
+              floor: fromFloor,
+              pathId: id,
+              fromLocation: fromLocation,
+              toLocation: toLocation,
+            ),
+          );
         }
       } else {
         final id1 = _getPathId(fromLocation, 'Elevator', fromFloor);
         if (id1.isNotEmpty) {
-          segments.add(PathSegment(
-              floor: fromFloor, pathId: id1,
-              fromLocation: fromLocation, toLocation: 'Elevator'));
+          segments.add(
+            PathSegment(
+              floor: fromFloor,
+              pathId: id1,
+              fromLocation: fromLocation,
+              toLocation: 'Elevator',
+            ),
+          );
         }
         final id2 = _getPathId('Elevator', toLocation, toFloor);
         if (id2.isNotEmpty) {
-          segments.add(PathSegment(
-              floor: toFloor, pathId: id2,
-              fromLocation: 'Elevator', toLocation: toLocation));
+          segments.add(
+            PathSegment(
+              floor: toFloor,
+              pathId: id2,
+              fromLocation: 'Elevator',
+              toLocation: toLocation,
+            ),
+          );
         }
       }
       return segments;
     } catch (e) {
-      print('Error getting path segments: $e');
       return segments;
     }
   }
@@ -350,10 +355,12 @@ class NavigationService {
   String _getPathId(String from, String to, String floor) {
     final toNorm = to.toLowerCase().replaceAll(' ', '_');
     if (floor == 'Ground Floor') {
-      if (from == 'Main Entrance' && to == 'Lab A') return 'path_entrance_to_lab_a';
-      if (from == 'Main Entrance' && to == 'Lab B') return 'path_entrance_to_lab_b';
-      if (from == 'Lab A'         && to == 'Elevator') return 'path_lab_a_to_elevator';
-      if (from == 'Lab B'         && to == 'Elevator') return 'path_lab_b_to_elevator';
+      if (from == 'Main Entrance' && to == 'Lab A')
+        return 'path_entrance_to_lab_a';
+      if (from == 'Main Entrance' && to == 'Lab B')
+        return 'path_entrance_to_lab_b';
+      if (from == 'Lab A' && to == 'Elevator') return 'path_lab_a_to_elevator';
+      if (from == 'Lab B' && to == 'Elevator') return 'path_lab_b_to_elevator';
     } else if (floor == '1st Floor' || floor == '2nd Floor') {
       if (from == 'Elevator' && to.startsWith('Room'))
         return 'path_elevator_to_$toNorm';
@@ -389,7 +396,8 @@ class NavigationService {
   };
 
   Map<String, List<Map<String, dynamic>>> groupTestsByRoom(
-      List<Map<String, dynamic>> tests) {
+    List<Map<String, dynamic>> tests,
+  ) {
     final Map<String, List<Map<String, dynamic>>> grouped = {};
     for (var t in tests) {
       final tr = t['test_rooms'] as Map<String, dynamic>?;
@@ -400,7 +408,9 @@ class NavigationService {
   }
 
   List<Map<String, dynamic>> getPendingTestsForRoom(
-      List<Map<String, dynamic>> tests, String roomNumber) {
+    List<Map<String, dynamic>> tests,
+    String roomNumber,
+  ) {
     return tests.where((t) {
       final tr = t['test_rooms'] as Map<String, dynamic>?;
       return tr?['room_number'] == roomNumber && t['status'] == 'pending';
@@ -408,15 +418,14 @@ class NavigationService {
   }
 
   Future<bool> completeAllTestsInRoom(
-      List<Map<String, dynamic>> testsInRoom) async {
+    List<Map<String, dynamic>> testsInRoom,
+  ) async {
     try {
       for (var t in testsInRoom) {
-        await updateTestStatus(
-            appointmentTestId: t['id'], status: 'completed');
+        await updateTestStatus(appointmentTestId: t['id'], status: 'completed');
       }
       return true;
     } catch (e) {
-      print('Error completing room tests: $e');
       return false;
     }
   }

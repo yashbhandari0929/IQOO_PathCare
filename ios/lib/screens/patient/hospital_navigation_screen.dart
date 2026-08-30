@@ -6,10 +6,8 @@ import '../../widgets/queue_status_widget.dart';
 class HospitalNavigationScreen extends StatefulWidget {
   final String appointmentId;
 
-  const HospitalNavigationScreen({
-    Key? key,
-    required this.appointmentId,
-  }) : super(key: key);
+  const HospitalNavigationScreen({Key? key, required this.appointmentId})
+    : super(key: key);
 
   @override
   State<HospitalNavigationScreen> createState() =>
@@ -46,7 +44,9 @@ class _HospitalNavigationScreenState extends State<HospitalNavigationScreen> {
       print('📍 Appointment ID: ${widget.appointmentId}');
 
       // ⚠️ CRITICAL: Force refresh from database
-      final tests = await _navigationService.getOptimalTestSequence(widget.appointmentId);
+      final tests = await _navigationService.getOptimalTestSequence(
+        widget.appointmentId,
+      );
 
       if (tests.isEmpty) {
         print('❌ No tests found');
@@ -88,7 +88,10 @@ class _HospitalNavigationScreenState extends State<HospitalNavigationScreen> {
         print('🗺️ Path segments: ${segments.length}');
 
         // Check if there are multiple tests in the same room
-        final testsInRoom = _navigationService.getPendingTestsForRoom(tests, toRoom);
+        final testsInRoom = _navigationService.getPendingTestsForRoom(
+          tests,
+          toRoom,
+        );
         print('📋 Tests in $toRoom: ${testsInRoom.length}');
 
         setState(() {
@@ -117,7 +120,10 @@ class _HospitalNavigationScreenState extends State<HospitalNavigationScreen> {
   }
 
   String _getFloorForLocation(String location) {
-    if (location == 'Main Entrance' || location == 'Lab A' || location == 'Lab B' || location == 'Elevator') {
+    if (location == 'Main Entrance' ||
+        location == 'Lab A' ||
+        location == 'Lab B' ||
+        location == 'Elevator') {
       return 'Ground Floor';
     } else if (location.startsWith('Room 1')) {
       return '1st Floor';
@@ -177,7 +183,8 @@ class _HospitalNavigationScreenState extends State<HospitalNavigationScreen> {
       }
 
       // Check if there are more tests in this room
-      if (_showingRoomTests && _currentTestIndexInRoom < _testsInCurrentRoom.length - 1) {
+      if (_showingRoomTests &&
+          _currentTestIndexInRoom < _testsInCurrentRoom.length - 1) {
         // Move to next test in same room
         setState(() {
           _currentTestIndexInRoom++;
@@ -237,8 +244,8 @@ class _HospitalNavigationScreenState extends State<HospitalNavigationScreen> {
       builder: (context) => AlertDialog(
         title: Text('Complete All Tests?'),
         content: Text(
-            'You have ${_testsInCurrentRoom.length} tests in this room.\n\n'
-                'Complete all of them now?'
+          'You have ${_testsInCurrentRoom.length} tests in this room.\n\n'
+          'Complete all of them now?',
         ),
         actions: [
           TextButton(
@@ -260,18 +267,21 @@ class _HospitalNavigationScreenState extends State<HospitalNavigationScreen> {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => Center(
-        child: CircularProgressIndicator(),
-      ),
+      builder: (context) => Center(child: CircularProgressIndicator()),
     );
 
-    final success = await _navigationService.completeAllTestsInRoom(_testsInCurrentRoom);
+    final success = await _navigationService.completeAllTestsInRoom(
+      _testsInCurrentRoom,
+    );
 
     Navigator.pop(context); // Close loading
 
     if (!success) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('❌ Error completing tests'), backgroundColor: Colors.red),
+        SnackBar(
+          content: Text('❌ Error completing tests'),
+          backgroundColor: Colors.red,
+        ),
       );
       return;
     }
@@ -300,7 +310,9 @@ class _HospitalNavigationScreenState extends State<HospitalNavigationScreen> {
   }
 
   Future<bool> _checkIfAllCompleted() async {
-    final tests = await _navigationService.getTestSequence(widget.appointmentId);
+    final tests = await _navigationService.getTestSequence(
+      widget.appointmentId,
+    );
     return _navigationService.areAllTestsCompleted(tests);
   }
 
@@ -565,7 +577,9 @@ class _HospitalNavigationScreenState extends State<HospitalNavigationScreen> {
                         backgroundColor: Colors.grey[200],
                         labelStyle: TextStyle(
                           color: isSelected ? Colors.white : Colors.black,
-                          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                          fontWeight: isSelected
+                              ? FontWeight.bold
+                              : FontWeight.normal,
                         ),
                       ),
                     );
@@ -617,13 +631,15 @@ class _HospitalNavigationScreenState extends State<HospitalNavigationScreen> {
 
     // Get directions for current selected floor
     final segment = _pathSegments.firstWhere(
-          (s) => s.floor == _selectedFloor,
-      orElse: () => _pathSegments.isNotEmpty ? _pathSegments.first : PathSegment(
-        floor: _selectedFloor,
-        pathId: '',
-        fromLocation: _currentLocation,
-        toLocation: destinationRoom,
-      ),
+      (s) => s.floor == _selectedFloor,
+      orElse: () => _pathSegments.isNotEmpty
+          ? _pathSegments.first
+          : PathSegment(
+              floor: _selectedFloor,
+              pathId: '',
+              fromLocation: _currentLocation,
+              toLocation: destinationRoom,
+            ),
     );
 
     final directions = _navigationService.generateFallbackDirections(
@@ -702,7 +718,9 @@ class _HospitalNavigationScreenState extends State<HospitalNavigationScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            if (_hasReachedDestination && _showingRoomTests && _testsInCurrentRoom.length > 1) ...[
+            if (_hasReachedDestination &&
+                _showingRoomTests &&
+                _testsInCurrentRoom.length > 1) ...[
               // Option to complete all tests in room
               ElevatedButton(
                 onPressed: _completeAllTestsInRoom,
@@ -717,7 +735,10 @@ class _HospitalNavigationScreenState extends State<HospitalNavigationScreen> {
                     SizedBox(width: 8),
                     Text(
                       'Complete All ${_testsInCurrentRoom.length} Tests in Room',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ],
                 ),
@@ -731,29 +752,35 @@ class _HospitalNavigationScreenState extends State<HospitalNavigationScreen> {
             ],
             _hasReachedDestination
                 ? ElevatedButton(
-              onPressed: _completeCurrentTest,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.green,
-                padding: EdgeInsets.symmetric(vertical: 16),
-              ),
-              child: Text(
-                _showingRoomTests
-                    ? 'Mark This Test as Completed (${_currentTestIndexInRoom + 1}/${_testsInCurrentRoom.length})'
-                    : 'Mark Test as Completed',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-              ),
-            )
+                    onPressed: _completeCurrentTest,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.green,
+                      padding: EdgeInsets.symmetric(vertical: 16),
+                    ),
+                    child: Text(
+                      _showingRoomTests
+                          ? 'Mark This Test as Completed (${_currentTestIndexInRoom + 1}/${_testsInCurrentRoom.length})'
+                          : 'Mark Test as Completed',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  )
                 : ElevatedButton(
-              onPressed: _markAsReached,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blue,
-                padding: EdgeInsets.symmetric(vertical: 16),
-              ),
-              child: Text(
-                'I\'ve Reached $roomNumber',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-              ),
-            ),
+                    onPressed: _markAsReached,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blue,
+                      padding: EdgeInsets.symmetric(vertical: 16),
+                    ),
+                    child: Text(
+                      'I\'ve Reached $roomNumber',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
           ],
         ),
       ),

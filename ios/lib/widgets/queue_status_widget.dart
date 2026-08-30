@@ -6,10 +6,8 @@ import '../services/navigation_service.dart';
 class QueueStatusWidget extends StatefulWidget {
   final String roomNumber;
 
-  const QueueStatusWidget({
-    Key? key,
-    required this.roomNumber,
-  }) : super(key: key);
+  const QueueStatusWidget({Key? key, required this.roomNumber})
+    : super(key: key);
 
   @override
   State<QueueStatusWidget> createState() => _QueueStatusWidgetState();
@@ -115,10 +113,7 @@ class _QueueStatusWidgetState extends State<QueueStatusWidget> {
       padding: EdgeInsets.all(16),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [
-            statusColor.withOpacity(0.1),
-            statusColor.withOpacity(0.05),
-          ],
+          colors: [statusColor.withOpacity(0.1), statusColor.withOpacity(0.05)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -216,13 +211,7 @@ class _QueueStatusWidgetState extends State<QueueStatusWidget> {
         children: [
           Icon(icon, color: color, size: 20),
           SizedBox(height: 4),
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 11,
-              color: Colors.grey[600],
-            ),
-          ),
+          Text(label, style: TextStyle(fontSize: 11, color: Colors.grey[600])),
           SizedBox(height: 2),
           Text(
             value,

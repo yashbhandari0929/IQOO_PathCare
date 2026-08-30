@@ -390,7 +390,6 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
   }
 }*/
 
-
 /*
 // lib/screens/patient/patient_home_screen.dart
 import 'package:flutter/material.dart';
@@ -975,8 +974,6 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
   }
 }*/
 
-
-
 // lib/screens/patient/patient_home_screen.dart
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -1060,20 +1057,25 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
       }
 
       if (_patientId == null) {
-        print('❌ DEBUG: _patientId is STILL null after loading! Cannot check appointments.');
+        print(
+          '❌ DEBUG: _patientId is STILL null after loading! Cannot check appointments.',
+        );
         return;
       }
 
       print('✅ DEBUG: Patient ID found: $_patientId');
 
       final today = DateTime.now();
-      final todayStr = '${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}';
+      final todayStr =
+          '${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}';
 
       print('📅 DEBUG: Today\'s date string: $todayStr');
 
       final appointments = await supabase
           .from('appointments')
-          .select('*, appointment_tests!inner(*, test_rooms!appointment_tests_assigned_room_id_fkey(*))')
+          .select(
+            '*, appointment_tests!inner(*, test_rooms!appointment_tests_assigned_room_id_fkey(*))',
+          )
           .eq('patient_id', _patientId!)
           .eq('appointment_date', todayStr)
           .eq('status', 'scheduled');
@@ -1082,8 +1084,12 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
 
       if (appointments.isNotEmpty) {
         print('✅ DEBUG: Found appointment! ID: ${appointments[0]['id']}');
-        print('📋 DEBUG: Appointment time: ${appointments[0]['appointment_time']}');
-        print('🧪 DEBUG: Number of tests: ${(appointments[0]['appointment_tests'] as List).length}');
+        print(
+          '📋 DEBUG: Appointment time: ${appointments[0]['appointment_time']}',
+        );
+        print(
+          '🧪 DEBUG: Number of tests: ${(appointments[0]['appointment_tests'] as List).length}',
+        );
 
         setState(() {
           _todayAppointment = appointments[0];
@@ -1096,12 +1102,16 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
             print('🚨 DEBUG: Showing appointment alert NOW!');
             _showAppointmentAlert();
           } else {
-            print('❌ DEBUG: Cannot show alert - mounted: $mounted, appointment: ${_todayAppointment != null}');
+            print(
+              '❌ DEBUG: Cannot show alert - mounted: $mounted, appointment: ${_todayAppointment != null}',
+            );
           }
         });
       } else {
         print('❌ DEBUG: No appointments found for today ($todayStr)');
-        print('💡 DEBUG: Check if appointment_date in database matches this date string');
+        print(
+          '💡 DEBUG: Check if appointment_date in database matches this date string',
+        );
       }
     } catch (e) {
       print('❌ ERROR checking today appointment: $e');
@@ -1117,7 +1127,8 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
       return;
     }
 
-    final testCount = (_todayAppointment!['appointment_tests'] as List?)?.length ?? 0;
+    final testCount =
+        (_todayAppointment!['appointment_tests'] as List?)?.length ?? 0;
     final time = _todayAppointment!['appointment_time'] as String;
 
     print('✅ DEBUG: Showing dialog with $testCount tests at $time');
@@ -1130,10 +1141,7 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
             Icon(Icons.notifications_active, color: Colors.orange, size: 32),
             SizedBox(width: 12),
             Expanded(
-              child: Text(
-                'Appointment Today!',
-                style: TextStyle(fontSize: 20),
-              ),
+              child: Text('Appointment Today!', style: TextStyle(fontSize: 20)),
             ),
           ],
         ),
@@ -1208,9 +1216,7 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
             },
             icon: Icon(Icons.navigation),
             label: Text('Start Navigation'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.blue,
-            ),
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
           ),
         ],
       ),
@@ -1312,10 +1318,7 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
                       children: [
                         Text(
                           'Welcome back,',
-                          style: TextStyle(
-                            color: Colors.white70,
-                            fontSize: 14,
-                          ),
+                          style: TextStyle(color: Colors.white70, fontSize: 14),
                         ),
                         SizedBox(height: 4),
                         Text(
@@ -1335,11 +1338,7 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
                       color: Colors.white24,
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: Icon(
-                      Icons.person,
-                      color: Colors.white,
-                      size: 32,
-                    ),
+                    child: Icon(Icons.person, color: Colors.white, size: 32),
                   ),
                 ],
               ),
@@ -1360,10 +1359,7 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
                 ),
                 Text(
                   '${_categories.length} categories',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey[600],
-                  ),
+                  style: TextStyle(fontSize: 14, color: Colors.grey[600]),
                 ),
               ],
             ),
@@ -1391,9 +1387,8 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => CategoryTestsScreen(
-                          category: category,
-                        ),
+                        builder: (context) =>
+                            CategoryTestsScreen(category: category),
                       ),
                     );
                   },
@@ -1416,10 +1411,7 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
                 ),
                 Text(
                   '${_packages.length} packages',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey[600],
-                  ),
+                  style: TextStyle(fontSize: 14, color: Colors.grey[600]),
                 ),
               ],
             ),
@@ -1495,9 +1487,7 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
                       onPressed: () {
                         Navigator.push(
                           context,
-                          MaterialPageRoute(
-                            builder: (context) => CartScreen(),
-                          ),
+                          MaterialPageRoute(builder: (context) => CartScreen()),
                         );
                       },
                     ),
@@ -1541,18 +1531,12 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
         selectedItemColor: Colors.blue,
         unselectedItemColor: Colors.grey,
         items: [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Home',
-          ),
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
           BottomNavigationBarItem(
             icon: Icon(Icons.calendar_today),
             label: 'Appointments',
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: 'Profile',
-          ),
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
         ],
       ),
     );

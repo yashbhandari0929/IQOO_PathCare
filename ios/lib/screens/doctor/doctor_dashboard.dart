@@ -67,7 +67,10 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
             )
           ''')
           .eq('status', 'scheduled')
-          .gte('appointment_date', DateTime.now().toIso8601String().split('T')[0])
+          .gte(
+            'appointment_date',
+            DateTime.now().toIso8601String().split('T')[0],
+          )
           .order('appointment_date')
           .order('appointment_time');
 
@@ -80,9 +83,9 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
     } catch (e) {
       print('❌ Error loading appointments: $e');
       setState(() => isLoading = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to load appointments')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Failed to load appointments')));
     }
   }
 
@@ -92,49 +95,49 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
     _appointmentsChannel = supabase
         .channel('doctor_appointments_channel')
         .onPostgresChanges(
-      event: PostgresChangeEvent.insert,
-      schema: 'public',
-      table: 'appointments',
-      callback: (payload) {
-        print('🔔 NEW APPOINTMENT DETECTED!');
-        print('Payload: $payload');
+          event: PostgresChangeEvent.insert,
+          schema: 'public',
+          table: 'appointments',
+          callback: (payload) {
+            print('🔔 NEW APPOINTMENT DETECTED!');
+            print('Payload: $payload');
 
-        // Reload appointments
-        _loadAppointments();
+            // Reload appointments
+            _loadAppointments();
 
-        // Show notification
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Row(
-                children: [
-                  Icon(Icons.notifications_active, color: Colors.white),
-                  SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      'New appointment booked!',
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
+            // Show notification
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Row(
+                    children: [
+                      Icon(Icons.notifications_active, color: Colors.white),
+                      SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          'New appointment booked!',
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                    ],
                   ),
-                ],
-              ),
-              backgroundColor: Colors.green,
-              duration: Duration(seconds: 4),
-              behavior: SnackBarBehavior.floating,
-            ),
-          );
-        }
-      },
-    )
+                  backgroundColor: Colors.green,
+                  duration: Duration(seconds: 4),
+                  behavior: SnackBarBehavior.floating,
+                ),
+              );
+            }
+          },
+        )
         .onPostgresChanges(
-      event: PostgresChangeEvent.update,
-      schema: 'public',
-      table: 'appointments',
-      callback: (payload) {
-        print('🔄 Appointment updated');
-        _loadAppointments();
-      },
-    )
+          event: PostgresChangeEvent.update,
+          schema: 'public',
+          table: 'appointments',
+          callback: (payload) {
+            print('🔄 Appointment updated');
+            _loadAppointments();
+          },
+        )
         .subscribe();
 
     print('✅ Realtime listener setup complete');
@@ -154,7 +157,7 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
       Navigator.pushNamedAndRemoveUntil(
         context,
         '/role-selection',
-            (route) => false,
+        (route) => false,
       );
     }
   }
@@ -197,10 +200,7 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
                   // Title
                   Text(
                     'Appointment Details',
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                   ),
                   SizedBox(height: 24),
                   // Patient info
@@ -305,18 +305,12 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
             children: [
               Text(
                 label,
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey[600],
-                ),
+                style: TextStyle(fontSize: 12, color: Colors.grey[600]),
               ),
               SizedBox(height: 4),
               Text(
                 value,
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
-                ),
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
               ),
             ],
           ),
@@ -332,298 +326,316 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
         title: Text('Doctor Dashboard'),
         backgroundColor: Colors.pink,
         actions: [
-          IconButton(
-            icon: Icon(Icons.refresh),
-            onPressed: _loadAppointments,
-          ),
-          IconButton(
-            icon: Icon(Icons.logout),
-            onPressed: _logout,
-          ),
+          IconButton(icon: Icon(Icons.refresh), onPressed: _loadAppointments),
+          IconButton(icon: Icon(Icons.logout), onPressed: _logout),
         ],
       ),
       body: isLoading
           ? Center(child: CircularProgressIndicator())
           : SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Header Card
-            Container(
-              width: double.infinity,
-              padding: EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [Colors.pink.shade400, Colors.red.shade400],
-                ),
-              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    children: [
-                      Container(
-                        padding: EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: Colors.white24,
-                          shape: BoxShape.circle,
-                        ),
-                        child: Icon(
-                          Icons.medical_services,
-                          color: Colors.white,
-                          size: 32,
-                        ),
+                  // Header Card
+                  Container(
+                    width: double.infinity,
+                    padding: EdgeInsets.all(24),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [Colors.pink.shade400, Colors.red.shade400],
                       ),
-                      SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
                           children: [
-                            Text(
-                              'Dr. $doctorName',
-                              style: TextStyle(
+                            Container(
+                              padding: EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                color: Colors.white24,
+                                shape: BoxShape.circle,
+                              ),
+                              child: Icon(
+                                Icons.medical_services,
                                 color: Colors.white,
-                                fontSize: 24,
-                                fontWeight: FontWeight.bold,
+                                size: 32,
                               ),
                             ),
-                            SizedBox(height: 4),
-                            Text(
-                              specialization,
-                              style: TextStyle(
-                                color: Colors.white70,
-                                fontSize: 14,
+                            SizedBox(width: 16),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Dr. $doctorName',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 24,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  SizedBox(height: 4),
+                                  Text(
+                                    specialization,
+                                    style: TextStyle(
+                                      color: Colors.white70,
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                  if (department.isNotEmpty) ...[
+                                    Text(
+                                      department,
+                                      style: TextStyle(
+                                        color: Colors.white60,
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                  ],
+                                ],
                               ),
                             ),
-                            if (department.isNotEmpty) ...[
-                              Text(
-                                department,
-                                style: TextStyle(
-                                  color: Colors.white60,
-                                  fontSize: 12,
-                                ),
-                              ),
-                            ],
                           ],
                         ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            // Stats
-            Padding(
-              padding: EdgeInsets.all(16),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: _buildStatCard(
-                      '${appointments.length}',
-                      'Scheduled',
-                      Icons.schedule,
-                      Colors.blue,
+                      ],
                     ),
                   ),
-                  SizedBox(width: 12),
-                  Expanded(
-                    child: _buildStatCard(
-                      '0',
-                      'Completed Today',
-                      Icons.check_circle,
-                      Colors.green,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            // Appointments List
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Today\'s Appointments',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  Container(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 6,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.green.shade50,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
+                  // Stats
+                  Padding(
+                    padding: EdgeInsets.all(16),
                     child: Row(
-                      mainAxisSize: MainAxisSize.min,
                       children: [
-                        Container(
-                          width: 8,
-                          height: 8,
-                          decoration: BoxDecoration(
-                            color: Colors.green,
-                            shape: BoxShape.circle,
+                        Expanded(
+                          child: _buildStatCard(
+                            '${appointments.length}',
+                            'Scheduled',
+                            Icons.schedule,
+                            Colors.blue,
                           ),
                         ),
-                        SizedBox(width: 6),
-                        Text(
-                          'Live Updates',
-                          style: TextStyle(
-                            color: Colors.green.shade900,
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
+                        SizedBox(width: 12),
+                        Expanded(
+                          child: _buildStatCard(
+                            '0',
+                            'Completed Today',
+                            Icons.check_circle,
+                            Colors.green,
                           ),
                         ),
                       ],
                     ),
                   ),
-                ],
-              ),
-            ),
-            SizedBox(height: 16),
-            appointments.isEmpty
-                ? Center(
-              child: Padding(
-                padding: EdgeInsets.all(32),
-                child: Column(
-                  children: [
-                    Icon(
-                      Icons.event_available,
-                      size: 64,
-                      color: Colors.grey[400],
-                    ),
-                    SizedBox(height: 16),
-                    Text(
-                      'No appointments scheduled',
-                      style: TextStyle(
-                        color: Colors.grey[600],
-                        fontSize: 16,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            )
-                : ListView.builder(
-              shrinkWrap: true,
-              physics: NeverScrollableScrollPhysics(),
-              padding: EdgeInsets.symmetric(horizontal: 16),
-              itemCount: appointments.length,
-              itemBuilder: (context, index) {
-                final apt = appointments[index];
-                final patient = apt['patients'];
-                final aptDate = DateTime.parse(apt['appointment_date']);
-
-                return Card(
-                  margin: EdgeInsets.only(bottom: 12),
-                  elevation: 2,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: InkWell(
-                    onTap: () => _showAppointmentDetails(apt),
-                    borderRadius: BorderRadius.circular(12),
-                    child: Padding(
-                      padding: EdgeInsets.all(16),
-                      child: Row(
-                        children: [
-                          // Number badge
-                          Container(
-                            width: 40,
-                            height: 40,
-                            decoration: BoxDecoration(
-                              color: Colors.pink,
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            alignment: Alignment.center,
-                            child: Text(
-                              '${index + 1}',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 18,
-                              ),
-                            ),
+                  // Appointments List
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 16),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Today\'s Appointments',
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
                           ),
-                          SizedBox(width: 16),
-                          // Patient info
-                          Expanded(
+                        ),
+                        Container(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 6,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.green.shade50,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Container(
+                                width: 8,
+                                height: 8,
+                                decoration: BoxDecoration(
+                                  color: Colors.green,
+                                  shape: BoxShape.circle,
+                                ),
+                              ),
+                              SizedBox(width: 6),
+                              Text(
+                                'Live Updates',
+                                style: TextStyle(
+                                  color: Colors.green.shade900,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  SizedBox(height: 16),
+                  appointments.isEmpty
+                      ? Center(
+                          child: Padding(
+                            padding: EdgeInsets.all(32),
                             child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
+                                Icon(
+                                  Icons.event_available,
+                                  size: 64,
+                                  color: Colors.grey[400],
+                                ),
+                                SizedBox(height: 16),
                                 Text(
-                                  patient['full_name'] ?? 'Unknown Patient',
+                                  'No appointments scheduled',
                                   style: TextStyle(
-                                    fontWeight: FontWeight.bold,
+                                    color: Colors.grey[600],
                                     fontSize: 16,
                                   ),
-                                ),
-                                SizedBox(height: 6),
-                                Row(
-                                  children: [
-                                    Icon(Icons.calendar_today, size: 14, color: Colors.grey),
-                                    SizedBox(width: 4),
-                                    Text(
-                                      DateFormat('MMM dd').format(aptDate),
-                                      style: TextStyle(
-                                        color: Colors.grey[600],
-                                        fontSize: 13,
-                                      ),
-                                    ),
-                                    SizedBox(width: 12),
-                                    Icon(Icons.access_time, size: 14, color: Colors.grey),
-                                    SizedBox(width: 4),
-                                    Text(
-                                      apt['appointment_time'] ?? 'N/A',
-                                      style: TextStyle(
-                                        color: Colors.grey[600],
-                                        fontSize: 13,
-                                      ),
-                                    ),
-                                  ],
                                 ),
                               ],
                             ),
                           ),
-                          // Tests badge
-                          Container(
-                            padding: EdgeInsets.symmetric(
-                              horizontal: 10,
-                              vertical: 6,
-                            ),
-                            decoration: BoxDecoration(
-                              color: Colors.blue.shade50,
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Text(
-                              '${(apt['test_ids'] as List?)?.length ?? 0} tests',
-                              style: TextStyle(
-                                color: Colors.blue,
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
+                        )
+                      : ListView.builder(
+                          shrinkWrap: true,
+                          physics: NeverScrollableScrollPhysics(),
+                          padding: EdgeInsets.symmetric(horizontal: 16),
+                          itemCount: appointments.length,
+                          itemBuilder: (context, index) {
+                            final apt = appointments[index];
+                            final patient = apt['patients'];
+                            final aptDate = DateTime.parse(
+                              apt['appointment_date'],
+                            );
+
+                            return Card(
+                              margin: EdgeInsets.only(bottom: 12),
+                              elevation: 2,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
                               ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                );
-              },
+                              child: InkWell(
+                                onTap: () => _showAppointmentDetails(apt),
+                                borderRadius: BorderRadius.circular(12),
+                                child: Padding(
+                                  padding: EdgeInsets.all(16),
+                                  child: Row(
+                                    children: [
+                                      // Number badge
+                                      Container(
+                                        width: 40,
+                                        height: 40,
+                                        decoration: BoxDecoration(
+                                          color: Colors.pink,
+                                          borderRadius: BorderRadius.circular(
+                                            8,
+                                          ),
+                                        ),
+                                        alignment: Alignment.center,
+                                        child: Text(
+                                          '${index + 1}',
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 18,
+                                          ),
+                                        ),
+                                      ),
+                                      SizedBox(width: 16),
+                                      // Patient info
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              patient['full_name'] ??
+                                                  'Unknown Patient',
+                                              style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 16,
+                                              ),
+                                            ),
+                                            SizedBox(height: 6),
+                                            Row(
+                                              children: [
+                                                Icon(
+                                                  Icons.calendar_today,
+                                                  size: 14,
+                                                  color: Colors.grey,
+                                                ),
+                                                SizedBox(width: 4),
+                                                Text(
+                                                  DateFormat(
+                                                    'MMM dd',
+                                                  ).format(aptDate),
+                                                  style: TextStyle(
+                                                    color: Colors.grey[600],
+                                                    fontSize: 13,
+                                                  ),
+                                                ),
+                                                SizedBox(width: 12),
+                                                Icon(
+                                                  Icons.access_time,
+                                                  size: 14,
+                                                  color: Colors.grey,
+                                                ),
+                                                SizedBox(width: 4),
+                                                Text(
+                                                  apt['appointment_time'] ??
+                                                      'N/A',
+                                                  style: TextStyle(
+                                                    color: Colors.grey[600],
+                                                    fontSize: 13,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      // Tests badge
+                                      Container(
+                                        padding: EdgeInsets.symmetric(
+                                          horizontal: 10,
+                                          vertical: 6,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: Colors.blue.shade50,
+                                          borderRadius: BorderRadius.circular(
+                                            8,
+                                          ),
+                                        ),
+                                        child: Text(
+                                          '${(apt['test_ids'] as List?)?.length ?? 0} tests',
+                                          style: TextStyle(
+                                            color: Colors.blue,
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                  SizedBox(height: 16),
+                ],
+              ),
             ),
-            SizedBox(height: 16),
-          ],
-        ),
-      ),
     );
   }
 
-  Widget _buildStatCard(String value, String label, IconData icon, Color color) {
+  Widget _buildStatCard(
+    String value,
+    String label,
+    IconData icon,
+    Color color,
+  ) {
     return Container(
       padding: EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -647,10 +659,7 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
           Text(
             label,
             textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 12,
-              color: Colors.grey[600],
-            ),
+            style: TextStyle(fontSize: 12, color: Colors.grey[600]),
           ),
         ],
       ),

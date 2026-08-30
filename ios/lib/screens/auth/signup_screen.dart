@@ -187,7 +187,8 @@ class _SignupScreenState extends State<SignupScreen> {
         } catch (profileError) {
           print('❌ PROFILE CREATION ERROR: $profileError');
           _showError(
-              'Profile creation failed. Please check your information and try again.');
+            'Profile creation failed. Please check your information and try again.',
+          );
         }
       }
     } on AuthException catch (e) {
@@ -284,10 +285,7 @@ class _SignupScreenState extends State<SignupScreen> {
                 Text(
                   'Fill in the details to get started',
                   textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey[600],
-                  ),
+                  style: TextStyle(fontSize: 14, color: Colors.grey[600]),
                 ),
                 SizedBox(height: 30),
 
@@ -352,8 +350,9 @@ class _SignupScreenState extends State<SignupScreen> {
                     if (value == null || value.isEmpty) {
                       return 'Please enter your email';
                     }
-                    if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$')
-                        .hasMatch(value)) {
+                    if (!RegExp(
+                      r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
+                    ).hasMatch(value)) {
                       return 'Please enter a valid email';
                     }
                     return null;
@@ -426,10 +425,12 @@ class _SignupScreenState extends State<SignupScreen> {
                       ),
                     ),
                     items: ['Male', 'Female', 'Other']
-                        .map((gender) => DropdownMenuItem(
-                      value: gender,
-                      child: Text(gender),
-                    ))
+                        .map(
+                          (gender) => DropdownMenuItem(
+                            value: gender,
+                            child: Text(gender),
+                          ),
+                        )
                         .toList(),
                     onChanged: (value) {
                       setState(() => _selectedGender = value);
@@ -463,19 +464,22 @@ class _SignupScreenState extends State<SignupScreen> {
                         borderRadius: BorderRadius.circular(12),
                       ),
                     ),
-                    items: [
-                      'Cardiology',
-                      'Radiology',
-                      'Pathology',
-                      'Ophthalmology',
-                      'Orthopedics',
-                      'Neurology'
-                    ]
-                        .map((dept) => DropdownMenuItem(
-                      value: dept,
-                      child: Text(dept),
-                    ))
-                        .toList(),
+                    items:
+                        [
+                              'Cardiology',
+                              'Radiology',
+                              'Pathology',
+                              'Ophthalmology',
+                              'Orthopedics',
+                              'Neurology',
+                            ]
+                            .map(
+                              (dept) => DropdownMenuItem(
+                                value: dept,
+                                child: Text(dept),
+                              ),
+                            )
+                            .toList(),
                     onChanged: (value) {
                       setState(() => _selectedDepartment = value);
                     },
@@ -579,8 +583,10 @@ class _SignupScreenState extends State<SignupScreen> {
                             : Icons.visibility_off_outlined,
                       ),
                       onPressed: () {
-                        setState(() =>
-                        _obscureConfirmPassword = !_obscureConfirmPassword);
+                        setState(
+                          () => _obscureConfirmPassword =
+                              !_obscureConfirmPassword,
+                        );
                       },
                     ),
                   ),
@@ -610,22 +616,22 @@ class _SignupScreenState extends State<SignupScreen> {
                     ),
                     child: _isLoading
                         ? SizedBox(
-                      height: 24,
-                      width: 24,
-                      child: CircularProgressIndicator(
-                        color: Colors.white,
-                        strokeWidth: 2,
-                      ),
-                    )
+                            height: 24,
+                            width: 24,
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                              strokeWidth: 2,
+                            ),
+                          )
                         : Text(
-                      'SIGN UP',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 1,
-                        color: Colors.white,
-                      ),
-                    ),
+                            'SIGN UP',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 1,
+                              color: Colors.white,
+                            ),
+                          ),
                   ),
                 ),
                 SizedBox(height: 24),

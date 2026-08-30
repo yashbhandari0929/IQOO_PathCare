@@ -1,5 +1,4 @@
 // lib/screens/patient/chatbot_screen.dart
-// GOOGLE GEMINI API - 100% FREE VERSION - FIXED
 
 import 'package:flutter/material.dart';
 import 'dart:convert';
@@ -9,8 +8,12 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
-import 'package:http_parser/http_parser.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+
+import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
+import 'package:pdfx/pdfx.dart';
+import 'package:path_provider/path_provider.dart';
+import '../../services/gemini_rag_service.dart';
+
 class ChatbotScreen extends StatefulWidget {
   final String patientName;
 
@@ -26,21 +29,24 @@ class _ChatbotScreenState extends State<ChatbotScreen>
   final ScrollController _scrollController = ScrollController();
   final List<ChatMessage> _messages = [];
   bool _isTyping = false;
+  String _loadingText = '';
   late AnimationController _animationController;
   List<ChatConversation> _conversationHistory = [];
   String _currentConversationId = '';
   bool _showHistory = false;
 
-  // Removed Gemini API Key, backend handles LLM now.
+  // Backend handles LLM via Gemini RAG
   String _userRole = 'patient';
   String _userId = '';
   final _supabase = Supabase.instance.client;
   String? _pendingFilePath;
   String? _pendingFileName;
+  late final GeminiRAGService _geminiRAGService;
 
   @override
   void initState() {
     super.initState();
+    _geminiRAGService = GeminiRAGService();
     _animationController = AnimationController(
       vsync: this,
       duration: Duration(milliseconds: 1500),
@@ -74,9 +80,7 @@ class _ChatbotScreenState extends State<ChatbotScreen>
           }
         }
         _userRole = foundRole;
-      } catch (e) {
-        print("Error fetching role: $e");
-      }
+      } catch (e) {}
     }
     await _loadChatHistory();
   }
@@ -116,7 +120,7 @@ class _ChatbotScreenState extends State<ChatbotScreen>
         _messages.add(
           ChatMessage(
             text:
-                'Hello ${widget.patientName}! 👋\n\nI\'m your healthcare assistant powered by Google Gemini. I can help you with:\n\n• Understanding your test results\n• Booking appointments\n• Health tips and advice\n• Medication information\n\nHow can I assist you today?',
+                'Hello ${widget.patientName}! 👋\n\nI\'m your healthcare assistant. I can help you with:\n\n• Understanding your test results\n• Booking appointments\n• Health tips and advice\n• Medication information\n\nHow can I assist you today?',
             isUser: false,
             timestamp: DateTime.now(),
           ),
@@ -247,9 +251,17 @@ class _ChatbotScreenState extends State<ChatbotScreen>
       timestamp: DateTime.now(),
     );
 
+    final filePath = _pendingFilePath;
+    final filename = _pendingFileName;
+
     setState(() {
       _messages.add(userMessage);
       _isTyping = true;
+      _loadingText = hasAttachment
+          ? '📄 Extracting text from report...'
+          : '🤖 Analyzing report...';
+      _pendingFilePath = null;
+      _pendingFileName = null;
     });
 
     try {
@@ -260,9 +272,7 @@ class _ChatbotScreenState extends State<ChatbotScreen>
         'message': combinedText,
         'created_at': DateTime.now().toIso8601String(),
       });
-    } catch (e) {
-      print('Warning: Failed to save user message to Supabase: $e');
-    }
+    } catch (e) {}
 
     await _saveCurrentConversation();
     _messageController.clear();
@@ -270,36 +280,44 @@ class _ChatbotScreenState extends State<ChatbotScreen>
 
     try {
       String responseText;
+      String? documentText;
 
       if (hasAttachment) {
-        final filePath = _pendingFilePath!;
-        final filename = _pendingFileName!;
-        final file = File(filePath);
+        final file = File(filePath!);
         final bytes = await file.readAsBytes();
 
         final storagePath =
             '$_userId/${DateTime.now().millisecondsSinceEpoch}_$filename';
-        
-        // Upload to Supabase
+
+        // Upload to Supabase for history
         await _supabase.storage
             .from('reports')
             .uploadBinary(storagePath, bytes);
 
-        // Get public URL
-        final publicUrl = _supabase.storage.from('reports').getPublicUrl(storagePath);
-
-        // Call Hugging Face API
-        responseText = await _callHuggingFaceAPI(text, imageUrl: publicUrl);
+        // Perform local OCR
+        documentText = await _performLocalOCR(filePath);
 
         if (mounted) {
           setState(() {
-            _pendingFilePath = null;
-            _pendingFileName = null;
+            _loadingText = '🤖 Analyzing report...';
           });
         }
-      } else {
-        responseText = await _callHuggingFaceAPI(text);
+
+        // Process for RAG embeddings
+        await _geminiRAGService.processDocument(
+          _userId,
+          documentText,
+          storagePath,
+        );
       }
+
+      // Call Gemini RAG API
+      responseText = await _geminiRAGService.generateResponse(
+        userId: _userId,
+        userRole: _userRole,
+        userMessage: text,
+        currentDocumentText: documentText,
+      );
 
       final botMessage = ChatMessage(
         text: responseText,
@@ -321,120 +339,31 @@ class _ChatbotScreenState extends State<ChatbotScreen>
           'message': responseText,
           'created_at': DateTime.now().toIso8601String(),
         });
-      } catch (e) {
-        print('Warning: Failed to save bot message to Supabase: $e');
-      }
+      } catch (e) {}
 
       await _saveCurrentConversation();
       _scrollToBottom();
     } catch (e) {
-      print('❌ ERROR: $e');
-
       if (!mounted) return;
 
-      if (hasAttachment) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to analyze document. Try again.'),
-            backgroundColor: Colors.red,
-          ),
-        );
-        setState(() {
-          _isTyping = false;
-        });
-      } else {
-        final errorMsg = ChatMessage(
-          text: _getErrorMessage(e.toString()),
-          isUser: false,
-          timestamp: DateTime.now(),
-        );
+      String errorMsg = e.toString().contains('OCR Failed')
+          ? 'Unable to read this document.'
+          : 'Unable to generate AI response. Please try again.';
 
-        setState(() {
-          _messages.add(errorMsg);
-          _isTyping = false;
-        });
-      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(errorMsg), backgroundColor: Colors.red),
+      );
 
-      await _saveCurrentConversation();
-    }
-  }
-
-  String _getErrorMessage(String error) {
-    if (error.contains('403') || error.contains('401')) {
-      return '🔑 Invalid API Key!\n\nPlease check your .env configuration.';
-    }
-    if (error.contains('SocketException')) {
-      return '📡 No Internet!\n\nCheck your connection and try again.';
-    }
-    return '❌ Error: ${error.substring(0, error.length > 150 ? 150 : error.length)}';
-  }
-
-  Future<String> _callHuggingFaceAPI(String userText, {String? imageUrl}) async {
-    final apiKey = dotenv.env['HF_TOKEN'] ?? '';
-    final url = dotenv.env['HF_ENDPOINT'] ?? 'https://api-inference.huggingface.co/models/Qwen/Qwen2.5-VL-7B-Instruct';
-
-    List<Map<String, dynamic>> userContent = [];
-    
-    userContent.add({
-      "type": "text",
-      "text": userText.isNotEmpty ? userText : "Explain this medical report in simple English."
-    });
-
-    if (imageUrl != null) {
-      userContent.add({
-        "type": "image_url",
-        "image_url": {
-          "url": imageUrl
+      setState(() {
+        _isTyping = false;
+        if (text.isNotEmpty && _messageController.text.isEmpty) {
+          _messageController.text = text;
+        }
+        if (filePath != null && filename != null) {
+          _pendingFilePath = filePath;
+          _pendingFileName = filename;
         }
       });
-    }
-
-    final body = {
-      "model": dotenv.env['HF_MODEL'] ?? 'Qwen/Qwen2.5-VL-7B-Instruct',
-      "messages": [
-        {
-          "role": "system",
-          "content": "You are an expert healthcare AI assistant. Explain medical reports in simple English. Preserve numerical values and reference ranges. Highlight abnormal findings. Never diagnose. Never prescribe medicines. Return: Report Summary, Important Findings, Easy Explanation, Normal vs Abnormal Values, Home Care Advice, Disclaimer"
-        },
-        {
-          "role": "user",
-          "content": userContent
-        }
-      ],
-      "stream": false,
-      "max_tokens": 1024
-    };
-
-    try {
-      final response = await http
-          .post(
-            Uri.parse(url),
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': 'Bearer $apiKey',
-            },
-            body: jsonEncode(body),
-          )
-          .timeout(Duration(seconds: 120));
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        if (data is List && data.isNotEmpty && data[0].containsKey('generated_text')) {
-          // HF typically returns [{"generated_text": "..."}] for these endpoints
-          return data[0]['generated_text'] ?? 'No response received.';
-        } else if (data is Map && data.containsKey('choices')) {
-          return data['choices'][0]['message']['content'] ?? 'No response received.';
-        }
-        return 'No response received.';
-      } else {
-        throw Exception('API Error ${response.statusCode}: ${response.body}');
-      }
-    } catch (e) {
-      print('💥 Exception: $e');
-      if (e.toString().contains('SocketException') || e.toString().contains('TimeoutException')) {
-        throw Exception('AI service unavailable. Please check your connection.');
-      }
-      rethrow;
     }
   }
 
@@ -503,7 +432,6 @@ class _ChatbotScreenState extends State<ChatbotScreen>
         });
       }
     } catch (e) {
-      print('Attachment Error: $e');
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -686,17 +614,6 @@ class _ChatbotScreenState extends State<ChatbotScreen>
               ),
             Row(
               children: [
-                Container(
-                  decoration: BoxDecoration(
-                    color: Colors.grey[100],
-                    shape: BoxShape.circle,
-                  ),
-                  child: IconButton(
-                    icon: Icon(Icons.add, color: Colors.grey[700]),
-                    onPressed: _showQuickActions,
-                  ),
-                ),
-                SizedBox(width: 12),
                 Expanded(
                   child: Container(
                     decoration: BoxDecoration(
@@ -858,45 +775,28 @@ class _ChatbotScreenState extends State<ChatbotScreen>
           ),
           SizedBox(width: 12),
           Container(
-            padding: EdgeInsets.all(12),
+            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(20),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: List.generate(
-                3,
-                (i) => Padding(
-                  padding: EdgeInsets.only(right: i < 2 ? 4 : 0),
-                  child: _buildDot(i),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black12,
+                  blurRadius: 5,
+                  offset: Offset(0, 2),
                 ),
+              ],
+            ),
+            child: Text(
+              _loadingText.isEmpty ? 'Typing...' : _loadingText,
+              style: TextStyle(
+                color: Colors.grey[700],
+                fontStyle: FontStyle.italic,
               ),
             ),
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildDot(int index) {
-    return AnimatedBuilder(
-      animation: _animationController,
-      builder: (context, child) {
-        final value = ((_animationController.value - index * 0.2) % 1.0);
-        final opacity = (value < 0.5 ? value * 2 : (1 - value) * 2).clamp(
-          0.3,
-          1.0,
-        );
-        return Container(
-          width: 8,
-          height: 8,
-          decoration: BoxDecoration(
-            color: Colors.grey.withOpacity(opacity),
-            shape: BoxShape.circle,
-          ),
-        );
-      },
     );
   }
 
@@ -990,64 +890,55 @@ class _ChatbotScreenState extends State<ChatbotScreen>
     );
   }
 
-  void _showQuickActions() {
-    showModalBottomSheet(
-      context: context,
-      builder: (context) => Container(
-        padding: EdgeInsets.all(20),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              'Quick Actions',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 20),
-            _buildQuickActionButton(
-              'Book Appointment',
-              Icons.calendar_today,
-              'I want to book an appointment',
-            ),
-            _buildQuickActionButton(
-              'Health Tips',
-              Icons.favorite,
-              'Give me some health tips',
-            ),
-            _buildQuickActionButton(
-              'Medication Info',
-              Icons.medical_services,
-              'Tell me about medications',
-            ),
-          ],
-        ),
-      ),
-    );
+  String _formatTime(DateTime time) {
+    return '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
   }
 
-  Widget _buildQuickActionButton(String title, IconData icon, String message) {
-    return ListTile(
-      leading: Icon(icon, color: Colors.blue),
-      title: Text(title),
-      trailing: Icon(Icons.arrow_forward_ios, size: 16),
-      onTap: () {
-        Navigator.pop(context);
-        _sendMessage(message);
-      },
-    );
-  }
+  Future<String> _performLocalOCR(String filePath) async {
+    final textRecognizer = TextRecognizer(script: TextRecognitionScript.latin);
+    String extractedText = '';
 
-  String _formatTime(DateTime time) =>
-      '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
+    try {
+      if (filePath.toLowerCase().endsWith('.pdf')) {
+        final document = await PdfDocument.openFile(filePath);
+        final tempDir = await getTemporaryDirectory();
 
-  String _formatDate(DateTime date) {
-    final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day);
-    final yesterday = today.subtract(Duration(days: 1));
-    final messageDate = DateTime(date.year, date.month, date.day);
+        for (int i = 1; i <= document.pagesCount; i++) {
+          final page = await document.getPage(i);
+          final pageImage = await page.render(
+            width: page.width * 4.0, // approx 300 DPI scaling
+            height: page.height * 4.0,
+            format: PdfPageImageFormat.png,
+          );
 
-    if (messageDate == today) return 'Today';
-    if (messageDate == yesterday) return 'Yesterday';
-    return '${date.day}/${date.month}/${date.year}';
+          if (pageImage != null) {
+            final tempFile = File('${tempDir.path}/temp_page_$i.png');
+            await tempFile.writeAsBytes(pageImage.bytes);
+
+            final inputImage = InputImage.fromFilePath(tempFile.path);
+            final RecognizedText recognizedText = await textRecognizer
+                .processImage(inputImage);
+            extractedText += recognizedText.text + '\n\n';
+
+            await tempFile.delete();
+          }
+          await page.close();
+        }
+        await document.close();
+      } else {
+        final inputImage = InputImage.fromFilePath(filePath);
+        final RecognizedText recognizedText = await textRecognizer.processImage(
+          inputImage,
+        );
+        extractedText = recognizedText.text;
+      }
+    } catch (e) {
+      throw Exception('OCR Failed');
+    } finally {
+      textRecognizer.close();
+    }
+
+    return extractedText;
   }
 }
 

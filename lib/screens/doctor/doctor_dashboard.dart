@@ -52,11 +52,11 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
 
   // ── The two summary numbers ───────────────────────────────────────────────
   int _patientsToday = 0; // from patient_treatments
-  int _todayMinutes  = 0; // from doctor_room_sessions
+  int _todayMinutes = 0; // from doctor_room_sessions
 
   // ── Realtime channels ─────────────────────────────────────────────────────
   RealtimeChannel? _treatmentsChannel; // watches patient_treatments INSERTs
-  RealtimeChannel? _sessionsChannel;   // watches doctor_room_sessions changes
+  RealtimeChannel? _sessionsChannel; // watches doctor_room_sessions changes
 
   @override
   void initState() {
@@ -126,7 +126,7 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
           start = DateTime.parse('${today}T${startRaw}').toLocal();
         }
 
-        final endRaw  = row['end_time'];
+        final endRaw = row['end_time'];
         DateTime end;
         if (endRaw != null) {
           try {
@@ -168,7 +168,7 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
         ]);
 
         _patientsToday = results[0] as int;
-        _todayMinutes  = results[1] as int;
+        _todayMinutes = results[1] as int;
         _activeSession = results[2] as Map<String, dynamic>?;
 
         // Start realtime listeners after the first fetch
@@ -193,20 +193,20 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
     _treatmentsChannel = _supabase
         .channel('dash_treatments_$doctorId')
         .onPostgresChanges(
-      event: PostgresChangeEvent.insert,
-      schema: 'public',
-      table: 'patient_treatments',
-      filter: PostgresChangeFilter(
-        type: PostgresChangeFilterType.eq,
-        column: 'doctor_id',
-        value: doctorId,
-      ),
-      callback: (_) async {
-        debugPrint('🔔 [Dashboard] New treatment — refreshing count');
-        final count = await _fetchPatientsToday(doctorId);
-        if (mounted) setState(() => _patientsToday = count);
-      },
-    )
+          event: PostgresChangeEvent.insert,
+          schema: 'public',
+          table: 'patient_treatments',
+          filter: PostgresChangeFilter(
+            type: PostgresChangeFilterType.eq,
+            column: 'doctor_id',
+            value: doctorId,
+          ),
+          callback: (_) async {
+            debugPrint('🔔 [Dashboard] New treatment — refreshing count');
+            final count = await _fetchPatientsToday(doctorId);
+            if (mounted) setState(() => _patientsToday = count);
+          },
+        )
         .subscribe();
 
     // ── Channel 2: doctor_room_sessions INSERT/UPDATE ─────────────────────
@@ -216,20 +216,20 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
     _sessionsChannel = _supabase
         .channel('dash_sessions_$doctorId')
         .onPostgresChanges(
-      event: PostgresChangeEvent.all,
-      schema: 'public',
-      table: 'doctor_room_sessions',
-      filter: PostgresChangeFilter(
-        type: PostgresChangeFilterType.eq,
-        column: 'doctor_id',
-        value: doctorId,
-      ),
-      callback: (_) async {
-        debugPrint('🔔 [Dashboard] Session changed — refreshing time');
-        final minutes = await _fetchTodayMinutes(doctorId);
-        if (mounted) setState(() => _todayMinutes = minutes);
-      },
-    )
+          event: PostgresChangeEvent.all,
+          schema: 'public',
+          table: 'doctor_room_sessions',
+          filter: PostgresChangeFilter(
+            type: PostgresChangeFilterType.eq,
+            column: 'doctor_id',
+            value: doctorId,
+          ),
+          callback: (_) async {
+            debugPrint('🔔 [Dashboard] Session changed — refreshing time');
+            final minutes = await _fetchTodayMinutes(doctorId);
+            if (mounted) setState(() => _todayMinutes = minutes);
+          },
+        )
         .subscribe();
   }
 
@@ -245,10 +245,9 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
     if (selectedRoom != null && mounted) {
       // ── START SESSION in DB so _getDoctorIdForRoom() can find this doctor ──
       if (_doctorProfile != null) {
-        final doctorId   = _doctorProfile!['id'] as String;
+        final doctorId = _doctorProfile!['id'] as String;
         final roomNumber = selectedRoom['room_number'] as String;
         await _doctorService.startSession(doctorId, roomNumber);
-        print('✅ Session started: doctor=$doctorId room=$roomNumber');
       }
 
       await _loadDashboardData();
@@ -299,8 +298,10 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
     return Scaffold(
       backgroundColor: Colors.grey[100],
       appBar: AppBar(
-        title: const Text('PathCare',
-            style: TextStyle(fontWeight: FontWeight.bold)),
+        title: const Text(
+          'PathCare',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         backgroundColor: Colors.blue,
         foregroundColor: Colors.white,
         elevation: 0,
@@ -349,7 +350,7 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
                     shape: BoxShape.circle,
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.blue.withOpacity(0.5),
+                        color: Colors.blue.withValues(alpha: 0.5),
                         blurRadius: 12,
                         offset: Offset(0, 4),
                       ),
@@ -401,32 +402,33 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
     return _isLoading
         ? const Center(child: CircularProgressIndicator())
         : RefreshIndicator(
-      onRefresh: _loadDashboardData,
-      child: SingleChildScrollView(
-        physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildProfileHeader(),
-            const SizedBox(height: 24),
-            _buildCurrentRoomStatus(),
-            const SizedBox(height: 24),
-            _buildSummaryStats(),       // ← the fixed section
-            const SizedBox(height: 24),
-            _buildGoToAnalyticsBanner(),
-            const SizedBox(height: 24),
-            if (_activeSession == null) _buildQuickTip(),
-          ],
-        ),
-      ),
-    );
+            onRefresh: _loadDashboardData,
+            child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildProfileHeader(),
+                  const SizedBox(height: 24),
+                  _buildCurrentRoomStatus(),
+                  const SizedBox(height: 24),
+                  _buildSummaryStats(), // ← the fixed section
+                  const SizedBox(height: 24),
+                  _buildGoToAnalyticsBanner(),
+                  const SizedBox(height: 24),
+                  if (_activeSession == null) _buildQuickTip(),
+                ],
+              ),
+            ),
+          );
   }
 
   // ── Profile header ────────────────────────────────────────────────────────
 
   Widget _buildProfileHeader() {
-    final doctorName = (_doctorProfile?['full_name'] as String?) ??
+    final doctorName =
+        (_doctorProfile?['full_name'] as String?) ??
         (_doctorProfile?['name'] as String?) ??
         'Doctor';
     final specialization = (_doctorProfile?['specialization'] as String?) ?? '';
@@ -438,10 +440,10 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 2),
-          )
+          ),
         ],
       ),
       child: Row(
@@ -463,7 +465,9 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
                 Text(
                   '👨‍⚕️ Dr. $doctorName',
                   style: const TextStyle(
-                      fontSize: 20, fontWeight: FontWeight.bold),
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 if (specialization.isNotEmpty)
                   Text(
@@ -496,78 +500,92 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: (active ? Colors.green : Colors.grey).withOpacity(0.3),
+            color: (active ? Colors.green : Colors.grey).withValues(alpha: 0.3),
             blurRadius: 12,
             offset: const Offset(0, 4),
-          )
+          ),
         ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (active) ...[
-            Row(children: [
-              const Icon(Icons.meeting_room, color: Colors.white, size: 24),
-              const SizedBox(width: 8),
-              Text(
-                'Room ${_activeSession!['room_number']}',
-                style: const TextStyle(
+            Row(
+              children: [
+                const Icon(Icons.meeting_room, color: Colors.white, size: 24),
+                const SizedBox(width: 8),
+                Text(
+                  'Room ${_activeSession!['room_number']}',
+                  style: const TextStyle(
                     color: Colors.white,
                     fontSize: 24,
-                    fontWeight: FontWeight.bold),
-              ),
-            ]),
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
             const SizedBox(height: 8),
             Text(
               'Session started at ${_formatSessionTime(_activeSession!['start_time'])}',
               style: TextStyle(
-                  color: Colors.white.withOpacity(0.9), fontSize: 14),
+                color: Colors.white.withValues(alpha: 0.9),
+                fontSize: 14,
+              ),
             ),
             const SizedBox(height: 16),
-            Row(children: [
-              Expanded(
-                child: ElevatedButton.icon(
-                  onPressed: _handleContinueWorking,
-                  icon: const Icon(Icons.play_arrow),
-                  label: const Text('Continue'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white,
-                    foregroundColor: Colors.green.shade700,
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8)),
+            Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: _handleContinueWorking,
+                    icon: const Icon(Icons.play_arrow),
+                    label: const Text('Continue'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.white,
+                      foregroundColor: Colors.green.shade700,
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: OutlinedButton.icon(
-                  onPressed: _handleChangeRoom,
-                  icon: const Icon(Icons.swap_horiz, color: Colors.white),
-                  label: const Text('Change Room',
-                      style: TextStyle(color: Colors.white)),
-                  style: OutlinedButton.styleFrom(
-                    side: const BorderSide(color: Colors.white),
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8)),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: _handleChangeRoom,
+                    icon: const Icon(Icons.swap_horiz, color: Colors.white),
+                    label: const Text(
+                      'Change Room',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                    style: OutlinedButton.styleFrom(
+                      side: const BorderSide(color: Colors.white),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
                   ),
                 ),
-              ),
-            ]),
+              ],
+            ),
           ] else ...[
             const Text(
               'Not Working',
               style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold),
+                color: Colors.white,
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+              ),
             ),
             const SizedBox(height: 8),
             Text(
               'Select a room to start your day',
               style: TextStyle(
-                  color: Colors.white.withOpacity(0.9), fontSize: 14),
+                color: Colors.white.withValues(alpha: 0.9),
+                fontSize: 14,
+              ),
             ),
             const SizedBox(height: 16),
             SizedBox(
@@ -581,7 +599,8 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
                   foregroundColor: Colors.grey.shade700,
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8)),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
                 ),
               ),
             ),
@@ -598,25 +617,31 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // Section header with live pulse dot when an active session exists
-        Row(children: [
-          const Text(
-            '📊 TODAY\'S SUMMARY',
-            style: TextStyle(
+        Row(
+          children: [
+            const Text(
+              '📊 TODAY\'S SUMMARY',
+              style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.bold,
-                letterSpacing: 1.2),
-          ),
-          if (_activeSession != null) ...[
-            const SizedBox(width: 8),
-            _PulseDot(color: Colors.green.shade500),
-            const SizedBox(width: 4),
-            Text('Live',
+                letterSpacing: 1.2,
+              ),
+            ),
+            if (_activeSession != null) ...[
+              const SizedBox(width: 8),
+              _PulseDot(color: Colors.green.shade500),
+              const SizedBox(width: 4),
+              Text(
+                'Live',
                 style: TextStyle(
-                    fontSize: 11,
-                    color: Colors.green.shade700,
-                    fontWeight: FontWeight.w600)),
+                  fontSize: 11,
+                  color: Colors.green.shade700,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
           ],
-        ]),
+        ),
         const SizedBox(height: 12),
         Row(
           children: [
@@ -667,10 +692,10 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
           borderRadius: BorderRadius.circular(14),
           boxShadow: [
             BoxShadow(
-              color: Colors.indigo.withOpacity(0.35),
+              color: Colors.indigo.withValues(alpha: 0.35),
               blurRadius: 14,
               offset: const Offset(0, 5),
-            )
+            ),
           ],
         ),
         child: Row(
@@ -678,11 +703,14 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
             Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.18),
+                color: Colors.white.withValues(alpha: 0.18),
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: const Icon(Icons.bar_chart_rounded,
-                  color: Colors.white, size: 30),
+              child: const Icon(
+                Icons.bar_chart_rounded,
+                color: Colors.white,
+                size: 30,
+              ),
             ),
             const SizedBox(width: 16),
             const Expanded(
@@ -692,9 +720,10 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
                   Text(
                     'Performance Analytics',
                     style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold),
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                   SizedBox(height: 4),
                   Text(
@@ -704,8 +733,11 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
                 ],
               ),
             ),
-            const Icon(Icons.arrow_forward_ios,
-                color: Colors.white60, size: 16),
+            const Icon(
+              Icons.arrow_forward_ios,
+              color: Colors.white60,
+              size: 16,
+            ),
           ],
         ),
       ),
@@ -809,10 +841,10 @@ class _StatCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 2),
-          )
+          ),
         ],
       ),
       child: Column(
@@ -825,11 +857,14 @@ class _StatCard extends StatelessWidget {
             style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 4),
-          Text(label,
-              style: const TextStyle(
-                  fontSize: 12, fontWeight: FontWeight.w600)),
-          Text(subtitle,
-              style: TextStyle(fontSize: 11, color: Colors.grey[600])),
+          Text(
+            label,
+            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+          ),
+          Text(
+            subtitle,
+            style: TextStyle(fontSize: 11, color: Colors.grey[600]),
+          ),
         ],
       ),
     );
@@ -871,8 +906,7 @@ class _PulseDotState extends State<_PulseDot>
     child: Container(
       width: 7,
       height: 7,
-      decoration:
-      BoxDecoration(color: widget.color, shape: BoxShape.circle),
+      decoration: BoxDecoration(color: widget.color, shape: BoxShape.circle),
     ),
   );
 }

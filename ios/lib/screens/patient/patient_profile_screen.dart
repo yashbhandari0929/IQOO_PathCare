@@ -67,7 +67,7 @@ class _PatientProfileScreenState extends State<PatientProfileScreen> {
         Navigator.pushNamedAndRemoveUntil(
           context,
           '/role-selection',
-              (route) => false,
+          (route) => false,
         );
       }
     }
@@ -97,11 +97,7 @@ class _PatientProfileScreenState extends State<PatientProfileScreen> {
                 CircleAvatar(
                   radius: 50,
                   backgroundColor: Colors.white,
-                  child: Icon(
-                    Icons.person,
-                    size: 60,
-                    color: Colors.blue,
-                  ),
+                  child: Icon(Icons.person, size: 60, color: Colors.blue),
                 ),
                 SizedBox(height: 16),
                 Text(
@@ -115,10 +111,7 @@ class _PatientProfileScreenState extends State<PatientProfileScreen> {
                 SizedBox(height: 4),
                 Text(
                   _patientData?['email'] ?? '',
-                  style: TextStyle(
-                    color: Colors.white70,
-                    fontSize: 14,
-                  ),
+                  style: TextStyle(color: Colors.white70, fontSize: 14),
                 ),
               ],
             ),
@@ -126,16 +119,18 @@ class _PatientProfileScreenState extends State<PatientProfileScreen> {
           SizedBox(height: 24),
 
           // Profile Info Cards
-          _buildInfoCard('Phone', _patientData?['phone'] ?? 'N/A',
-              Icons.phone),
+          _buildInfoCard('Phone', _patientData?['phone'] ?? 'N/A', Icons.phone),
           _buildInfoCard(
-              'Age',
-              _patientData?['age']?.toString() ?? 'N/A',
-              Icons.cake),
+            'Age',
+            _patientData?['age']?.toString() ?? 'N/A',
+            Icons.cake,
+          ),
+          _buildInfoCard('Gender', _patientData?['gender'] ?? 'N/A', Icons.wc),
           _buildInfoCard(
-              'Gender', _patientData?['gender'] ?? 'N/A', Icons.wc),
-          _buildInfoCard('Blood Group',
-              _patientData?['blood_group'] ?? 'N/A', Icons.bloodtype),
+            'Blood Group',
+            _patientData?['blood_group'] ?? 'N/A',
+            Icons.bloodtype,
+          ),
 
           SizedBox(height: 24),
 
@@ -145,9 +140,7 @@ class _PatientProfileScreenState extends State<PatientProfileScreen> {
             child: OutlinedButton.icon(
               onPressed: () {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('Edit profile feature coming soon'),
-                  ),
+                  SnackBar(content: Text('Edit profile feature coming soon')),
                 );
               },
               icon: Icon(Icons.edit),
@@ -217,10 +210,7 @@ class _PatientProfileScreenState extends State<PatientProfileScreen> {
               children: [
                 Text(
                   label,
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey[600],
-                  ),
+                  style: TextStyle(fontSize: 12, color: Colors.grey[600]),
                 ),
                 SizedBox(height: 4),
                 Text(

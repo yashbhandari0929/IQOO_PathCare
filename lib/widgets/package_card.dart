@@ -24,9 +24,8 @@ class PackageCard extends StatelessWidget {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => Center(
-        child: CircularProgressIndicator(color: Colors.green),
-      ),
+      builder: (context) =>
+          Center(child: CircularProgressIndicator(color: Colors.green)),
     );
 
     try {
@@ -86,7 +85,11 @@ class PackageCard extends StatelessWidget {
                     SizedBox(height: 16),
                     Row(
                       children: [
-                        Icon(Icons.card_giftcard, color: Colors.white, size: 32),
+                        Icon(
+                          Icons.card_giftcard,
+                          color: Colors.white,
+                          size: 32,
+                        ),
                         SizedBox(width: 12),
                         Expanded(
                           child: Column(
@@ -140,10 +143,10 @@ class PackageCard extends StatelessWidget {
                       margin: EdgeInsets.only(bottom: 12),
                       padding: EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: Colors.green.withOpacity(0.05),
+                        color: Colors.green.withValues(alpha: 0.05),
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
-                          color: Colors.green.withOpacity(0.3),
+                          color: Colors.green.withValues(alpha: 0.3),
                         ),
                       ),
                       child: Row(
@@ -180,7 +183,8 @@ class PackageCard extends StatelessWidget {
                                   ),
                                 ),
                                 if (test['description'] != null &&
-                                    (test['description'] as String).isNotEmpty) ...[
+                                    (test['description'] as String)
+                                        .isNotEmpty) ...[
                                   SizedBox(height: 4),
                                   Text(
                                     test['description'] as String,
@@ -229,9 +233,9 @@ class PackageCard extends StatelessWidget {
                       onPressed: isInCart
                           ? () => Navigator.pop(context)
                           : () {
-                        Navigator.pop(context);
-                        onAddToCart();
-                      },
+                              Navigator.pop(context);
+                              onAddToCart();
+                            },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: isInCart ? Colors.grey : Colors.green,
                         padding: EdgeInsets.symmetric(vertical: 16),
@@ -279,13 +283,13 @@ class PackageCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: Colors.blue.withOpacity(0.1),
+              color: Colors.blue.withValues(alpha: 0.1),
               blurRadius: 10,
               offset: Offset(0, 4),
             ),
           ],
           border: Border.all(
-            color: Colors.blue.withOpacity(0.2),
+            color: Colors.blue.withValues(alpha: 0.2),
             width: 1,
           ),
         ),
@@ -330,7 +334,11 @@ class PackageCard extends StatelessWidget {
                         SizedBox(height: 4),
                         Row(
                           children: [
-                            Icon(Icons.info_outline, size: 14, color: Colors.blue),
+                            Icon(
+                              Icons.info_outline,
+                              size: 14,
+                              color: Colors.blue,
+                            ),
                             SizedBox(width: 4),
                             Text(
                               'Tap to view $testCount tests',
@@ -367,10 +375,7 @@ class PackageCard extends StatelessWidget {
                 SizedBox(height: 12),
                 Text(
                   package.description,
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: Colors.grey[600],
-                  ),
+                  style: TextStyle(fontSize: 13, color: Colors.grey[600]),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -382,20 +387,19 @@ class PackageCard extends StatelessWidget {
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton.icon(
-                  onPressed: isInCart ? null : () {
-                    // Prevent tap from propagating to GestureDetector
-                    onAddToCart();
-                  },
+                  onPressed: isInCart
+                      ? null
+                      : () {
+                          // Prevent tap from propagating to GestureDetector
+                          onAddToCart();
+                        },
                   icon: Icon(
                     isInCart ? Icons.check : Icons.add_shopping_cart,
                     size: 18,
                   ),
                   label: Text(
                     isInCart ? 'Added to Cart' : 'Add to Cart',
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
                   ),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: isInCart ? Colors.grey : Colors.green,

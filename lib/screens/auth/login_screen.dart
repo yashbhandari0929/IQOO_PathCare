@@ -94,32 +94,20 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() => _isLoading = true);
 
     try {
-      print('🔵 Attempting login for: ${_emailController.text.trim()}');
-
       // Sign in with Supabase
       final AuthResponse response = await supabase.auth.signInWithPassword(
         email: _emailController.text.trim(),
         password: _passwordController.text,
       );
-
-      print('🔵 Auth response: ${response.user?.id}');
-
       if (response.user != null) {
         final userId = response.user!.id;
-        print('🔵 User ID: $userId');
-
         // Check which table the user exists in
         String tableName = _getTableName();
-        print('🔵 Checking table: $tableName');
-
         final data = await supabase
             .from(tableName)
             .select()
             .eq('auth_id', userId)
             .maybeSingle();
-
-        print('🔵 Profile data: $data');
-
         if (data == null) {
           // User doesn't exist in the correct table
           await supabase.auth.signOut();
@@ -130,15 +118,12 @@ class _LoginScreenState extends State<LoginScreen> {
         // Navigate to appropriate dashboard
         if (mounted) {
           String route = _getRouteForUserType();
-          print('✅ Login successful! Navigating to: $route');
           Navigator.pushReplacementNamed(context, route);
         }
       }
     } on AuthException catch (e) {
-      print('❌ Auth Error: ${e.message}');
       _showError(e.message);
     } catch (e) {
-      print('❌ Error: $e');
       _showError('Login failed: ${e.toString()}');
     } finally {
       if (mounted) {
@@ -186,7 +171,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     height: 100,
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
-                        colors: [color, color.withOpacity(0.7)],
+                        colors: [color, color.withValues(alpha: 0.7)],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ),
@@ -214,10 +199,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 Text(
                   'Welcome back! Please login to continue',
                   textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey[600],
-                  ),
+                  style: TextStyle(fontSize: 14, color: Colors.grey[600]),
                 ),
                 SizedBox(height: 40),
                 // Email Field
@@ -236,8 +218,9 @@ class _LoginScreenState extends State<LoginScreen> {
                     if (value == null || value.isEmpty) {
                       return 'Please enter your email';
                     }
-                    if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$')
-                        .hasMatch(value)) {
+                    if (!RegExp(
+                      r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
+                    ).hasMatch(value)) {
                       return 'Please enter a valid email';
                     }
                     return null;
@@ -284,29 +267,29 @@ class _LoginScreenState extends State<LoginScreen> {
                     onPressed: _isLoading ? null : _login,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: color,
-                      disabledBackgroundColor: color.withOpacity(0.6),
+                      disabledBackgroundColor: color.withValues(alpha: 0.6),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
                     ),
                     child: _isLoading
                         ? SizedBox(
-                      height: 24,
-                      width: 24,
-                      child: CircularProgressIndicator(
-                        color: Colors.white,
-                        strokeWidth: 2,
-                      ),
-                    )
+                            height: 24,
+                            width: 24,
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                              strokeWidth: 2,
+                            ),
+                          )
                         : Text(
-                      'LOGIN',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 1,
-                        color: Colors.white,
-                      ),
-                    ),
+                            'LOGIN',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 1,
+                              color: Colors.white,
+                            ),
+                          ),
                   ),
                 ),
                 SizedBox(height: 24),

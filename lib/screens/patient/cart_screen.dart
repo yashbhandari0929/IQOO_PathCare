@@ -39,10 +39,7 @@ class CartScreen extends StatelessWidget {
                   SizedBox(height: 10),
                   Text(
                     'Add tests or packages to get started',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey[500],
-                    ),
+                    style: TextStyle(fontSize: 14, color: Colors.grey[500]),
                   ),
                   SizedBox(height: 30),
                   ElevatedButton(
@@ -79,7 +76,7 @@ class CartScreen extends StatelessWidget {
                         borderRadius: BorderRadius.circular(12),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.05),
+                            color: Colors.black.withValues(alpha: 0.05),
                             blurRadius: 5,
                             offset: Offset(0, 2),
                           ),
@@ -95,14 +92,12 @@ class CartScreen extends StatelessWidget {
                               height: 50,
                               decoration: BoxDecoration(
                                 color: isPackage
-                                    ? Colors.green.withOpacity(0.1)
-                                    : Colors.blue.withOpacity(0.1),
+                                    ? Colors.green.withValues(alpha: 0.1)
+                                    : Colors.blue.withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(10),
                               ),
                               child: Icon(
-                                isPackage
-                                    ? Icons.card_giftcard
-                                    : Icons.science,
+                                isPackage ? Icons.card_giftcard : Icons.science,
                                 color: isPackage ? Colors.green : Colors.blue,
                                 size: 28,
                               ),
@@ -130,8 +125,8 @@ class CartScreen extends StatelessWidget {
                                     ),
                                     decoration: BoxDecoration(
                                       color: isPackage
-                                          ? Colors.green.withOpacity(0.2)
-                                          : Colors.blue.withOpacity(0.2),
+                                          ? Colors.green.withValues(alpha: 0.2)
+                                          : Colors.blue.withValues(alpha: 0.2),
                                       borderRadius: BorderRadius.circular(4),
                                     ),
                                     child: Text(
@@ -180,8 +175,7 @@ class CartScreen extends StatelessWidget {
                                     await cartService.removeItem(item.id);
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       SnackBar(
-                                        content:
-                                        Text('${item.name} removed'),
+                                        content: Text('${item.name} removed'),
                                         backgroundColor: Colors.orange,
                                         behavior: SnackBarBehavior.floating,
                                         duration: Duration(seconds: 1),
@@ -302,10 +296,12 @@ class CartScreen extends StatelessWidget {
                             builder: (context) => AlertDialog(
                               title: Text('Clear Cart?'),
                               content: Text(
-                                  'Are you sure you want to remove all items?'),
+                                'Are you sure you want to remove all items?',
+                              ),
                               actions: [
                                 TextButton(
-                                  onPressed: () => Navigator.pop(context, false),
+                                  onPressed: () =>
+                                      Navigator.pop(context, false),
                                   child: Text('Cancel'),
                                 ),
                                 TextButton(

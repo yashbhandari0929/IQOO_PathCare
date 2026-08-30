@@ -107,27 +107,29 @@ class _DoctorAnalysisScreenState extends State<DoctorAnalysisScreen>
     _treatmentChannel = _supabase
         .channel('treatments_doctor_$doctorId')
         .onPostgresChanges(
-      event: PostgresChangeEvent.insert,
-      schema: 'public',
-      table: 'patient_treatments',
-      filter: PostgresChangeFilter(
-        type: PostgresChangeFilterType.eq,
-        column: 'doctor_id',
-        value: doctorId,
-      ),
-      callback: (payload) {
-        debugPrint('[DoctorAnalysis] ✅ New treatment recorded — refreshing Today count');
-        // Only refresh the day count — month/year can wait for manual tab switch
-        _loadDay();
-      },
-    )
+          event: PostgresChangeEvent.insert,
+          schema: 'public',
+          table: 'patient_treatments',
+          filter: PostgresChangeFilter(
+            type: PostgresChangeFilterType.eq,
+            column: 'doctor_id',
+            value: doctorId,
+          ),
+          callback: (payload) {
+            debugPrint(
+              '[DoctorAnalysis] ✅ New treatment recorded — refreshing Today count',
+            );
+            // Only refresh the day count — month/year can wait for manual tab switch
+            _loadDay();
+          },
+        )
         .subscribe((status, [error]) {
-      if (error != null) {
-        debugPrint('[DoctorAnalysis] ⚠️ Realtime error: $error');
-      } else {
-        debugPrint('[DoctorAnalysis] Realtime subscribed: $status');
-      }
-    });
+          if (error != null) {
+            debugPrint('[DoctorAnalysis] ⚠️ Realtime error: $error');
+          } else {
+            debugPrint('[DoctorAnalysis] Realtime subscribed: $status');
+          }
+        });
   }
 
   // ── Bootstrap ─────────────────────────────────────────────────────────────
@@ -145,12 +147,13 @@ class _DoctorAnalysisScreenState extends State<DoctorAnalysisScreen>
       if (id == null || id.isEmpty) {
         throw Exception(
           'Doctor profile is missing an "id" field.\n'
-              'Make sure getCurrentDoctor() returns the full doctors row.',
+          'Make sure getCurrentDoctor() returns the full doctors row.',
         );
       }
 
       _doctorId = id;
-      _doctorName = (profile['full_name'] as String?) ??
+      _doctorName =
+          (profile['full_name'] as String?) ??
           (profile['name'] as String?) ??
           'Doctor';
 
@@ -204,14 +207,13 @@ class _DoctorAnalysisScreenState extends State<DoctorAnalysisScreen>
       }
     } catch (e) {
       // Fallback to original RPC if patient_treatments table doesn't exist yet
-      debugPrint('[DoctorAnalysis] patient_treatments query failed, falling back to RPC: $e');
+      debugPrint(
+        '[DoctorAnalysis] patient_treatments query failed, falling back to RPC: $e',
+      );
       try {
         final result = await _supabase.rpc(
           'get_doctor_patients_on_date',
-          params: {
-            'p_doctor_id': _doctorId,
-            'p_date': _fmtDate(_selectedDate),
-          },
+          params: {'p_doctor_id': _doctorId, 'p_date': _fmtDate(_selectedDate)},
         );
         if (mounted) {
           setState(() {
@@ -247,24 +249,32 @@ class _DoctorAnalysisScreenState extends State<DoctorAnalysisScreen>
     setState(() => _monthLoading = true);
     try {
       final results = await Future.wait([
-        _supabase.rpc('get_doctor_month_analytics', params: {
-          'p_doctor_id': _doctorId,
-          'p_year': _selMonthYear,
-          'p_month': _selMonth,
-        }),
-        _supabase.rpc('get_doctor_daily_breakdown', params: {
-          'p_doctor_id': _doctorId,
-          'p_year': _selMonthYear,
-          'p_month': _selMonth,
-        }),
+        _supabase.rpc(
+          'get_doctor_month_analytics',
+          params: {
+            'p_doctor_id': _doctorId,
+            'p_year': _selMonthYear,
+            'p_month': _selMonth,
+          },
+        ),
+        _supabase.rpc(
+          'get_doctor_daily_breakdown',
+          params: {
+            'p_doctor_id': _doctorId,
+            'p_year': _selMonthYear,
+            'p_month': _selMonth,
+          },
+        ),
       ]);
 
       final totRow = _firstRow(results[0]);
       final bars = _toList(results[1])
-          .map((r) => _DayBar(
-        day: _toInt(r['day_number']),
-        count: _toInt(r['patients_count']),
-      ))
+          .map(
+            (r) => _DayBar(
+              day: _toInt(r['day_number']),
+              count: _toInt(r['patients_count']),
+            ),
+          )
           .toList();
 
       if (mounted) {
@@ -285,25 +295,25 @@ class _DoctorAnalysisScreenState extends State<DoctorAnalysisScreen>
     setState(() => _yearLoading = true);
     try {
       final results = await Future.wait([
-        _supabase.rpc('get_doctor_year_analytics', params: {
-          'p_doctor_id': _doctorId,
-          'p_year': _selYear,
-        }),
-        _supabase.rpc('get_doctor_monthly_breakdown', params: {
-          'p_doctor_id': _doctorId,
-          'p_year': _selYear,
-        }),
+        _supabase.rpc(
+          'get_doctor_year_analytics',
+          params: {'p_doctor_id': _doctorId, 'p_year': _selYear},
+        ),
+        _supabase.rpc(
+          'get_doctor_monthly_breakdown',
+          params: {'p_doctor_id': _doctorId, 'p_year': _selYear},
+        ),
       ]);
 
       final totRow = _firstRow(results[0]);
       final rawBars = _toList(results[1]);
       final Map<int, int> monthMap = {
         for (var r in rawBars)
-          _toInt(r['month_number']): _toInt(r['patients_count'])
+          _toInt(r['month_number']): _toInt(r['patients_count']),
       };
       final fullBars = List.generate(
         12,
-            (i) => _MonthBar(month: i + 1, count: monthMap[i + 1] ?? 0),
+        (i) => _MonthBar(month: i + 1, count: monthMap[i + 1] ?? 0),
       );
 
       if (mounted) {
@@ -348,12 +358,32 @@ class _DoctorAnalysisScreenState extends State<DoctorAnalysisScreen>
   }
 
   static const _kMonths = [
-    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
   ];
   static const _kMonthsFull = [
-    'January', 'February', 'March', 'April', 'May', 'June',
-    'July', 'August', 'September', 'October', 'November', 'December',
+    'January',
+    'February',
+    'March',
+    'April',
+    'May',
+    'June',
+    'July',
+    'August',
+    'September',
+    'October',
+    'November',
+    'December',
   ];
 
   // ── Root build ────────────────────────────────────────────────────────────
@@ -361,9 +391,7 @@ class _DoctorAnalysisScreenState extends State<DoctorAnalysisScreen>
   @override
   Widget build(BuildContext context) {
     if (_initLoading) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
     if (_initError != null) {
@@ -371,21 +399,24 @@ class _DoctorAnalysisScreenState extends State<DoctorAnalysisScreen>
         body: Center(
           child: Padding(
             padding: const EdgeInsets.all(28),
-            child: Column(mainAxisSize: MainAxisSize.min, children: [
-              const Icon(Icons.error_outline, color: Colors.red, size: 56),
-              const SizedBox(height: 16),
-              Text(
-                _initError!,
-                textAlign: TextAlign.center,
-                style: const TextStyle(fontSize: 14, color: Colors.black87),
-              ),
-              const SizedBox(height: 24),
-              ElevatedButton.icon(
-                onPressed: _bootstrap,
-                icon: const Icon(Icons.refresh),
-                label: const Text('Retry'),
-              ),
-            ]),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.error_outline, color: Colors.red, size: 56),
+                const SizedBox(height: 16),
+                Text(
+                  _initError!,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(fontSize: 14, color: Colors.black87),
+                ),
+                const SizedBox(height: 24),
+                ElevatedButton.icon(
+                  onPressed: _bootstrap,
+                  icon: const Icon(Icons.refresh),
+                  label: const Text('Retry'),
+                ),
+              ],
+            ),
           ),
         ),
       );
@@ -397,20 +428,29 @@ class _DoctorAnalysisScreenState extends State<DoctorAnalysisScreen>
         backgroundColor: Colors.blue,
         foregroundColor: Colors.white,
         elevation: 0,
-        title: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          const Text('My Analytics',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-          Text(_doctorName,
-              style: const TextStyle(fontSize: 12, color: Colors.white70)),
-        ]),
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'My Analytics',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            Text(
+              _doctorName,
+              style: const TextStyle(fontSize: 12, color: Colors.white70),
+            ),
+          ],
+        ),
         bottom: TabBar(
           controller: _tabController,
           indicatorColor: Colors.white,
           indicatorWeight: 3,
           labelColor: Colors.white,
           unselectedLabelColor: Colors.white60,
-          labelStyle:
-          const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+          labelStyle: const TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 14,
+          ),
           tabs: const [
             Tab(text: 'Today'),
             Tab(text: 'Month'),
@@ -420,11 +460,7 @@ class _DoctorAnalysisScreenState extends State<DoctorAnalysisScreen>
       ),
       body: TabBarView(
         controller: _tabController,
-        children: [
-          _buildDayTab(),
-          _buildMonthTab(),
-          _buildYearTab(),
-        ],
+        children: [_buildDayTab(), _buildMonthTab(), _buildYearTab()],
       ),
     );
   }
@@ -437,71 +473,84 @@ class _DoctorAnalysisScreenState extends State<DoctorAnalysisScreen>
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
         padding: const EdgeInsets.all(16),
-        child: Column(children: [
-          _NavCard(
-            label: _isToday(_selectedDate)
-                ? 'Today  •  ${_fmtDisplay(_selectedDate)}'
-                : _fmtDisplay(_selectedDate),
-            onPrev: () {
-              setState(() => _selectedDate =
-                  _selectedDate.subtract(const Duration(days: 1)));
-              _loadDay();
-            },
-            onNext: _isToday(_selectedDate)
-                ? null
-                : () {
-              setState(() =>
-              _selectedDate = _selectedDate.add(const Duration(days: 1)));
-              _loadDay();
-            },
-            onTap: () async {
-              final p = await showDatePicker(
-                context: context,
-                initialDate: _selectedDate,
-                firstDate: DateTime(2020),
-                lastDate: DateTime.now(),
-              );
-              if (p != null) {
-                setState(() => _selectedDate = p);
-                _loadDay();
-              }
-            },
-          ),
-          const SizedBox(height: 20),
-          _BigCountCard(
-            count: _dayCount,
-            label: 'Patients Attended',
-            sublabel: _isToday(_selectedDate)
-                ? 'Today'
-                : _fmtDisplay(_selectedDate),
-            color: Colors.blue,
-            icon: Icons.people_alt_rounded,
-            loading: _dayLoading,
-            isLive: _isLiveCount && _isToday(_selectedDate),
-          ),
-          // ✅ NEW: Live indicator note
-          if (_isToday(_selectedDate)) ...[
-            const SizedBox(height: 12),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              decoration: BoxDecoration(
-                color: Colors.green.shade50,
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: Colors.green.shade200),
-              ),
-              child: Row(children: [
-                _PulseDot(color: Colors.green.shade500),
-                const SizedBox(width: 8),
-                const Expanded(
-                  child: Text(
-                    'Live — count updates instantly when a patient completes tests',
-                    style: TextStyle(fontSize: 12, color: Colors.black87),
+        child: Column(
+          children: [
+            _NavCard(
+              label: _isToday(_selectedDate)
+                  ? 'Today  •  ${_fmtDisplay(_selectedDate)}'
+                  : _fmtDisplay(_selectedDate),
+              onPrev: () {
+                setState(
+                  () => _selectedDate = _selectedDate.subtract(
+                    const Duration(days: 1),
                   ),
-                ),
-              ]),
+                );
+                _loadDay();
+              },
+              onNext: _isToday(_selectedDate)
+                  ? null
+                  : () {
+                      setState(
+                        () => _selectedDate = _selectedDate.add(
+                          const Duration(days: 1),
+                        ),
+                      );
+                      _loadDay();
+                    },
+              onTap: () async {
+                final p = await showDatePicker(
+                  context: context,
+                  initialDate: _selectedDate,
+                  firstDate: DateTime(2020),
+                  lastDate: DateTime.now(),
+                );
+                if (p != null) {
+                  setState(() => _selectedDate = p);
+                  _loadDay();
+                }
+              },
             ),
+            const SizedBox(height: 20),
+            _BigCountCard(
+              count: _dayCount,
+              label: 'Patients Attended',
+              sublabel: _isToday(_selectedDate)
+                  ? 'Today'
+                  : _fmtDisplay(_selectedDate),
+              color: Colors.blue,
+              icon: Icons.people_alt_rounded,
+              loading: _dayLoading,
+              isLive: _isLiveCount && _isToday(_selectedDate),
+            ),
+            // ✅ NEW: Live indicator note
+            if (_isToday(_selectedDate)) ...[
+              const SizedBox(height: 12),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.green.shade50,
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: Colors.green.shade200),
+                ),
+                child: Row(
+                  children: [
+                    _PulseDot(color: Colors.green.shade500),
+                    const SizedBox(width: 8),
+                    const Expanded(
+                      child: Text(
+                        'Live — count updates instantly when a patient completes tests',
+                        style: TextStyle(fontSize: 12, color: Colors.black87),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ],
-        ]),
+        ),
       ),
     );
   }
@@ -517,51 +566,54 @@ class _DoctorAnalysisScreenState extends State<DoctorAnalysisScreen>
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
         padding: const EdgeInsets.all(16),
-        child: Column(children: [
-          _NavCard(
-            label: '${_kMonthsFull[_selMonth - 1]}  $_selMonthYear',
-            onPrev: () {
-              setState(() {
-                if (_selMonth == 1) {
-                  _selMonth = 12;
-                  _selMonthYear--;
-                } else {
-                  _selMonth--;
-                }
-              });
-              _loadMonth();
-            },
-            onNext: atCurrent
-                ? null
-                : () {
-              setState(() {
-                if (_selMonth == 12) {
-                  _selMonth = 1;
-                  _selMonthYear++;
-                } else {
-                  _selMonth++;
-                }
-              });
-              _loadMonth();
-            },
-          ),
-          const SizedBox(height: 20),
-          _BigCountCard(
-            count: _monthCount,
-            label: 'Patients This Month',
-            sublabel: '${_kMonthsFull[_selMonth - 1]} $_selMonthYear',
-            color: Colors.purple,
-            icon: Icons.calendar_month_rounded,
-            loading: _monthLoading,
-          ),
-          const SizedBox(height: 20),
-          _ChartCard(
-            title: 'Daily Patients  •  ${_kMonths[_selMonth - 1]} $_selMonthYear',
-            loading: _monthLoading,
-            isEmpty: _monthBars.isEmpty,
-            child: _DailyBarChart(bars: _monthBars),
-          ),
-        ]),
+        child: Column(
+          children: [
+            _NavCard(
+              label: '${_kMonthsFull[_selMonth - 1]}  $_selMonthYear',
+              onPrev: () {
+                setState(() {
+                  if (_selMonth == 1) {
+                    _selMonth = 12;
+                    _selMonthYear--;
+                  } else {
+                    _selMonth--;
+                  }
+                });
+                _loadMonth();
+              },
+              onNext: atCurrent
+                  ? null
+                  : () {
+                      setState(() {
+                        if (_selMonth == 12) {
+                          _selMonth = 1;
+                          _selMonthYear++;
+                        } else {
+                          _selMonth++;
+                        }
+                      });
+                      _loadMonth();
+                    },
+            ),
+            const SizedBox(height: 20),
+            _BigCountCard(
+              count: _monthCount,
+              label: 'Patients This Month',
+              sublabel: '${_kMonthsFull[_selMonth - 1]} $_selMonthYear',
+              color: Colors.purple,
+              icon: Icons.calendar_month_rounded,
+              loading: _monthLoading,
+            ),
+            const SizedBox(height: 20),
+            _ChartCard(
+              title:
+                  'Daily Patients  •  ${_kMonths[_selMonth - 1]} $_selMonthYear',
+              loading: _monthLoading,
+              isEmpty: _monthBars.isEmpty,
+              child: _DailyBarChart(bars: _monthBars),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -574,38 +626,39 @@ class _DoctorAnalysisScreenState extends State<DoctorAnalysisScreen>
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
         padding: const EdgeInsets.all(16),
-        child: Column(children: [
-          _NavCard(
-            label: '$_selYear',
-            onPrev: () {
-              setState(() => _selYear--);
-              _loadYear();
-            },
-            onNext: _selYear >= DateTime.now().year
-                ? null
-                : () {
-              setState(() => _selYear++);
-              _loadYear();
-            },
-          ),
-          const SizedBox(height: 20),
-          _BigCountCard(
-            count: _yearCount,
-            label: 'Patients This Year',
-            sublabel: '$_selYear',
-            color: Colors.teal,
-            icon: Icons.bar_chart_rounded,
-            loading: _yearLoading,
-          ),
-          const SizedBox(height: 20),
-          _ChartCard(
-            title: 'Monthly Patients  •  $_selYear',
-            loading: _yearLoading,
-            isEmpty: _yearBars.every((b) => b.count == 0),
-            child:
-            _MonthlyBarChart(bars: _yearBars, currentYear: _selYear),
-          ),
-        ]),
+        child: Column(
+          children: [
+            _NavCard(
+              label: '$_selYear',
+              onPrev: () {
+                setState(() => _selYear--);
+                _loadYear();
+              },
+              onNext: _selYear >= DateTime.now().year
+                  ? null
+                  : () {
+                      setState(() => _selYear++);
+                      _loadYear();
+                    },
+            ),
+            const SizedBox(height: 20),
+            _BigCountCard(
+              count: _yearCount,
+              label: 'Patients This Year',
+              sublabel: '$_selYear',
+              color: Colors.teal,
+              icon: Icons.bar_chart_rounded,
+              loading: _yearLoading,
+            ),
+            const SizedBox(height: 20),
+            _ChartCard(
+              title: 'Monthly Patients  •  $_selYear',
+              loading: _yearLoading,
+              isEmpty: _yearBars.every((b) => b.count == 0),
+              child: _MonthlyBarChart(bars: _yearBars, currentYear: _selYear),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -634,25 +687,28 @@ class _NavCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(14),
         boxShadow: [
           BoxShadow(
-              color: Colors.black.withOpacity(0.06),
-              blurRadius: 8,
-              offset: const Offset(0, 2))
+            color: Colors.black.withValues(alpha: 0.06),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
         ],
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          IconButton(
-              icon: const Icon(Icons.chevron_left), onPressed: onPrev),
+          IconButton(icon: const Icon(Icons.chevron_left), onPressed: onPrev),
           GestureDetector(
             onTap: onTap,
-            child: Text(label,
-                style: const TextStyle(
-                    fontSize: 16, fontWeight: FontWeight.bold)),
+            child: Text(
+              label,
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
           ),
           IconButton(
-            icon: Icon(Icons.chevron_right,
-                color: onNext == null ? Colors.grey[300] : Colors.black87),
+            icon: Icon(
+              Icons.chevron_right,
+              color: onNext == null ? Colors.grey[300] : Colors.black87,
+            ),
             onPressed: onNext,
           ),
         ],
@@ -689,77 +745,95 @@ class _BigCountCard extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 24),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [color, color.withOpacity(0.72)],
+          colors: [color, color.withValues(alpha: 0.72)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-              color: color.withOpacity(0.3),
-              blurRadius: 16,
-              offset: const Offset(0, 6))
+            color: color.withValues(alpha: 0.3),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
+          ),
         ],
       ),
       child: loading
           ? const SizedBox(
-          height: 80,
-          child: Center(
-              child: CircularProgressIndicator(color: Colors.white)))
-          : Row(children: [
-        Icon(icon,
-            color: Colors.white.withOpacity(0.85), size: 56),
-        const SizedBox(width: 24),
-        Expanded(
-          child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              height: 80,
+              child: Center(
+                child: CircularProgressIndicator(color: Colors.white),
+              ),
+            )
+          : Row(
               children: [
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('$count',
-                        style: const TextStyle(
-                            fontSize: 52,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                            height: 1.1)),
-                    if (isLive) ...[
-                      const SizedBox(width: 8),
-                      Container(
-                        margin: const EdgeInsets.only(top: 6),
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: Colors.greenAccent.shade400,
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                        child: const Text(
-                          'LIVE',
-                          style: TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black87,
-                            letterSpacing: 1,
+                Icon(
+                  icon,
+                  color: Colors.white.withValues(alpha: 0.85),
+                  size: 56,
+                ),
+                const SizedBox(width: 24),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            '$count',
+                            style: const TextStyle(
+                              fontSize: 52,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                              height: 1.1,
+                            ),
                           ),
+                          if (isLive) ...[
+                            const SizedBox(width: 8),
+                            Container(
+                              margin: const EdgeInsets.only(top: 6),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 4,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.greenAccent.shade400,
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: const Text(
+                                'LIVE',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black87,
+                                  letterSpacing: 1,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                      Text(
+                        label,
+                        style: const TextStyle(
+                          fontSize: 15,
+                          color: Colors.white,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      Text(
+                        isLive ? '$sublabel  •  updated from room' : sublabel,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.white.withValues(alpha: 0.75),
                         ),
                       ),
                     ],
-                  ],
+                  ),
                 ),
-                Text(label,
-                    style: const TextStyle(
-                        fontSize: 15,
-                        color: Colors.white,
-                        fontWeight: FontWeight.w600)),
-                Text(
-                  isLive ? '$sublabel  •  updated from room' : sublabel,
-                  style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.white.withOpacity(0.75)),
-                ),
-              ]),
-        ),
-      ]),
+              ],
+            ),
     );
   }
 }
@@ -789,31 +863,43 @@ class _ChartCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-              color: Colors.black.withOpacity(0.06),
-              blurRadius: 8,
-              offset: const Offset(0, 2))
+            color: Colors.black.withValues(alpha: 0.06),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
         ],
       ),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text(title,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
             style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.bold,
-                color: Colors.black87)),
-        const SizedBox(height: 16),
-        if (loading)
-          const SizedBox(
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
+              color: Colors.black87,
+            ),
+          ),
+          const SizedBox(height: 16),
+          if (loading)
+            const SizedBox(
               height: 120,
-              child: Center(child: CircularProgressIndicator()))
-        else if (isEmpty)
-          const SizedBox(
+              child: Center(child: CircularProgressIndicator()),
+            )
+          else if (isEmpty)
+            const SizedBox(
               height: 100,
               child: Center(
-                  child: Text('No data for this period',
-                      style: TextStyle(color: Colors.grey))))
-        else
-          child,
-      ]),
+                child: Text(
+                  'No data for this period',
+                  style: TextStyle(color: Colors.grey),
+                ),
+              ),
+            )
+          else
+            child,
+        ],
+      ),
     );
   }
 }
@@ -848,27 +934,35 @@ class _DailyBarChart extends StatelessWidget {
           final isToday = b.day == todayDay;
           return Padding(
             padding: const EdgeInsets.symmetric(horizontal: 3),
-            child:
-            Column(mainAxisAlignment: MainAxisAlignment.end, children: [
-              if (b.count > 0)
-                Text('${b.count}',
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                if (b.count > 0)
+                  Text(
+                    '${b.count}',
                     style: const TextStyle(
-                        fontSize: 9, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 2),
-              Container(
-                width: 22,
-                height: h,
-                decoration: BoxDecoration(
-                  color: isToday
-                      ? Colors.orange.shade400
-                      : Colors.blue.shade400,
-                  borderRadius: BorderRadius.circular(4),
+                      fontSize: 9,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                const SizedBox(height: 2),
+                Container(
+                  width: 22,
+                  height: h,
+                  decoration: BoxDecoration(
+                    color: isToday
+                        ? Colors.orange.shade400
+                        : Colors.blue.shade400,
+                    borderRadius: BorderRadius.circular(4),
+                  ),
                 ),
-              ),
-              const SizedBox(height: 4),
-              Text('${b.day}',
-                  style: TextStyle(fontSize: 9, color: Colors.grey[600])),
-            ]),
+                const SizedBox(height: 4),
+                Text(
+                  '${b.day}',
+                  style: TextStyle(fontSize: 9, color: Colors.grey[600]),
+                ),
+              ],
+            ),
           );
         },
       ),
@@ -889,8 +983,18 @@ class _MonthlyBarChart extends StatelessWidget {
   const _MonthlyBarChart({required this.bars, required this.currentYear});
 
   static const _names = [
-    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
   ];
 
   @override
@@ -901,25 +1005,29 @@ class _MonthlyBarChart extends StatelessWidget {
     final curMonth = DateTime.now().month;
     final curYear = DateTime.now().year;
 
-    return Column(children: [
-      SizedBox(
-        height: barH + 44,
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: bars.map((b) {
-            final h = ((b.count / safeMax) * barH).clamp(2.0, barH);
-            final isCurrent = b.month == curMonth && currentYear == curYear;
-            return Expanded(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 2),
-                child: Column(
+    return Column(
+      children: [
+        SizedBox(
+          height: barH + 44,
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: bars.map((b) {
+              final h = ((b.count / safeMax) * barH).clamp(2.0, barH);
+              final isCurrent = b.month == curMonth && currentYear == curYear;
+              return Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 2),
+                  child: Column(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
                       if (b.count > 0)
-                        Text('${b.count}',
-                            style: const TextStyle(
-                                fontSize: 8,
-                                fontWeight: FontWeight.bold)),
+                        Text(
+                          '${b.count}',
+                          style: const TextStyle(
+                            fontSize: 8,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                       const SizedBox(height: 2),
                       Container(
                         height: h,
@@ -931,26 +1039,32 @@ class _MonthlyBarChart extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 4),
-                      Text(_names[b.month - 1],
-                          style: TextStyle(
-                              fontSize: 9, color: Colors.grey[600])),
-                    ]),
-              ),
-            );
-          }).toList(),
+                      Text(
+                        _names[b.month - 1],
+                        style: TextStyle(fontSize: 9, color: Colors.grey[600]),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
         ),
-      ),
-      const SizedBox(height: 10),
-      Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-        Container(width: 10, height: 10, color: Colors.teal.shade400),
-        const SizedBox(width: 4),
-        const Text('Patients', style: TextStyle(fontSize: 11)),
-        const SizedBox(width: 16),
-        Container(width: 10, height: 10, color: Colors.orange.shade400),
-        const SizedBox(width: 4),
-        const Text('Current month', style: TextStyle(fontSize: 11)),
-      ]),
-    ]);
+        const SizedBox(height: 10),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(width: 10, height: 10, color: Colors.teal.shade400),
+            const SizedBox(width: 4),
+            const Text('Patients', style: TextStyle(fontSize: 11)),
+            const SizedBox(width: 16),
+            Container(width: 10, height: 10, color: Colors.orange.shade400),
+            const SizedBox(width: 4),
+            const Text('Current month', style: TextStyle(fontSize: 11)),
+          ],
+        ),
+      ],
+    );
   }
 }
 
@@ -958,7 +1072,8 @@ class _MonthlyBarChart extends StatelessWidget {
 class _PulseDot extends StatefulWidget {
   final Color color;
   const _PulseDot({required this.color});
-  @override State<_PulseDot> createState() => _PulseDotState();
+  @override
+  State<_PulseDot> createState() => _PulseDotState();
 }
 
 class _PulseDotState extends State<_PulseDot>
@@ -970,19 +1085,25 @@ class _PulseDotState extends State<_PulseDot>
   void initState() {
     super.initState();
     _c = AnimationController(
-        vsync: this,
-        duration: const Duration(milliseconds: 900))
-      ..repeat(reverse: true);
+      vsync: this,
+      duration: const Duration(milliseconds: 900),
+    )..repeat(reverse: true);
     _a = Tween<double>(begin: 0.25, end: 1.0).animate(_c);
   }
 
-  @override void dispose() { _c.dispose(); super.dispose(); }
+  @override
+  void dispose() {
+    _c.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) => FadeTransition(
     opacity: _a,
-    child: Container(width: 8, height: 8,
-        decoration: BoxDecoration(
-            color: widget.color, shape: BoxShape.circle)),
+    child: Container(
+      width: 8,
+      height: 8,
+      decoration: BoxDecoration(color: widget.color, shape: BoxShape.circle),
+    ),
   );
 }

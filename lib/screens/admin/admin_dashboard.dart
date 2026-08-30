@@ -227,7 +227,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
                 Icons.people,
                 Colors.blue,
                 onTap: () async {
-                  final result = await Navigator.push(
+                  await Navigator.push(
                     context,
                     MaterialPageRoute(
                       builder: (context) => ManageDoctorsScreen(),

@@ -96,7 +96,6 @@ class _SplashScreenState extends State<SplashScreen>
       await supabase.auth.signOut();
       Navigator.pushReplacementNamed(context, '/role-selection');
     } catch (e) {
-      print('Error checking user role: $e');
       // On error, go to role selection
       Navigator.pushReplacementNamed(context, '/role-selection');
     }
@@ -202,10 +201,7 @@ class _SplashScreenState extends State<SplashScreen>
                   opacity: _fadeAnimation,
                   child: Text(
                     'Loading...',
-                    style: TextStyle(
-                      color: Colors.white70,
-                      fontSize: 14,
-                    ),
+                    style: TextStyle(color: Colors.white70, fontSize: 14),
                   ),
                 ),
               ],

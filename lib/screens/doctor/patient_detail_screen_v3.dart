@@ -52,7 +52,7 @@ class _PatientDetailScreenState extends State<PatientDetailScreen>
 
     final tests = widget.patient['tests_in_room'] as List? ?? [];
     _isTimerRunning = tests.any(
-          (t) => t['status'] == 'in_progress' || t['status'] == 'reached',
+      (t) => t['status'] == 'in_progress' || t['status'] == 'reached',
     );
   }
 
@@ -67,7 +67,8 @@ class _PatientDetailScreenState extends State<PatientDetailScreen>
   // NEW: Show priority dialog
   Future<void> _showChangePriorityDialog() async {
     final appointmentId = widget.patient['appointment_id'] as String;
-    final currentPriority = widget.patient['priority_level'] as String? ?? 'normal';
+    final currentPriority =
+        widget.patient['priority_level'] as String? ?? 'normal';
 
     final selected = await showDialog<String>(
       context: context,
@@ -153,7 +154,9 @@ class _PatientDetailScreenState extends State<PatientDetailScreen>
     final tests = widget.patient['tests_in_room'] as List? ?? [];
     final nextTest = _doctorService.getNextPendingTest(tests);
 
-    if (nextTest == null || widget.doctorProfile == null || widget.activeSession == null) {
+    if (nextTest == null ||
+        widget.doctorProfile == null ||
+        widget.activeSession == null) {
       return;
     }
 
@@ -177,9 +180,13 @@ class _PatientDetailScreenState extends State<PatientDetailScreen>
 
   Future<void> _completeAllTests() async {
     final tests = widget.patient['tests_in_room'] as List? ?? [];
-    final pendingTests = tests.where((t) => t['status'] != 'completed').toList();
+    final pendingTests = tests
+        .where((t) => t['status'] != 'completed')
+        .toList();
 
-    if (pendingTests.isEmpty || widget.doctorProfile == null || widget.activeSession == null) {
+    if (pendingTests.isEmpty ||
+        widget.doctorProfile == null ||
+        widget.activeSession == null) {
       return;
     }
 
@@ -279,13 +286,15 @@ class _PatientDetailScreenState extends State<PatientDetailScreen>
     final tests = widget.patient['tests_in_room'] as List? ?? [];
     final specialInstructions =
         widget.patient['special_instructions'] as String? ?? '';
-    final priorityLevel = widget.patient['priority_level'] as String? ?? 'normal';
+    final priorityLevel =
+        widget.patient['priority_level'] as String? ?? 'normal';
 
     final testCounts = _doctorService.countTestsByStatus(tests);
     final completedCount = testCounts['completed'] ?? 0;
     final totalCount = tests.length;
-    final progressPercent =
-    totalCount > 0 ? (completedCount / totalCount * 100).round() : 0;
+    final progressPercent = totalCount > 0
+        ? (completedCount / totalCount * 100).round()
+        : 0;
 
     return Scaffold(
       backgroundColor: Colors.grey[100],
@@ -351,7 +360,10 @@ class _PatientDetailScreenState extends State<PatientDetailScreen>
           tabs: const [
             Tab(text: 'Overview', icon: Icon(Icons.person, size: 20)),
             Tab(text: 'Notes', icon: Icon(Icons.edit_note, size: 20)),
-            Tab(text: 'Actions', icon: Icon(Icons.bolt, size: 20)), // NEW: Actions tab
+            Tab(
+              text: 'Actions',
+              icon: Icon(Icons.bolt, size: 20),
+            ), // NEW: Actions tab
           ],
         ),
       ),
@@ -600,7 +612,9 @@ class _PatientDetailScreenState extends State<PatientDetailScreen>
                       child: Row(
                         children: [
                           Icon(
-                            _isTimerRunning ? Icons.timer : Icons.check_circle_outline,
+                            _isTimerRunning
+                                ? Icons.timer
+                                : Icons.check_circle_outline,
                             size: 16,
                             color: progressPercent == 100
                                 ? Colors.green.shade700
@@ -632,9 +646,7 @@ class _PatientDetailScreenState extends State<PatientDetailScreen>
                     minHeight: 10,
                     backgroundColor: Colors.grey[200],
                     valueColor: AlwaysStoppedAnimation<Color>(
-                      completedCount == totalCount
-                          ? Colors.green
-                          : Colors.blue,
+                      completedCount == totalCount ? Colors.green : Colors.blue,
                     ),
                   ),
                 ),
@@ -653,10 +665,7 @@ class _PatientDetailScreenState extends State<PatientDetailScreen>
               children: [
                 const Text(
                   '📋 Tests in This Room',
-                  style: TextStyle(
-                    fontSize: 17,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 16),
                 ...tests.map((test) => _buildEnhancedTestItem(test)).toList(),
@@ -675,10 +684,7 @@ class _PatientDetailScreenState extends State<PatientDetailScreen>
                 children: [
                   const Text(
                     '📝 Special Instructions',
-                    style: TextStyle(
-                      fontSize: 17,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 12),
                   Container(
@@ -686,7 +692,10 @@ class _PatientDetailScreenState extends State<PatientDetailScreen>
                     decoration: BoxDecoration(
                       color: Colors.amber.shade50,
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.amber.shade200, width: 2),
+                      border: Border.all(
+                        color: Colors.amber.shade200,
+                        width: 2,
+                      ),
                     ),
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -732,19 +741,13 @@ class _PatientDetailScreenState extends State<PatientDetailScreen>
             children: [
               const Text(
                 '🗒️ Doctor Notes',
-                style: TextStyle(
-                  fontSize: 17,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
               ),
               const Spacer(),
               // NEW: Character count
               Text(
                 '${_notesController.text.length} chars',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey[600],
-                ),
+                style: TextStyle(fontSize: 12, color: Colors.grey[600]),
               ),
             ],
           ),
@@ -763,7 +766,8 @@ class _PatientDetailScreenState extends State<PatientDetailScreen>
                 expands: true,
                 textAlignVertical: TextAlignVertical.top,
                 decoration: InputDecoration(
-                  hintText: 'Add your notes here...\n\nTip: Use bullet points for clarity',
+                  hintText:
+                      'Add your notes here...\n\nTip: Use bullet points for clarity',
                   border: InputBorder.none,
                   contentPadding: const EdgeInsets.all(16),
                   hintStyle: TextStyle(color: Colors.grey[400]),
@@ -781,10 +785,7 @@ class _PatientDetailScreenState extends State<PatientDetailScreen>
           // Quick Note Templates
           const Text(
             'Quick templates:',
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-            ),
+            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
           ),
           const SizedBox(height: 12),
           Wrap(
@@ -793,7 +794,10 @@ class _PatientDetailScreenState extends State<PatientDetailScreen>
             children: [
               _buildQuickNoteChip('Normal results ✓', Icons.check_circle),
               _buildQuickNoteChip('Repeat test needed', Icons.repeat),
-              _buildQuickNoteChip('Consultation required', Icons.medical_services),
+              _buildQuickNoteChip(
+                'Consultation required',
+                Icons.medical_services,
+              ),
               _buildQuickNoteChip('Patient cooperative', Icons.thumb_up),
               _buildQuickNoteChip('Follow-up in 1 week', Icons.calendar_today),
               _buildQuickNoteChip('Fasting required', Icons.no_meals),
@@ -810,7 +814,8 @@ class _PatientDetailScreenState extends State<PatientDetailScreen>
   Widget _buildActionsTab(List tests, Map<String, int> testCounts) {
     final appointmentId = widget.patient['appointment_id'] as String;
     final patientName = widget.patient['patient_name'] as String;
-    final priorityLevel = widget.patient['priority_level'] as String? ?? 'normal';
+    final priorityLevel =
+        widget.patient['priority_level'] as String? ?? 'normal';
     final allCompleted = testCounts['completed'] == tests.length;
 
     return SingleChildScrollView(
@@ -825,10 +830,7 @@ class _PatientDetailScreenState extends State<PatientDetailScreen>
               children: [
                 const Text(
                   '🚩 Priority Management',
-                  style: TextStyle(
-                    fontSize: 17,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 16),
 
@@ -907,10 +909,7 @@ class _PatientDetailScreenState extends State<PatientDetailScreen>
               children: [
                 const Text(
                   '⚡ Quick Actions',
-                  style: TextStyle(
-                    fontSize: 17,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 16),
 
@@ -949,7 +948,8 @@ class _PatientDetailScreenState extends State<PatientDetailScreen>
                             child: const Text('Cancel'),
                           ),
                           ElevatedButton(
-                            onPressed: () => Navigator.pop(context, 'Skipped by doctor'),
+                            onPressed: () =>
+                                Navigator.pop(context, 'Skipped by doctor'),
                             child: const Text('Skip'),
                           ),
                         ],
@@ -985,7 +985,9 @@ class _PatientDetailScreenState extends State<PatientDetailScreen>
                     );
 
                     if (confirmed == true) {
-                      final success = await _doctorService.markNoShow(appointmentId);
+                      final success = await _doctorService.markNoShow(
+                        appointmentId,
+                      );
                       if (success && mounted) {
                         _showSuccessSnackbar('Marked as no-show');
                         Navigator.pop(context);
@@ -1016,10 +1018,10 @@ class _PatientDetailScreenState extends State<PatientDetailScreen>
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: enabled ? color.withOpacity(0.1) : Colors.grey[100],
+          color: enabled ? color.withValues(alpha: 0.1) : Colors.grey[100],
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: enabled ? color.withOpacity(0.3) : Colors.grey[300]!,
+            color: enabled ? color.withValues(alpha: 0.3) : Colors.grey[300]!,
             width: 2,
           ),
         ),
@@ -1077,9 +1079,9 @@ class _PatientDetailScreenState extends State<PatientDetailScreen>
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: color.withOpacity(0.3)),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1101,10 +1103,7 @@ class _PatientDetailScreenState extends State<PatientDetailScreen>
           const SizedBox(height: 6),
           Text(
             value,
-            style: const TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.bold,
-            ),
+            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
             overflow: TextOverflow.ellipsis,
           ),
         ],
@@ -1160,7 +1159,8 @@ class _PatientDetailScreenState extends State<PatientDetailScreen>
     if (timestamp != null) {
       try {
         final time = DateTime.parse(timestamp);
-        formattedTime = '${time.hour}:${time.minute.toString().padLeft(2, '0')}';
+        formattedTime =
+            '${time.hour}:${time.minute.toString().padLeft(2, '0')}';
       } catch (e) {
         // Keep null
       }
@@ -1170,9 +1170,9 @@ class _PatientDetailScreenState extends State<PatientDetailScreen>
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.05),
+        color: color.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withOpacity(0.3), width: 2),
+        border: Border.all(color: color.withValues(alpha: 0.3), width: 2),
       ),
       child: Row(
         children: [
@@ -1217,10 +1217,7 @@ class _PatientDetailScreenState extends State<PatientDetailScreen>
                       const SizedBox(width: 8),
                       Text(
                         'at $formattedTime',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Colors.grey[600],
-                        ),
+                        style: TextStyle(fontSize: 12, color: Colors.grey[600]),
                       ),
                     ],
                   ],
@@ -1236,10 +1233,7 @@ class _PatientDetailScreenState extends State<PatientDetailScreen>
   Widget _buildQuickNoteChip(String label, IconData icon) {
     return ActionChip(
       avatar: Icon(icon, size: 16, color: Colors.blue.shade700),
-      label: Text(
-        label,
-        style: const TextStyle(fontSize: 13),
-      ),
+      label: Text(label, style: const TextStyle(fontSize: 13)),
       onPressed: () => _addQuickNote(label),
       backgroundColor: Colors.blue.shade50,
       side: BorderSide(color: Colors.blue.shade200),
@@ -1250,8 +1244,7 @@ class _PatientDetailScreenState extends State<PatientDetailScreen>
   Widget _buildBottomActions(List tests, Map<String, int> testCounts) {
     final nextTest = _doctorService.getNextPendingTest(tests);
     final allCompleted = testCounts['completed'] == tests.length;
-    final hasPending =
-        testCounts['pending']! > 0 || testCounts['reached']! > 0;
+    final hasPending = testCounts['pending']! > 0 || testCounts['reached']! > 0;
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -1259,7 +1252,7 @@ class _PatientDetailScreenState extends State<PatientDetailScreen>
         color: Colors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 10,
             offset: const Offset(0, -2),
           ),
@@ -1318,7 +1311,11 @@ class _PatientDetailScreenState extends State<PatientDetailScreen>
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.check_circle, color: Colors.green.shade700, size: 24),
+                    Icon(
+                      Icons.check_circle,
+                      color: Colors.green.shade700,
+                      size: 24,
+                    ),
                     const SizedBox(width: 12),
                     Text(
                       'All tests completed',

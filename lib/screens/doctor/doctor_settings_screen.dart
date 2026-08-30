@@ -83,7 +83,7 @@ class _DoctorSettingsScreenState extends State<DoctorSettingsScreen> {
         Navigator.pushNamedAndRemoveUntil(
           context,
           '/role-selection',
-              (route) => false,
+          (route) => false,
         );
       }
     }
@@ -107,107 +107,134 @@ class _DoctorSettingsScreenState extends State<DoctorSettingsScreen> {
     return Scaffold(
       backgroundColor: Colors.grey[100],
       appBar: AppBar(
-        title: const Text('Settings', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: const Text(
+          'Settings',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         backgroundColor: Colors.blue,
         foregroundColor: Colors.white,
         elevation: 0,
         actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: _loadAll,
-          ),
+          IconButton(icon: const Icon(Icons.refresh), onPressed: _loadAll),
         ],
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : RefreshIndicator(
-        onRefresh: _loadAll,
-        child: SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            children: [
-              // ── Profile Header ───────────────────────────────────────
-              Container(
-                padding: const EdgeInsets.all(20),
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [Colors.blue, Colors.blue.shade800],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.circular(20),
-                ),
+              onRefresh: _loadAll,
+              child: SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: const EdgeInsets.all(16),
                 child: Column(
                   children: [
-                    const CircleAvatar(
-                      radius: 45,
-                      backgroundColor: Colors.white,
-                      child: Icon(Icons.person, size: 50, color: Colors.blue),
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      'Dr. $fullName',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    Text(
-                      specialization,
-                      style: const TextStyle(color: Colors.white70, fontSize: 14),
-                    ),
-                    const SizedBox(height: 16),
-                    // Stats Badge
+                    // ── Profile Header ───────────────────────────────────────
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      padding: const EdgeInsets.all(20),
+                      width: double.infinity,
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.2),
+                        gradient: LinearGradient(
+                          colors: [Colors.blue, Colors.blue.shade800],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
                         borderRadius: BorderRadius.circular(20),
                       ),
-                      child: Text(
-                        '$attendedToday patients attended today',
-                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                      child: Column(
+                        children: [
+                          const CircleAvatar(
+                            radius: 45,
+                            backgroundColor: Colors.white,
+                            child: Icon(
+                              Icons.person,
+                              size: 50,
+                              color: Colors.blue,
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          Text(
+                            'Dr. $fullName',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 22,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          Text(
+                            specialization,
+                            style: const TextStyle(
+                              color: Colors.white70,
+                              fontSize: 14,
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          // Stats Badge
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 8,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.2),
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Text(
+                              '$attendedToday patients attended today',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+
+                    // ── Detailed Info Cards ──────────────────────────────────
+                    _buildInfoCard('Email', email, Icons.email_outlined),
+                    _buildInfoCard('Phone', phone, Icons.phone_outlined),
+                    _buildInfoCard(
+                      'License No.',
+                      license,
+                      Icons.badge_outlined,
+                    ),
+                    _buildInfoCard(
+                      'Department',
+                      department,
+                      Icons.local_hospital_outlined,
+                    ),
+
+                    // Display status if active
+                    if (_doctorData?['is_active'] == true)
+                      _buildInfoCard(
+                        'Status',
+                        'Active Profile',
+                        Icons.check_circle_outline,
+                      ),
+
+                    const SizedBox(height: 24),
+
+                    // ── Logout ──────────────────────────────────────────────
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        onPressed: _logout,
+                        icon: const Icon(Icons.logout),
+                        label: const Text('Logout'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.red.shade600,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
                       ),
                     ),
                   ],
                 ),
               ),
-              const SizedBox(height: 20),
-
-              // ── Detailed Info Cards ──────────────────────────────────
-              _buildInfoCard('Email', email, Icons.email_outlined),
-              _buildInfoCard('Phone', phone, Icons.phone_outlined),
-              _buildInfoCard('License No.', license, Icons.badge_outlined),
-              _buildInfoCard('Department', department, Icons.local_hospital_outlined),
-
-              // Display status if active
-              if (_doctorData?['is_active'] == true)
-                _buildInfoCard('Status', 'Active Profile', Icons.check_circle_outline),
-
-              const SizedBox(height: 24),
-
-              // ── Logout ──────────────────────────────────────────────
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton.icon(
-                  onPressed: _logout,
-                  icon: const Icon(Icons.logout),
-                  label: const Text('Logout'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.red.shade600,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
+            ),
     );
   }
 
@@ -218,8 +245,18 @@ class _DoctorSettingsScreenState extends State<DoctorSettingsScreen> {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: ListTile(
         leading: Icon(icon, color: Colors.blue),
-        title: Text(label, style: const TextStyle(fontSize: 12, color: Colors.grey)),
-        subtitle: Text(value, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black87)),
+        title: Text(
+          label,
+          style: const TextStyle(fontSize: 12, color: Colors.grey),
+        ),
+        subtitle: Text(
+          value,
+          style: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            color: Colors.black87,
+          ),
+        ),
       ),
     );
   }

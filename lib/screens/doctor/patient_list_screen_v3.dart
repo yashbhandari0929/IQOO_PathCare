@@ -91,7 +91,9 @@ class _PatientListScreenState extends State<PatientListScreen>
       _doctorProfile = await _doctorService.getCurrentDoctor();
 
       if (_doctorProfile == null) {
-        debugPrint('[PatientList] Doctor profile not found — check auth_id column in doctors table');
+        debugPrint(
+          '[PatientList] Doctor profile not found — check auth_id column in doctors table',
+        );
         return;
       }
 
@@ -113,11 +115,15 @@ class _PatientListScreenState extends State<PatientListScreen>
         }
 
         if (_activeSession == null) {
-          debugPrint('[PatientList] Could not start/find session for doctor $doctorId in room ${widget.roomNumber}');
+          debugPrint(
+            '[PatientList] Could not start/find session for doctor $doctorId in room ${widget.roomNumber}',
+          );
         }
       }
 
-      debugPrint('[PatientList] Doctor: ${_doctorProfile!['full_name']}  Session: ${_activeSession?['id']}');
+      debugPrint(
+        '[PatientList] Doctor: ${_doctorProfile!['full_name']}  Session: ${_activeSession?['id']}',
+      );
     } catch (e) {
       debugPrint('[PatientList] Error loading doctor profile: $e');
     }
@@ -172,9 +178,7 @@ class _PatientListScreenState extends State<PatientListScreen>
       setState(() {
         _analytics = analytics;
       });
-    } catch (e) {
-      print('Error loading analytics: $e');
-    }
+    } catch (e) {}
   }
 
   Future<void> _checkForSuggestions() async {
@@ -193,9 +197,7 @@ class _PatientListScreenState extends State<PatientListScreen>
           _suggestedRoom = suggested;
         });
       }
-    } catch (e) {
-      print('Error checking suggestions: $e');
-    }
+    } catch (e) {}
   }
 
   void _separatePatients() {
@@ -285,7 +287,11 @@ class _PatientListScreenState extends State<PatientListScreen>
               ListTile(
                 leading: const Icon(Icons.flag, color: Colors.red),
                 title: const Text('Mark as Urgent'),
-                subtitle: Text(priorityLevel == 'urgent' ? 'Already urgent' : 'Set high priority'),
+                subtitle: Text(
+                  priorityLevel == 'urgent'
+                      ? 'Already urgent'
+                      : 'Set high priority',
+                ),
                 enabled: priorityLevel != 'urgent',
                 onTap: () {
                   Navigator.pop(context);
@@ -295,7 +301,11 @@ class _PatientListScreenState extends State<PatientListScreen>
               ListTile(
                 leading: const Icon(Icons.priority_high, color: Colors.orange),
                 title: const Text('Mark as High Priority'),
-                subtitle: Text(priorityLevel == 'high' ? 'Already high priority' : 'Set medium priority'),
+                subtitle: Text(
+                  priorityLevel == 'high'
+                      ? 'Already high priority'
+                      : 'Set medium priority',
+                ),
                 enabled: priorityLevel != 'high',
                 onTap: () {
                   Navigator.pop(context);
@@ -305,7 +315,11 @@ class _PatientListScreenState extends State<PatientListScreen>
               ListTile(
                 leading: const Icon(Icons.remove_circle, color: Colors.grey),
                 title: const Text('Set Normal Priority'),
-                subtitle: Text(priorityLevel == 'normal' ? 'Already normal' : 'Remove high priority'),
+                subtitle: Text(
+                  priorityLevel == 'normal'
+                      ? 'Already normal'
+                      : 'Remove high priority',
+                ),
                 enabled: priorityLevel != 'normal',
                 onTap: () {
                   Navigator.pop(context);
@@ -410,7 +424,8 @@ class _PatientListScreenState extends State<PatientListScreen>
   Future<void> _markNoShow(String appointmentId, String patientName) async {
     final confirmed = await _showConfirmDialog(
       title: 'Mark as No-Show?',
-      message: '$patientName will be marked as no-show and removed from the queue.',
+      message:
+          '$patientName will be marked as no-show and removed from the queue.',
     );
 
     if (confirmed == true) {
@@ -428,9 +443,9 @@ class _PatientListScreenState extends State<PatientListScreen>
   }
 
   Future<void> _handleCompleteTest(
-      String testId,
-      Map<String, dynamic> patient,
-      ) async {
+    String testId,
+    Map<String, dynamic> patient,
+  ) async {
     if (_doctorProfile == null) {
       _showErrorSnackbar('Doctor profile not loaded. Please restart.');
       return;
@@ -468,9 +483,9 @@ class _PatientListScreenState extends State<PatientListScreen>
   }
 
   Future<void> _handleCompleteAllTests(
-      List pendingTests,
-      Map<String, dynamic> patient,
-      ) async {
+    List pendingTests,
+    Map<String, dynamic> patient,
+  ) async {
     if (_doctorProfile == null) return;
 
     if (_activeSession == null) {
@@ -485,7 +500,8 @@ class _PatientListScreenState extends State<PatientListScreen>
 
     final confirmed = await _showConfirmDialog(
       title: 'Complete All Tests?',
-      message: 'Mark all ${pendingTests.length} tests as completed for ${patient['patient_name']}?',
+      message:
+          'Mark all ${pendingTests.length} tests as completed for ${patient['patient_name']}?',
     );
 
     if (confirmed != true) return;
@@ -535,7 +551,9 @@ class _PatientListScreenState extends State<PatientListScreen>
     }
 
     final tests = patient['tests_in_room'] as List? ?? [];
-    final pendingTests = tests.where((t) => t['status'] != 'completed').toList();
+    final pendingTests = tests
+        .where((t) => t['status'] != 'completed')
+        .toList();
 
     if (pendingTests.isEmpty) {
       _showWarningSnackbar('All tests already completed');
@@ -545,7 +563,7 @@ class _PatientListScreenState extends State<PatientListScreen>
     final confirmed = await _showConfirmDialog(
       title: 'Mark Patient Attended?',
       message:
-      'Patient: ${patient['patient_name']}\n\nThis will mark ${pendingTests.length} remaining test(s) as completed.\n\nPatient will be moved to completed section.',
+          'Patient: ${patient['patient_name']}\n\nThis will mark ${pendingTests.length} remaining test(s) as completed.\n\nPatient will be moved to completed section.',
     );
 
     if (confirmed != true) return;
@@ -603,7 +621,8 @@ class _PatientListScreenState extends State<PatientListScreen>
 
     final confirmed = await _showConfirmDialog(
       title: 'Switch to $_suggestedRoom?',
-      message: 'This room has the most patients waiting. Do you want to switch?',
+      message:
+          'This room has the most patients waiting. Do you want to switch?',
     );
 
     if (confirmed != true) return;
@@ -685,9 +704,7 @@ class _PatientListScreenState extends State<PatientListScreen>
           ),
           ElevatedButton(
             onPressed: () => Navigator.pop(context, true),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.green,
-            ),
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
             child: const Text('Confirm'),
           ),
         ],
@@ -711,7 +728,7 @@ class _PatientListScreenState extends State<PatientListScreen>
             final confirmed = await _showConfirmDialog(
               title: 'Leave Room?',
               message:
-              'Going back will end your current session in this room. Continue?',
+                  'Going back will end your current session in this room. Continue?',
             );
             if (confirmed == true) {
               await _handleBackToRooms();
@@ -726,10 +743,7 @@ class _PatientListScreenState extends State<PatientListScreen>
               style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             if (widget.floor.isNotEmpty)
-              Text(
-                widget.floor,
-                style: const TextStyle(fontSize: 12),
-              ),
+              Text(widget.floor, style: const TextStyle(fontSize: 12)),
           ],
         ),
         backgroundColor: Colors.blue,
@@ -819,46 +833,46 @@ class _PatientListScreenState extends State<PatientListScreen>
                 : _allPatients.isEmpty
                 ? _buildEmptyState()
                 : FadeTransition(
-              opacity: _fadeAnimation,
-              child: RefreshIndicator(
-                onRefresh: () async {
-                  await _loadPatients();
-                  await _loadAnalytics();
-                  await _checkForSuggestions();
-                },
-                child: ListView(
-                  padding: const EdgeInsets.all(16),
-                  children: [
-                    if (_activePatients.isNotEmpty) ...[
-                      _buildSectionHeader(
-                        'Active Patients',
-                        _activePatients.length,
-                        Icons.people,
-                        Colors.blue,
+                    opacity: _fadeAnimation,
+                    child: RefreshIndicator(
+                      onRefresh: () async {
+                        await _loadPatients();
+                        await _loadAnalytics();
+                        await _checkForSuggestions();
+                      },
+                      child: ListView(
+                        padding: const EdgeInsets.all(16),
+                        children: [
+                          if (_activePatients.isNotEmpty) ...[
+                            _buildSectionHeader(
+                              'Active Patients',
+                              _activePatients.length,
+                              Icons.people,
+                              Colors.blue,
+                            ),
+                            const SizedBox(height: 8),
+                            ..._activePatients.asMap().entries.map((entry) {
+                              return _buildPatientCard(
+                                entry.value,
+                                entry.key,
+                                isActive: true,
+                              );
+                            }).toList(),
+                          ],
+
+                          if (_completedPatients.isNotEmpty) ...[
+                            const SizedBox(height: 16),
+                            _buildCollapsibleCompletedSection(),
+                          ],
+
+                          if (_activePatients.isEmpty &&
+                              _completedPatients.isEmpty &&
+                              _searchQuery.isNotEmpty)
+                            _buildNoResultsState(),
+                        ],
                       ),
-                      const SizedBox(height: 8),
-                      ..._activePatients.asMap().entries.map((entry) {
-                        return _buildPatientCard(
-                          entry.value,
-                          entry.key,
-                          isActive: true,
-                        );
-                      }).toList(),
-                    ],
-
-                    if (_completedPatients.isNotEmpty) ...[
-                      const SizedBox(height: 16),
-                      _buildCollapsibleCompletedSection(),
-                    ],
-
-                    if (_activePatients.isEmpty &&
-                        _completedPatients.isEmpty &&
-                        _searchQuery.isNotEmpty)
-                      _buildNoResultsState(),
-                  ],
-                ),
-              ),
-            ),
+                    ),
+                  ),
           ),
         ],
       ),
@@ -924,19 +938,19 @@ class _PatientListScreenState extends State<PatientListScreen>
     );
   }
 
-  Widget _buildAnalyticRow(String label, String value, IconData icon, Color color) {
+  Widget _buildAnalyticRow(
+    String label,
+    String value,
+    IconData icon,
+    Color color,
+  ) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
         children: [
           Icon(icon, color: color, size: 20),
           const SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              label,
-              style: const TextStyle(fontSize: 14),
-            ),
-          ),
+          Expanded(child: Text(label, style: const TextStyle(fontSize: 14))),
           Text(
             value,
             style: TextStyle(
@@ -961,7 +975,7 @@ class _PatientListScreenState extends State<PatientListScreen>
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.purple.withOpacity(0.3),
+            color: Colors.purple.withValues(alpha: 0.3),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -985,10 +999,7 @@ class _PatientListScreenState extends State<PatientListScreen>
                 ),
                 Text(
                   'Switch to $_suggestedRoom (more patients waiting)',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 14,
-                  ),
+                  style: const TextStyle(color: Colors.white, fontSize: 14),
                 ),
               ],
             ),
@@ -1008,9 +1019,9 @@ class _PatientListScreenState extends State<PatientListScreen>
   }
 
   Widget _buildEnhancedQuickStats(
-      Map<String, int> activeStats,
-      Map<String, int> totalStats,
-      ) {
+    Map<String, int> activeStats,
+    Map<String, int> totalStats,
+  ) {
     final totalPatients = totalStats['total'] ?? 0;
     // ── CHANGED: use _completedTodayCount (live) instead of totalStats['completed']
     //    so the Done chip always matches what the analysis screen shows.
@@ -1025,8 +1036,9 @@ class _PatientListScreenState extends State<PatientListScreen>
     //    Now we count only patients whose at least one test is 'reached' or 'in_progress'.
     final arrivedWaitingCount = _activePatients.where((patient) {
       final tests = patient['tests_in_room'] as List? ?? [];
-      return tests.any((t) =>
-      t['status'] == 'reached' || t['status'] == 'in_progress');
+      return tests.any(
+        (t) => t['status'] == 'reached' || t['status'] == 'in_progress',
+      );
     }).length;
 
     return Container(
@@ -1063,16 +1075,16 @@ class _PatientListScreenState extends State<PatientListScreen>
                   child: GestureDetector(
                     onTap: _doctorProfile != null
                         ? () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => DoctorAnalysisScreen(
-                          doctorProfile: _doctorProfile!,
-                          // Pass live count so analysis screen shows it
-                          // immediately on the Today tab.
-                          liveCompletedToday: _completedTodayCount,
-                        ),
-                      ),
-                    )
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => DoctorAnalysisScreen(
+                                doctorProfile: _doctorProfile!,
+                                // Pass live count so analysis screen shows it
+                                // immediately on the Today tab.
+                                liveCompletedToday: _completedTodayCount,
+                              ),
+                            ),
+                          )
                         : null,
                     child: Column(
                       children: [
@@ -1178,13 +1190,7 @@ class _PatientListScreenState extends State<PatientListScreen>
             color: color,
           ),
         ),
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 11,
-            color: Colors.grey[600],
-          ),
-        ),
+        Text(label, style: TextStyle(fontSize: 11, color: Colors.grey[600])),
       ],
     );
   }
@@ -1202,15 +1208,15 @@ class _PatientListScreenState extends State<PatientListScreen>
               prefixIcon: const Icon(Icons.search),
               suffixIcon: _searchQuery.isNotEmpty
                   ? IconButton(
-                icon: const Icon(Icons.clear),
-                onPressed: () {
-                  setState(() {
-                    _searchController.clear();
-                    _searchQuery = '';
-                    _applyFiltersAndSort();
-                  });
-                },
-              )
+                      icon: const Icon(Icons.clear),
+                      onPressed: () {
+                        setState(() {
+                          _searchController.clear();
+                          _searchQuery = '';
+                          _applyFiltersAndSort();
+                        });
+                      },
+                    )
                   : null,
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8),
@@ -1262,7 +1268,9 @@ class _PatientListScreenState extends State<PatientListScreen>
                         Icon(
                           Icons.flag,
                           size: 18,
-                          color: _selectedSort == 'priority' ? Colors.blue : null,
+                          color: _selectedSort == 'priority'
+                              ? Colors.blue
+                              : null,
                         ),
                         const SizedBox(width: 8),
                         Text(
@@ -1375,17 +1383,17 @@ class _PatientListScreenState extends State<PatientListScreen>
   }
 
   Widget _buildSectionHeader(
-      String title,
-      int count,
-      IconData icon,
-      Color color,
-      ) {
+    String title,
+    int count,
+    IconData icon,
+    Color color,
+  ) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: color.withOpacity(0.3)),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: Row(
         children: [
@@ -1438,11 +1446,7 @@ class _PatientListScreenState extends State<PatientListScreen>
             ),
             child: Row(
               children: [
-                Icon(
-                  Icons.check_circle,
-                  size: 18,
-                  color: Colors.grey[600],
-                ),
+                Icon(Icons.check_circle, size: 18, color: Colors.grey[600]),
                 const SizedBox(width: 8),
                 Text(
                   'Completed Patients',
@@ -1454,7 +1458,10 @@ class _PatientListScreenState extends State<PatientListScreen>
                 ),
                 const Spacer(),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 2,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.grey[600],
                     borderRadius: BorderRadius.circular(12),
@@ -1482,11 +1489,7 @@ class _PatientListScreenState extends State<PatientListScreen>
         if (_showCompleted) ...[
           const SizedBox(height: 8),
           ..._completedPatients.asMap().entries.map((entry) {
-            return _buildPatientCard(
-              entry.value,
-              entry.key,
-              isActive: false,
-            );
+            return _buildPatientCard(entry.value, entry.key, isActive: false);
           }).toList(),
         ],
       ],
@@ -1494,14 +1497,15 @@ class _PatientListScreenState extends State<PatientListScreen>
   }
 
   Widget _buildPatientCard(
-      Map<String, dynamic> patient,
-      int index, {
-        required bool isActive,
-      }) {
+    Map<String, dynamic> patient,
+    int index, {
+    required bool isActive,
+  }) {
     final patientName = patient['patient_name'] as String? ?? 'Unknown';
     final scheduledTime = patient['scheduled_time'] as String? ?? '';
     final tests = patient['tests_in_room'] as List? ?? [];
-    final specialInstructions = patient['special_instructions'] as String? ?? '';
+    final specialInstructions =
+        patient['special_instructions'] as String? ?? '';
     final priorityLevel = patient['priority_level'] as String? ?? 'normal';
 
     final status = _doctorService.getPatientStatusText(tests);
@@ -1578,7 +1582,7 @@ class _PatientListScreenState extends State<PatientListScreen>
                     width: 32,
                     height: 32,
                     decoration: BoxDecoration(
-                      color: statusColor.withOpacity(0.2),
+                      color: statusColor.withValues(alpha: 0.2),
                       shape: BoxShape.circle,
                     ),
                     child: Center(
@@ -1651,8 +1655,11 @@ class _PatientListScreenState extends State<PatientListScreen>
                         const SizedBox(height: 4),
                         Row(
                           children: [
-                            Icon(Icons.access_time,
-                                size: 14, color: Colors.grey[600]),
+                            Icon(
+                              Icons.access_time,
+                              size: 14,
+                              color: Colors.grey[600],
+                            ),
                             const SizedBox(width: 4),
                             Text(
                               _doctorService.formatTime(scheduledTime),
@@ -1674,8 +1681,11 @@ class _PatientListScreenState extends State<PatientListScreen>
                             ),
                             if (timeWithPatient > 0) ...[
                               const SizedBox(width: 16),
-                              Icon(Icons.timelapse,
-                                  size: 14, color: Colors.purple[600]),
+                              Icon(
+                                Icons.timelapse,
+                                size: 14,
+                                color: Colors.purple[600],
+                              ),
                               const SizedBox(width: 4),
                               Text(
                                 '${timeWithPatient}m',
@@ -1724,8 +1734,11 @@ class _PatientListScreenState extends State<PatientListScreen>
                   ),
                   child: Row(
                     children: [
-                      Icon(Icons.info_outline,
-                          size: 16, color: Colors.amber.shade900),
+                      Icon(
+                        Icons.info_outline,
+                        size: 16,
+                        color: Colors.amber.shade900,
+                      ),
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
@@ -1758,7 +1771,7 @@ class _PatientListScreenState extends State<PatientListScreen>
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Row(
@@ -1818,10 +1831,7 @@ class _PatientListScreenState extends State<PatientListScreen>
             const SizedBox(width: 6),
             Text(
               '📋 ${tests.length} test${tests.length != 1 ? 's' : ''} in this room:',
-              style: const TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-              ),
+              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
             ),
           ],
         ),
@@ -1846,7 +1856,7 @@ class _PatientListScreenState extends State<PatientListScreen>
                 try {
                   final time = DateTime.parse(completedAt);
                   statusText +=
-                  ' ${time.hour}:${time.minute.toString().padLeft(2, '0')}';
+                      ' ${time.hour}:${time.minute.toString().padLeft(2, '0')}';
                 } catch (e) {
                   // Keep default
                 }
@@ -1907,14 +1917,13 @@ class _PatientListScreenState extends State<PatientListScreen>
   }
 
   Widget _buildActionButtons(
-      Map<String, dynamic> patient,
-      List tests,
-      Map<String, int> testCounts,
-      ) {
+    Map<String, dynamic> patient,
+    List tests,
+    Map<String, int> testCounts,
+  ) {
     final nextTest = _doctorService.getNextPendingTest(tests);
     final allCompleted = testCounts['completed'] == tests.length;
-    final hasPending =
-        testCounts['pending']! > 0 || testCounts['reached']! > 0;
+    final hasPending = testCounts['pending']! > 0 || testCounts['reached']! > 0;
 
     if (allCompleted) {
       return Container(
@@ -1982,10 +1991,7 @@ class _PatientListScreenState extends State<PatientListScreen>
                   borderRadius: BorderRadius.circular(8),
                 ),
               ),
-              child: const Text(
-                'All',
-                style: TextStyle(fontSize: 13),
-              ),
+              child: const Text('All', style: TextStyle(fontSize: 13)),
             ),
           ),
 
@@ -2024,10 +2030,7 @@ class _PatientListScreenState extends State<PatientListScreen>
           const SizedBox(height: 16),
           Text(
             'Loading patients...',
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.grey[600],
-            ),
+            style: TextStyle(fontSize: 14, color: Colors.grey[600]),
           ),
         ],
       ),
@@ -2039,11 +2042,7 @@ class _PatientListScreenState extends State<PatientListScreen>
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.people_outline,
-            size: 64,
-            color: Colors.grey[400],
-          ),
+          Icon(Icons.people_outline, size: 64, color: Colors.grey[400]),
           const SizedBox(height: 16),
           Text(
             'No patients today',
@@ -2056,10 +2055,7 @@ class _PatientListScreenState extends State<PatientListScreen>
           const SizedBox(height: 8),
           Text(
             'Check back later or change room',
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.grey[500],
-            ),
+            style: TextStyle(fontSize: 14, color: Colors.grey[500]),
           ),
         ],
       ),
@@ -2073,11 +2069,7 @@ class _PatientListScreenState extends State<PatientListScreen>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.search_off,
-              size: 64,
-              color: Colors.grey[400],
-            ),
+            Icon(Icons.search_off, size: 64, color: Colors.grey[400]),
             const SizedBox(height: 16),
             Text(
               'No results found',
@@ -2090,10 +2082,7 @@ class _PatientListScreenState extends State<PatientListScreen>
             const SizedBox(height: 8),
             Text(
               'Try a different search term or filter',
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey[500],
-              ),
+              style: TextStyle(fontSize: 14, color: Colors.grey[500]),
               textAlign: TextAlign.center,
             ),
           ],

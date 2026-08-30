@@ -13,10 +13,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Settings'),
-        backgroundColor: Colors.orange,
-      ),
+      appBar: AppBar(title: Text('Settings'), backgroundColor: Colors.orange),
       body: ListView(
         padding: EdgeInsets.all(16),
         children: [
@@ -26,7 +23,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             'Enable push notifications',
             Icons.notifications,
             notificationsEnabled,
-                (value) {
+            (value) {
               setState(() {
                 notificationsEnabled = value;
               });
@@ -37,7 +34,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             'Enable dark theme',
             Icons.dark_mode,
             darkModeEnabled,
-                (value) {
+            (value) {
               setState(() {
                 darkModeEnabled = value;
               });
@@ -50,7 +47,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             'Automatically backup data',
             Icons.backup,
             autoBackup,
-                (value) {
+            (value) {
               setState(() {
                 autoBackup = value;
               });
@@ -60,7 +57,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             'Clear Cache',
             'Free up storage space',
             Icons.delete_outline,
-                () {
+            () {
               _showClearCacheDialog();
             },
           ),
@@ -70,13 +67,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
             'Profile',
             'Edit your profile information',
             Icons.person,
-                () {},
+            () {},
           ),
           _buildSettingsTile(
             'Change Password',
             'Update your password',
             Icons.lock,
-                () {},
+            () {},
           ),
           SizedBox(height: 20),
           _buildSectionHeader('About'),
@@ -90,7 +87,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             'Privacy Policy',
             'View privacy policy',
             Icons.privacy_tip,
-                () {},
+            () {},
           ),
         ],
       ),
@@ -112,12 +109,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Widget _buildSwitchTile(
-      String title,
-      String subtitle,
-      IconData icon,
-      bool value,
-      Function(bool) onChanged,
-      ) {
+    String title,
+    String subtitle,
+    IconData icon,
+    bool value,
+    Function(bool) onChanged,
+  ) {
     return Card(
       margin: EdgeInsets.only(bottom: 8),
       child: SwitchListTile(
@@ -132,18 +129,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Widget _buildSettingsTile(
-      String title,
-      String subtitle,
-      IconData icon,
-      VoidCallback? onTap,
-      ) {
+    String title,
+    String subtitle,
+    IconData icon,
+    VoidCallback? onTap,
+  ) {
     return Card(
       margin: EdgeInsets.only(bottom: 8),
       child: ListTile(
         leading: Icon(icon, color: Colors.orange),
         title: Text(title, style: TextStyle(fontWeight: FontWeight.w500)),
         subtitle: Text(subtitle),
-        trailing: onTap != null ? Icon(Icons.arrow_forward_ios, size: 16) : null,
+        trailing: onTap != null
+            ? Icon(Icons.arrow_forward_ios, size: 16)
+            : null,
         onTap: onTap,
       ),
     );
@@ -154,7 +153,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: Text('Clear Cache'),
-        content: Text('Are you sure you want to clear the cache? This action cannot be undone.'),
+        content: Text(
+          'Are you sure you want to clear the cache? This action cannot be undone.',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),

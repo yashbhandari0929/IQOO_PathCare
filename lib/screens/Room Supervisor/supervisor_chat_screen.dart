@@ -39,7 +39,6 @@ class _SupervisorChatScreenState extends State<SupervisorChatScreen> {
 
       await _loadPatients();
     } catch (e) {
-      print('Error loading supervisor: $e');
       setState(() => _isLoading = false);
     }
   }
@@ -68,7 +67,6 @@ class _SupervisorChatScreenState extends State<SupervisorChatScreen> {
         _isLoading = false;
       });
     } catch (e) {
-      print('Error loading patients: $e');
       setState(() => _isLoading = false);
     }
   }
@@ -96,10 +94,7 @@ class _SupervisorChatScreenState extends State<SupervisorChatScreen> {
         foregroundColor: Colors.white,
         elevation: 0,
         actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: _loadPatients,
-          ),
+          IconButton(icon: const Icon(Icons.refresh), onPressed: _loadPatients),
         ],
       ),
       body: _isLoading
@@ -107,46 +102,46 @@ class _SupervisorChatScreenState extends State<SupervisorChatScreen> {
           : _patients.isEmpty
           ? _buildEmptyState()
           : RefreshIndicator(
-        onRefresh: _loadPatients,
-        child: ListView.builder(
-          padding: const EdgeInsets.all(12),
-          itemCount: _patients.length,
-          itemBuilder: (context, index) {
-            final patient = _patients[index];
-            return Card(
-              margin: const EdgeInsets.only(bottom: 12),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: ListTile(
-                leading: CircleAvatar(
-                  backgroundColor: Colors.teal.withOpacity(0.2),
-                  child: Text(
-                    patient['name'][0].toUpperCase(),
-                    style: const TextStyle(
-                      color: Colors.teal,
-                      fontWeight: FontWeight.bold,
+              onRefresh: _loadPatients,
+              child: ListView.builder(
+                padding: const EdgeInsets.all(12),
+                itemCount: _patients.length,
+                itemBuilder: (context, index) {
+                  final patient = _patients[index];
+                  return Card(
+                    margin: const EdgeInsets.only(bottom: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
                     ),
-                  ),
-                ),
-                title: Text(
-                  patient['name'],
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                  ),
-                ),
-                subtitle: const Text('Tap to chat'),
-                trailing: const Icon(
-                  Icons.chat_bubble_outline,
-                  color: Colors.teal,
-                ),
-                onTap: () => _startChat(patient),
+                    child: ListTile(
+                      leading: CircleAvatar(
+                        backgroundColor: Colors.teal.withValues(alpha: 0.2),
+                        child: Text(
+                          patient['name'][0].toUpperCase(),
+                          style: const TextStyle(
+                            color: Colors.teal,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                      title: Text(
+                        patient['name'],
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
+                      subtitle: const Text('Tap to chat'),
+                      trailing: const Icon(
+                        Icons.chat_bubble_outline,
+                        color: Colors.teal,
+                      ),
+                      onTap: () => _startChat(patient),
+                    ),
+                  );
+                },
               ),
-            );
-          },
-        ),
-      ),
+            ),
       floatingActionButton: FloatingActionButton(
         onPressed: _loadPatients,
         backgroundColor: Colors.teal,
@@ -160,11 +155,7 @@ class _SupervisorChatScreenState extends State<SupervisorChatScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.chat_bubble_outline,
-            size: 80,
-            color: Colors.grey[400],
-          ),
+          Icon(Icons.chat_bubble_outline, size: 80, color: Colors.grey[400]),
           const SizedBox(height: 16),
           Text(
             'No messages yet',

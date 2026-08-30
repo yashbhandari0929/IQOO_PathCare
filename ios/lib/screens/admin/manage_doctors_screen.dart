@@ -28,9 +28,7 @@ class _ManageDoctorsScreenState extends State<ManageDoctorsScreen> {
       setState(() => isLoading = true);
 
       // Select all columns to see what's available
-      final data = await supabase
-          .from('doctors')
-          .select();
+      final data = await supabase.from('doctors').select();
 
       print('Doctor data: $data'); // Debug print to see column names
 
@@ -42,9 +40,9 @@ class _ManageDoctorsScreenState extends State<ManageDoctorsScreen> {
       print('Error loading doctors: $e');
       setState(() => isLoading = false);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to load doctors: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Failed to load doctors: $e')));
       }
     }
   }
@@ -59,11 +57,11 @@ class _ManageDoctorsScreenState extends State<ManageDoctorsScreen> {
         title: const Text('Delete Doctor'),
         content: Text(
           'Are you sure you want to remove Dr. $doctorName from the system?\n\n'
-              'This will:\n'
-              '• Delete their account\n'
-              '• Remove all their data\n'
-              '• Cancel their appointments\n\n'
-              'This action cannot be undone.',
+          'This will:\n'
+          '• Delete their account\n'
+          '• Remove all their data\n'
+          '• Cancel their appointments\n\n'
+          'This action cannot be undone.',
         ),
         actions: [
           TextButton(
@@ -72,9 +70,7 @@ class _ManageDoctorsScreenState extends State<ManageDoctorsScreen> {
           ),
           ElevatedButton(
             onPressed: () => Navigator.pop(context, true),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-            ),
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
             child: const Text('Delete'),
           ),
         ],
@@ -106,10 +102,7 @@ class _ManageDoctorsScreenState extends State<ManageDoctorsScreen> {
       final authId = doctor['auth_id'];
 
       // Step 1: Delete from doctors table
-      await supabase
-          .from('doctors')
-          .delete()
-          .eq('id', doctorId);
+      await supabase.from('doctors').delete().eq('id', doctorId);
 
       // Step 2: Delete auth user if auth_id exists
       if (authId != null) {
@@ -150,9 +143,13 @@ class _ManageDoctorsScreenState extends State<ManageDoctorsScreen> {
     if (searchQuery.isEmpty) return doctors;
 
     return doctors.where((doctor) {
-      final name = (doctor['full_name'] ?? doctor['name'] ?? '').toString().toLowerCase();
+      final name = (doctor['full_name'] ?? doctor['name'] ?? '')
+          .toString()
+          .toLowerCase();
       final email = (doctor['email'] ?? '').toString().toLowerCase();
-      final specialization = (doctor['specialization'] ?? '').toString().toLowerCase();
+      final specialization = (doctor['specialization'] ?? '')
+          .toString()
+          .toLowerCase();
       final query = searchQuery.toLowerCase();
 
       return name.contains(query) ||
@@ -168,10 +165,7 @@ class _ManageDoctorsScreenState extends State<ManageDoctorsScreen> {
         title: const Text('Manage Doctors'),
         backgroundColor: Colors.blue,
         actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: _loadDoctors,
-          ),
+          IconButton(icon: const Icon(Icons.refresh), onPressed: _loadDoctors),
         ],
       ),
       body: Column(
@@ -186,9 +180,9 @@ class _ManageDoctorsScreenState extends State<ManageDoctorsScreen> {
                 prefixIcon: const Icon(Icons.search),
                 suffixIcon: searchQuery.isNotEmpty
                     ? IconButton(
-                  icon: const Icon(Icons.clear),
-                  onPressed: () => setState(() => searchQuery = ''),
-                )
+                        icon: const Icon(Icons.clear),
+                        onPressed: () => setState(() => searchQuery = ''),
+                      )
                     : null,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
@@ -208,38 +202,38 @@ class _ManageDoctorsScreenState extends State<ManageDoctorsScreen> {
                 ? const Center(child: CircularProgressIndicator())
                 : filteredDoctors.isEmpty
                 ? Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    searchQuery.isNotEmpty
-                        ? Icons.search_off
-                        : Icons.person_off,
-                    size: 64,
-                    color: Colors.grey,
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    searchQuery.isNotEmpty
-                        ? 'No doctors found matching "$searchQuery"'
-                        : 'No doctors in the system',
-                    style: TextStyle(color: Colors.grey[600]),
-                    textAlign: TextAlign.center,
-                  ),
-                ],
-              ),
-            )
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          searchQuery.isNotEmpty
+                              ? Icons.search_off
+                              : Icons.person_off,
+                          size: 64,
+                          color: Colors.grey,
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          searchQuery.isNotEmpty
+                              ? 'No doctors found matching "$searchQuery"'
+                              : 'No doctors in the system',
+                          style: TextStyle(color: Colors.grey[600]),
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                    ),
+                  )
                 : RefreshIndicator(
-              onRefresh: _loadDoctors,
-              child: ListView.builder(
-                padding: const EdgeInsets.all(16),
-                itemCount: filteredDoctors.length,
-                itemBuilder: (context, index) {
-                  final doctor = filteredDoctors[index];
-                  return _buildDoctorCard(doctor);
-                },
-              ),
-            ),
+                    onRefresh: _loadDoctors,
+                    child: ListView.builder(
+                      padding: const EdgeInsets.all(16),
+                      itemCount: filteredDoctors.length,
+                      itemBuilder: (context, index) {
+                        final doctor = filteredDoctors[index];
+                        return _buildDoctorCard(doctor);
+                      },
+                    ),
+                  ),
           ),
         ],
       ),
@@ -253,9 +247,7 @@ class _ManageDoctorsScreenState extends State<ManageDoctorsScreen> {
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -376,18 +368,14 @@ class _ManageDoctorsScreenState extends State<ManageDoctorsScreen> {
                   },
                   icon: const Icon(Icons.edit, size: 18),
                   label: const Text('Edit'),
-                  style: TextButton.styleFrom(
-                    foregroundColor: Colors.blue,
-                  ),
+                  style: TextButton.styleFrom(foregroundColor: Colors.blue),
                 ),
                 const SizedBox(width: 8),
                 TextButton.icon(
                   onPressed: () => _deleteDoctor(doctor),
                   icon: const Icon(Icons.delete, size: 18),
                   label: const Text('Delete'),
-                  style: TextButton.styleFrom(
-                    foregroundColor: Colors.red,
-                  ),
+                  style: TextButton.styleFrom(foregroundColor: Colors.red),
                 ),
               ],
             ),

@@ -30,13 +30,22 @@ class _EditDoctorScreenState extends State<EditDoctorScreen> {
     super.initState();
 
     // Handle both 'name' and 'full_name' column possibilities
-    final doctorName = widget.doctor['full_name'] ?? widget.doctor['name'] ?? '';
+    final doctorName =
+        widget.doctor['full_name'] ?? widget.doctor['name'] ?? '';
 
     _nameController = TextEditingController(text: doctorName);
-    _emailController = TextEditingController(text: widget.doctor['email'] ?? '');
-    _phoneController = TextEditingController(text: widget.doctor['phone'] ?? '');
-    _specializationController = TextEditingController(text: widget.doctor['specialization'] ?? '');
-    _licenseController = TextEditingController(text: widget.doctor['license_number'] ?? widget.doctor['license'] ?? '');
+    _emailController = TextEditingController(
+      text: widget.doctor['email'] ?? '',
+    );
+    _phoneController = TextEditingController(
+      text: widget.doctor['phone'] ?? '',
+    );
+    _specializationController = TextEditingController(
+      text: widget.doctor['specialization'] ?? '',
+    );
+    _licenseController = TextEditingController(
+      text: widget.doctor['license_number'] ?? widget.doctor['license'] ?? '',
+    );
     _selectedDepartment = widget.doctor['department'];
   }
 
@@ -88,7 +97,6 @@ class _EditDoctorScreenState extends State<EditDoctorScreen> {
         Navigator.pop(context, true); // Return true to indicate success
       }
     } catch (e) {
-      print('Error updating doctor: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -106,7 +114,8 @@ class _EditDoctorScreenState extends State<EditDoctorScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final doctorName = widget.doctor['full_name'] ?? widget.doctor['name'] ?? 'Unknown';
+    final doctorName =
+        widget.doctor['full_name'] ?? widget.doctor['name'] ?? 'Unknown';
     final firstLetter = doctorName.toString().substring(0, 1).toUpperCase();
 
     return Scaffold(
@@ -234,20 +243,23 @@ class _EditDoctorScreenState extends State<EditDoctorScreen> {
                     labelText: 'Department',
                     prefixIcon: Icon(Icons.business_outlined),
                   ),
-                  items: [
-                    'Cardiology',
-                    'Radiology',
-                    'Pathology',
-                    'Ophthalmology',
-                    'General Medicine',
-                    'Orthopedics',
-                    'Neurology'
-                  ]
-                      .map((dept) => DropdownMenuItem(
-                    value: dept,
-                    child: Text(dept),
-                  ))
-                      .toList(),
+                  items:
+                      [
+                            'Cardiology',
+                            'Radiology',
+                            'Pathology',
+                            'Ophthalmology',
+                            'General Medicine',
+                            'Orthopedics',
+                            'Neurology',
+                          ]
+                          .map(
+                            (dept) => DropdownMenuItem(
+                              value: dept,
+                              child: Text(dept),
+                            ),
+                          )
+                          .toList(),
                   onChanged: (value) {
                     setState(() => _selectedDepartment = value);
                   },
@@ -300,29 +312,29 @@ class _EditDoctorScreenState extends State<EditDoctorScreen> {
                     ),
                     child: _isLoading
                         ? const SizedBox(
-                      height: 20,
-                      width: 20,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                      ),
-                    )
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                Colors.white,
+                              ),
+                            ),
+                          )
                         : const Text(
-                      'Update Doctor',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
+                            'Update Doctor',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                   ),
                 ),
                 const SizedBox(height: 16),
 
                 // Cancel Button
                 OutlinedButton(
-                  onPressed: _isLoading
-                      ? null
-                      : () => Navigator.pop(context),
+                  onPressed: _isLoading ? null : () => Navigator.pop(context),
                   style: OutlinedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(

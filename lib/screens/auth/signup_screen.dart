@@ -88,8 +88,6 @@ class _SignupScreenState extends State<SignupScreen> {
     setState(() => _isLoading = true);
 
     try {
-      print('🔵 Step 1: Creating auth user');
-
       // 1. Create authentication user
       final AuthResponse authResponse = await supabase.auth.signUp(
         email: _emailController.text.trim(),
@@ -98,13 +96,9 @@ class _SignupScreenState extends State<SignupScreen> {
 
       if (authResponse.user != null) {
         final userId = authResponse.user!.id;
-        print('🔵 Step 2: Auth user created with ID: $userId');
-
         // 2. Create profile directly in table (simplified approach)
         try {
           if (widget.userType == 'patient') {
-            print('🔵 Step 3: Creating patient profile');
-
             // Calculate age from DOB
             int? calculatedAge;
             if (_dobController.text.isNotEmpty) {
@@ -116,9 +110,7 @@ class _SignupScreenState extends State<SignupScreen> {
                     (today.month == dob.month && today.day < dob.day)) {
                   calculatedAge--;
                 }
-              } catch (e) {
-                print('Could not calculate age: $e');
-              }
+              } catch (e) {}
             }
 
             await supabase.from('patients').insert({
@@ -136,8 +128,6 @@ class _SignupScreenState extends State<SignupScreen> {
                   : _bloodGroupController.text.trim(),
             });
           } else if (widget.userType == 'doctor') {
-            print('🔵 Step 3: Creating doctor profile');
-
             await supabase.from('doctors').insert({
               'auth_id': userId,
               'full_name': _nameController.text.trim(),
@@ -148,8 +138,6 @@ class _SignupScreenState extends State<SignupScreen> {
               'license_number': _licenseController.text.trim(),
             });
           } else if (widget.userType == 'admin') {
-            print('🔵 Step 3: Creating admin profile');
-
             await supabase.from('admins').insert({
               'auth_id': userId,
               'username': _usernameController.text.trim(),
@@ -161,9 +149,6 @@ class _SignupScreenState extends State<SignupScreen> {
                   : _roleController.text.trim(),
             });
           }
-
-          print('✅ Step 4: Profile created successfully!');
-
           // Sign out after signup
           await supabase.auth.signOut();
 
@@ -185,16 +170,14 @@ class _SignupScreenState extends State<SignupScreen> {
             );
           }
         } catch (profileError) {
-          print('❌ PROFILE CREATION ERROR: $profileError');
           _showError(
-              'Profile creation failed. Please check your information and try again.');
+            'Profile creation failed. Please check your information and try again.',
+          );
         }
       }
     } on AuthException catch (e) {
-      print('❌ AUTH ERROR: ${e.message}');
       _showError(e.message);
     } catch (e) {
-      print('❌ GENERAL ERROR: $e');
       _showError('Signup failed: ${e.toString()}');
     } finally {
       if (mounted) {
@@ -256,7 +239,7 @@ class _SignupScreenState extends State<SignupScreen> {
                     height: 100,
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
-                        colors: [color, color.withOpacity(0.7)],
+                        colors: [color, color.withValues(alpha: 0.7)],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ),
@@ -284,10 +267,7 @@ class _SignupScreenState extends State<SignupScreen> {
                 Text(
                   'Fill in the details to get started',
                   textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey[600],
-                  ),
+                  style: TextStyle(fontSize: 14, color: Colors.grey[600]),
                 ),
                 SizedBox(height: 30),
 
@@ -352,8 +332,9 @@ class _SignupScreenState extends State<SignupScreen> {
                     if (value == null || value.isEmpty) {
                       return 'Please enter your email';
                     }
-                    if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$')
-                        .hasMatch(value)) {
+                    if (!RegExp(
+                      r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
+                    ).hasMatch(value)) {
                       return 'Please enter a valid email';
                     }
                     return null;
@@ -426,10 +407,12 @@ class _SignupScreenState extends State<SignupScreen> {
                       ),
                     ),
                     items: ['Male', 'Female', 'Other']
-                        .map((gender) => DropdownMenuItem(
-                      value: gender,
-                      child: Text(gender),
-                    ))
+                        .map(
+                          (gender) => DropdownMenuItem(
+                            value: gender,
+                            child: Text(gender),
+                          ),
+                        )
                         .toList(),
                     onChanged: (value) {
                       setState(() => _selectedGender = value);
@@ -463,19 +446,22 @@ class _SignupScreenState extends State<SignupScreen> {
                         borderRadius: BorderRadius.circular(12),
                       ),
                     ),
-                    items: [
-                      'Cardiology',
-                      'Radiology',
-                      'Pathology',
-                      'Ophthalmology',
-                      'Orthopedics',
-                      'Neurology'
-                    ]
-                        .map((dept) => DropdownMenuItem(
-                      value: dept,
-                      child: Text(dept),
-                    ))
-                        .toList(),
+                    items:
+                        [
+                              'Cardiology',
+                              'Radiology',
+                              'Pathology',
+                              'Ophthalmology',
+                              'Orthopedics',
+                              'Neurology',
+                            ]
+                            .map(
+                              (dept) => DropdownMenuItem(
+                                value: dept,
+                                child: Text(dept),
+                              ),
+                            )
+                            .toList(),
                     onChanged: (value) {
                       setState(() => _selectedDepartment = value);
                     },
@@ -579,8 +565,10 @@ class _SignupScreenState extends State<SignupScreen> {
                             : Icons.visibility_off_outlined,
                       ),
                       onPressed: () {
-                        setState(() =>
-                        _obscureConfirmPassword = !_obscureConfirmPassword);
+                        setState(
+                          () => _obscureConfirmPassword =
+                              !_obscureConfirmPassword,
+                        );
                       },
                     ),
                   ),
@@ -603,29 +591,29 @@ class _SignupScreenState extends State<SignupScreen> {
                     onPressed: _isLoading ? null : _signup,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: color,
-                      disabledBackgroundColor: color.withOpacity(0.6),
+                      disabledBackgroundColor: color.withValues(alpha: 0.6),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
                     ),
                     child: _isLoading
                         ? SizedBox(
-                      height: 24,
-                      width: 24,
-                      child: CircularProgressIndicator(
-                        color: Colors.white,
-                        strokeWidth: 2,
-                      ),
-                    )
+                            height: 24,
+                            width: 24,
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                              strokeWidth: 2,
+                            ),
+                          )
                         : Text(
-                      'SIGN UP',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 1,
-                        color: Colors.white,
-                      ),
-                    ),
+                            'SIGN UP',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 1,
+                              color: Colors.white,
+                            ),
+                          ),
                   ),
                 ),
                 SizedBox(height: 24),

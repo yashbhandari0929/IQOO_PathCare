@@ -36,10 +36,7 @@ class CategoryCard extends StatelessWidget {
               offset: Offset(0, 4),
             ),
           ],
-          border: Border.all(
-            color: color.withOpacity(0.3),
-            width: 1.5,
-          ),
+          border: Border.all(color: color.withOpacity(0.3), width: 1.5),
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -57,10 +54,7 @@ class CategoryCard extends StatelessWidget {
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Center(
-                child: Text(
-                  category.icon,
-                  style: TextStyle(fontSize: 32),
-                ),
+                child: Text(category.icon, style: TextStyle(fontSize: 32)),
               ),
             ),
             SizedBox(height: 12),
@@ -82,10 +76,7 @@ class CategoryCard extends StatelessWidget {
             // Test Count
             Text(
               '$testCount tests',
-              style: TextStyle(
-                fontSize: 12,
-                color: Colors.grey[600],
-              ),
+              style: TextStyle(fontSize: 12, color: Colors.grey[600]),
             ),
           ],
         ),

@@ -53,7 +53,6 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
         });
       }
     } catch (e) {
-      print('Error loading patient info: $e');
     }
   }
 
@@ -101,7 +100,6 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
         _packageTestCounts[package.id] = (packageTestsData as List).length;
       }
     } catch (e) {
-      print('Error loading data: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Error loading data: $e'),
@@ -389,7 +387,6 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
     );
   }
 }*/
-
 
 /*
 // lib/screens/patient/patient_home_screen.dart
@@ -438,106 +435,65 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
   }
 
   Future<void> _loadPatientInfo() async {
-    print('🔍 DEBUG: _loadPatientInfo() started');
     try {
       final userId = supabase.auth.currentUser?.id;
-      print('👤 DEBUG: Current auth user ID: $userId');
-
       if (userId != null) {
         final data = await supabase
             .from('patients')
             .select('id, full_name')
             .eq('auth_id', userId)
             .single();
-
-        print('✅ DEBUG: Patient data found: ${data['full_name']}');
-        print('✅ DEBUG: Patient ID: ${data['id']}');
-
         setState(() {
           _patientName = data['full_name'] as String;
           _patientId = data['id'] as String;
         });
       } else {
-        print('❌ DEBUG: No auth user found!');
       }
     } catch (e) {
-      print('❌ ERROR loading patient info: $e');
-      print('Stack trace: ${StackTrace.current}');
     }
   }
 
   Future<void> _checkTodayAppointment() async {
-    print('🔍 DEBUG: _checkTodayAppointment() started');
-
     try {
       if (_patientId == null) {
-        print('⚠️ DEBUG: _patientId is null, loading patient info...');
         await _loadPatientInfo();
       }
 
       if (_patientId == null) {
-        print('❌ DEBUG: _patientId is STILL null after loading! Cannot check appointments.');
         return;
       }
-
-      print('✅ DEBUG: Patient ID found: $_patientId');
-
       final today = DateTime.now();
       final todayStr = '${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}';
-
-      print('📅 DEBUG: Today\'s date string: $todayStr');
-
       final appointments = await supabase
           .from('appointments')
           .select('*, appointment_tests(*)')
           .eq('patient_id', _patientId!)
           .eq('appointment_date', todayStr)
           .eq('status', 'scheduled');
-
-      print('📊 DEBUG: Query returned ${appointments.length} appointments');
-
       if (appointments.isNotEmpty) {
-        print('✅ DEBUG: Found appointment! ID: ${appointments[0]['id']}');
-        print('📋 DEBUG: Appointment time: ${appointments[0]['appointment_time']}');
-        print('🧪 DEBUG: Number of tests: ${(appointments[0]['appointment_tests'] as List).length}');
-
         setState(() {
           _todayAppointment = appointments[0];
         });
-
-        print('⏳ DEBUG: Waiting 500ms before showing popup...');
         // Show alert after a short delay
         Future.delayed(Duration(milliseconds: 500), () {
           if (mounted && _todayAppointment != null) {
-            print('🚨 DEBUG: Showing appointment alert NOW!');
             _showAppointmentAlert();
           } else {
-            print('❌ DEBUG: Cannot show alert - mounted: $mounted, appointment: ${_todayAppointment != null}');
           }
         });
       } else {
-        print('❌ DEBUG: No appointments found for today ($todayStr)');
-        print('💡 DEBUG: Check if appointment_date in database matches this date string');
       }
     } catch (e) {
-      print('❌ ERROR checking today appointment: $e');
-      print('Stack trace: ${StackTrace.current}');
     }
   }
 
   void _showAppointmentAlert() {
-    print('🚨 DEBUG: _showAppointmentAlert() called');
-
     if (_todayAppointment == null) {
-      print('❌ DEBUG: _todayAppointment is null, cannot show alert');
       return;
     }
 
     final testCount = (_todayAppointment!['appointment_tests'] as List?)?.length ?? 0;
     final time = _todayAppointment!['appointment_time'] as String;
-
-    print('✅ DEBUG: Showing dialog with $testCount tests at $time');
-
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -686,7 +642,6 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
         _packageTestCounts[package.id] = (packageTestsData as List).length;
       }
     } catch (e) {
-      print('Error loading data: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Error loading data: $e'),
@@ -975,8 +930,6 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
   }
 }*/
 
-
-
 // lib/screens/patient/patient_home_screen.dart
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -1024,106 +977,64 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
   }
 
   Future<void> _loadPatientInfo() async {
-    print('🔍 DEBUG: _loadPatientInfo() started');
     try {
       final userId = supabase.auth.currentUser?.id;
-      print('👤 DEBUG: Current auth user ID: $userId');
-
       if (userId != null) {
         final data = await supabase
             .from('patients')
             .select('id, full_name')
             .eq('auth_id', userId)
             .single();
-
-        print('✅ DEBUG: Patient data found: ${data['full_name']}');
-        print('✅ DEBUG: Patient ID: ${data['id']}');
-
         setState(() {
           _patientName = data['full_name'] as String;
           _patientId = data['id'] as String;
         });
-      } else {
-        print('❌ DEBUG: No auth user found!');
-      }
-    } catch (e) {
-      print('❌ ERROR loading patient info: $e');
-      print('Stack trace: ${StackTrace.current}');
-    }
+      } else {}
+    } catch (e) {}
   }
 
   Future<void> _checkTodayAppointment() async {
-    print('🔍 DEBUG: _checkTodayAppointment() started');
-
     try {
       if (_patientId == null) {
-        print('⚠️ DEBUG: _patientId is null, loading patient info...');
         await _loadPatientInfo();
       }
 
       if (_patientId == null) {
-        print('❌ DEBUG: _patientId is STILL null after loading! Cannot check appointments.');
         return;
       }
-
-      print('✅ DEBUG: Patient ID found: $_patientId');
-
       final today = DateTime.now();
-      final todayStr = '${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}';
-
-      print('📅 DEBUG: Today\'s date string: $todayStr');
-
+      final todayStr =
+          '${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}';
       final appointments = await supabase
           .from('appointments')
-          .select('*, appointment_tests!inner(*, test_rooms!appointment_tests_assigned_room_id_fkey(*))')
+          .select(
+            '*, appointment_tests!inner(*, test_rooms!appointment_tests_assigned_room_id_fkey(*))',
+          )
           .eq('patient_id', _patientId!)
           .eq('appointment_date', todayStr)
           .eq('status', 'scheduled');
-
-      print('📊 DEBUG: Query returned ${appointments.length} appointments');
-
       if (appointments.isNotEmpty) {
-        print('✅ DEBUG: Found appointment! ID: ${appointments[0]['id']}');
-        print('📋 DEBUG: Appointment time: ${appointments[0]['appointment_time']}');
-        print('🧪 DEBUG: Number of tests: ${(appointments[0]['appointment_tests'] as List).length}');
-
         setState(() {
           _todayAppointment = appointments[0];
         });
-
-        print('⏳ DEBUG: Waiting 500ms before showing popup...');
         // Show alert after a short delay
         Future.delayed(Duration(milliseconds: 500), () {
           if (mounted && _todayAppointment != null) {
-            print('🚨 DEBUG: Showing appointment alert NOW!');
             _showAppointmentAlert();
-          } else {
-            print('❌ DEBUG: Cannot show alert - mounted: $mounted, appointment: ${_todayAppointment != null}');
-          }
+          } else {}
         });
-      } else {
-        print('❌ DEBUG: No appointments found for today ($todayStr)');
-        print('💡 DEBUG: Check if appointment_date in database matches this date string');
-      }
-    } catch (e) {
-      print('❌ ERROR checking today appointment: $e');
-      print('Stack trace: ${StackTrace.current}');
-    }
+      } else {}
+    } catch (e) {}
   }
 
   void _showAppointmentAlert() {
-    print('🚨 DEBUG: _showAppointmentAlert() called');
-
     if (_todayAppointment == null) {
-      print('❌ DEBUG: _todayAppointment is null, cannot show alert');
       return;
     }
 
-    final testCount = (_todayAppointment!['appointment_tests'] as List?)?.length ?? 0;
+    final testCount =
+        (_todayAppointment!['appointment_tests'] as List?)?.length ?? 0;
     final time = _todayAppointment!['appointment_time'] as String;
-
-    print('✅ DEBUG: Showing dialog with $testCount tests at $time');
-
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -1132,10 +1043,7 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
             Icon(Icons.notifications_active, color: Colors.orange, size: 32),
             SizedBox(width: 12),
             Expanded(
-              child: Text(
-                'Appointment Today!',
-                style: TextStyle(fontSize: 20),
-              ),
+              child: Text('Appointment Today!', style: TextStyle(fontSize: 20)),
             ),
           ],
         ),
@@ -1210,9 +1118,7 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
             },
             icon: Icon(Icons.navigation),
             label: Text('Start Navigation'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.blue,
-            ),
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
           ),
         ],
       ),
@@ -1272,7 +1178,6 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
         _packageTestCounts[package.id] = (packageTestsData as List).length;
       }
     } catch (e) {
-      print('Error loading data: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Error loading data: $e'),
@@ -1314,10 +1219,7 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
                       children: [
                         Text(
                           'Welcome back,',
-                          style: TextStyle(
-                            color: Colors.white70,
-                            fontSize: 14,
-                          ),
+                          style: TextStyle(color: Colors.white70, fontSize: 14),
                         ),
                         SizedBox(height: 4),
                         Text(
@@ -1337,11 +1239,7 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
                       color: Colors.white24,
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: Icon(
-                      Icons.person,
-                      color: Colors.white,
-                      size: 32,
-                    ),
+                    child: Icon(Icons.person, color: Colors.white, size: 32),
                   ),
                 ],
               ),
@@ -1362,10 +1260,7 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
                 ),
                 Text(
                   '${_categories.length} categories',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey[600],
-                  ),
+                  style: TextStyle(fontSize: 14, color: Colors.grey[600]),
                 ),
               ],
             ),
@@ -1393,9 +1288,8 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => CategoryTestsScreen(
-                          category: category,
-                        ),
+                        builder: (context) =>
+                            CategoryTestsScreen(category: category),
                       ),
                     );
                   },
@@ -1418,10 +1312,7 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
                 ),
                 Text(
                   '${_packages.length} packages',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey[600],
-                  ),
+                  style: TextStyle(fontSize: 14, color: Colors.grey[600]),
                 ),
               ],
             ),
@@ -1482,7 +1373,7 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
               : _currentIndex == 1
               ? 'Appointments'
               : _currentIndex == 2
-              ? 'My Reports'  // ← ADDED
+              ? 'My Reports' // ← ADDED
               : 'Profile',
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
@@ -1500,9 +1391,7 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
                       onPressed: () {
                         Navigator.push(
                           context,
-                          MaterialPageRoute(
-                            builder: (context) => CartScreen(),
-                          ),
+                          MaterialPageRoute(builder: (context) => CartScreen()),
                         );
                       },
                     ),
@@ -1550,9 +1439,8 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => ChatbotScreen(
-                        patientName: _patientName,
-                      ),
+                      builder: (context) =>
+                          ChatbotScreen(patientName: _patientName),
                     ),
                   );
                 },
@@ -1568,7 +1456,7 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
                     shape: BoxShape.circle,
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.blue.withOpacity(0.5),
+                        color: Colors.blue.withValues(alpha: 0.5),
                         blurRadius: 12,
                         offset: Offset(0, 4),
                       ),
@@ -1592,10 +1480,7 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
         selectedItemColor: Colors.blue,
         unselectedItemColor: Colors.grey,
         items: [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Home',
-          ),
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
           BottomNavigationBarItem(
             icon: Icon(Icons.calendar_today),
             label: 'Appointments',
@@ -1604,10 +1489,7 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
             icon: Icon(Icons.folder_special),
             label: 'My Reports',
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: 'Profile',
-          ),
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
         ],
       ),
     );

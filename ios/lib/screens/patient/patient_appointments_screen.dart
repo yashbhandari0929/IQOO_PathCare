@@ -80,7 +80,9 @@ class _PatientAppointmentsScreenState extends State<PatientAppointmentsScreen>
       List<Map<String, dynamic>> cancelled = [];
 
       for (var appointment in appointments) {
-        final appointmentDate = DateTime.parse(appointment['appointment_date'] as String);
+        final appointmentDate = DateTime.parse(
+          appointment['appointment_date'] as String,
+        );
         final status = appointment['status'] as String;
 
         if (status == 'cancelled') {
@@ -89,8 +91,7 @@ class _PatientAppointmentsScreenState extends State<PatientAppointmentsScreen>
               ? DateTime.parse(appointment['cancelled_at'] as String)
               : null;
 
-          if (cancelledAt != null &&
-              now.difference(cancelledAt).inDays <= 7) {
+          if (cancelledAt != null && now.difference(cancelledAt).inDays <= 7) {
             cancelled.add(appointment);
           }
         } else if (status == 'completed') {
@@ -158,8 +159,20 @@ class _PatientAppointmentsScreenState extends State<PatientAppointmentsScreen>
 
   String _formatDate(String dateStr) {
     final date = DateTime.parse(dateStr);
-    final months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    final months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
     return '${date.day} ${months[date.month - 1]}, ${date.year}';
   }
 
@@ -177,9 +190,8 @@ class _PatientAppointmentsScreenState extends State<PatientAppointmentsScreen>
     final result = await Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => AppointmentDetailScreen(
-          appointmentId: appointmentId,
-        ),
+        builder: (context) =>
+            AppointmentDetailScreen(appointmentId: appointmentId),
       ),
     );
 
@@ -189,7 +201,10 @@ class _PatientAppointmentsScreenState extends State<PatientAppointmentsScreen>
     }
   }
 
-  Widget _buildAppointmentCard(Map<String, dynamic> appointment, bool canCancel) {
+  Widget _buildAppointmentCard(
+    Map<String, dynamic> appointment,
+    bool canCancel,
+  ) {
     final appointmentTests = appointment['appointment_tests'] as List? ?? [];
     final testCount = appointmentTests.length;
     final status = appointment['status'] as String;
@@ -231,10 +246,7 @@ class _PatientAppointmentsScreenState extends State<PatientAppointmentsScreen>
               offset: Offset(0, 2),
             ),
           ],
-          border: Border.all(
-            color: statusColor.withOpacity(0.3),
-            width: 2,
-          ),
+          border: Border.all(color: statusColor.withOpacity(0.3), width: 2),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -305,10 +317,7 @@ class _PatientAppointmentsScreenState extends State<PatientAppointmentsScreen>
                 SizedBox(width: 8),
                 Text(
                   '$testCount test${testCount != 1 ? 's' : ''} scheduled',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey[700],
-                  ),
+                  style: TextStyle(fontSize: 14, color: Colors.grey[700]),
                 ),
                 if (status == 'scheduled' && completedTests > 0) ...[
                   SizedBox(width: 8),
@@ -366,10 +375,7 @@ class _PatientAppointmentsScreenState extends State<PatientAppointmentsScreen>
           SizedBox(height: 20),
           Text(
             message,
-            style: TextStyle(
-              fontSize: 18,
-              color: Colors.grey[600],
-            ),
+            style: TextStyle(fontSize: 18, color: Colors.grey[600]),
             textAlign: TextAlign.center,
           ),
         ],
@@ -400,63 +406,63 @@ class _PatientAppointmentsScreenState extends State<PatientAppointmentsScreen>
           child: _isLoading
               ? Center(child: CircularProgressIndicator())
               : RefreshIndicator(
-            onRefresh: _loadAppointments,
-            child: TabBarView(
-              controller: _tabController,
-              children: [
-                // Upcoming Tab
-                _upcomingAppointments.isEmpty
-                    ? _buildEmptyState(
-                  'No upcoming appointments',
-                  Icons.calendar_today,
-                )
-                    : ListView.builder(
-                  padding: EdgeInsets.all(16),
-                  itemCount: _upcomingAppointments.length,
-                  itemBuilder: (context, index) {
-                    return _buildAppointmentCard(
-                      _upcomingAppointments[index],
-                      true, // Can cancel
-                    );
-                  },
-                ),
+                  onRefresh: _loadAppointments,
+                  child: TabBarView(
+                    controller: _tabController,
+                    children: [
+                      // Upcoming Tab
+                      _upcomingAppointments.isEmpty
+                          ? _buildEmptyState(
+                              'No upcoming appointments',
+                              Icons.calendar_today,
+                            )
+                          : ListView.builder(
+                              padding: EdgeInsets.all(16),
+                              itemCount: _upcomingAppointments.length,
+                              itemBuilder: (context, index) {
+                                return _buildAppointmentCard(
+                                  _upcomingAppointments[index],
+                                  true, // Can cancel
+                                );
+                              },
+                            ),
 
-                // Completed Tab
-                _completedAppointments.isEmpty
-                    ? _buildEmptyState(
-                  'No completed appointments',
-                  Icons.check_circle_outline,
-                )
-                    : ListView.builder(
-                  padding: EdgeInsets.all(16),
-                  itemCount: _completedAppointments.length,
-                  itemBuilder: (context, index) {
-                    return _buildAppointmentCard(
-                      _completedAppointments[index],
-                      false, // Cannot cancel
-                    );
-                  },
-                ),
+                      // Completed Tab
+                      _completedAppointments.isEmpty
+                          ? _buildEmptyState(
+                              'No completed appointments',
+                              Icons.check_circle_outline,
+                            )
+                          : ListView.builder(
+                              padding: EdgeInsets.all(16),
+                              itemCount: _completedAppointments.length,
+                              itemBuilder: (context, index) {
+                                return _buildAppointmentCard(
+                                  _completedAppointments[index],
+                                  false, // Cannot cancel
+                                );
+                              },
+                            ),
 
-                // Cancelled Tab
-                _cancelledAppointments.isEmpty
-                    ? _buildEmptyState(
-                  'No cancelled appointments',
-                  Icons.cancel_outlined,
-                )
-                    : ListView.builder(
-                  padding: EdgeInsets.all(16),
-                  itemCount: _cancelledAppointments.length,
-                  itemBuilder: (context, index) {
-                    return _buildAppointmentCard(
-                      _cancelledAppointments[index],
-                      false, // Cannot cancel
-                    );
-                  },
+                      // Cancelled Tab
+                      _cancelledAppointments.isEmpty
+                          ? _buildEmptyState(
+                              'No cancelled appointments',
+                              Icons.cancel_outlined,
+                            )
+                          : ListView.builder(
+                              padding: EdgeInsets.all(16),
+                              itemCount: _cancelledAppointments.length,
+                              itemBuilder: (context, index) {
+                                return _buildAppointmentCard(
+                                  _cancelledAppointments[index],
+                                  false, // Cannot cancel
+                                );
+                              },
+                            ),
+                    ],
+                  ),
                 ),
-              ],
-            ),
-          ),
         ),
       ],
     );

@@ -121,7 +121,8 @@ class DoctorService {
       }
 
       final avgTestTime = testDurations.isNotEmpty
-          ? (testDurations.reduce((a, b) => a + b) / testDurations.length).round()
+          ? (testDurations.reduce((a, b) => a + b) / testDurations.length)
+                .round()
           : 0;
 
       return {
@@ -169,10 +170,7 @@ class DoctorService {
       // Update all tests for this appointment to in_progress
       await _supabase
           .from('appointment_tests')
-          .update({
-        'status': 'in_progress',
-        'attended_by_doctor_id': doctorId,
-      })
+          .update({'status': 'in_progress', 'attended_by_doctor_id': doctorId})
           .eq('appointment_id', appointmentId)
           .neq('status', 'completed');
 
@@ -212,9 +210,9 @@ class DoctorService {
 
   /// Update patient priority level
   Future<bool> updatePatientPriority(
-      String appointmentId,
-      String priorityLevel, // 'normal', 'high', 'urgent'
-      ) async {
+    String appointmentId,
+    String priorityLevel, // 'normal', 'high', 'urgent'
+  ) async {
     try {
       await _supabase
           .from('appointments')
@@ -230,9 +228,9 @@ class DoctorService {
 
   /// Get patients by priority
   List<Map<String, dynamic>> filterByPriority(
-      List<Map<String, dynamic>> patients,
-      String priority,
-      ) {
+    List<Map<String, dynamic>> patients,
+    String priority,
+  ) {
     return patients.where((patient) {
       final patientPriority = patient['priority_level'] as String? ?? 'normal';
       return patientPriority == priority;
@@ -241,8 +239,8 @@ class DoctorService {
 
   /// Sort patients by priority (urgent first)
   List<Map<String, dynamic>> sortByPriority(
-      List<Map<String, dynamic>> patients,
-      ) {
+    List<Map<String, dynamic>> patients,
+  ) {
     final priorityOrder = {'urgent': 1, 'high': 2, 'normal': 3};
 
     patients.sort((a, b) {
@@ -268,9 +266,7 @@ class DoctorService {
       // Update appointment with skip reason
       await _supabase
           .from('appointments')
-          .update({
-        'special_instructions': 'SKIPPED: $reason',
-      })
+          .update({'special_instructions': 'SKIPPED: $reason'})
           .eq('id', appointmentId);
 
       // Update all pending tests to scheduled status
@@ -324,9 +320,9 @@ class DoctorService {
       final rooms = List<Map<String, dynamic>>.from(response);
 
       // Filter out current room
-      final otherRooms = rooms.where(
-            (r) => r['room_number'] != currentRoomNumber,
-      ).toList();
+      final otherRooms = rooms
+          .where((r) => r['room_number'] != currentRoomNumber)
+          .toList();
 
       if (otherRooms.isEmpty) return null;
 
@@ -360,7 +356,7 @@ class DoctorService {
       for (var patient in patients) {
         final tests = patient['tests_in_room'] as List? ?? [];
         final hasPending = tests.any(
-              (t) => t['status'] == 'pending' || t['status'] == 'reached',
+          (t) => t['status'] == 'pending' || t['status'] == 'reached',
         );
         if (hasPending) return true;
       }
@@ -379,9 +375,7 @@ class DoctorService {
     try {
       final response = await _supabase.rpc(
         'get_room_stats_for_doctor',
-        params: {
-          'p_date': DateTime.now().toIso8601String().split('T')[0],
-        },
+        params: {'p_date': DateTime.now().toIso8601String().split('T')[0]},
       );
 
       if (response != null && response is List) {
@@ -396,8 +390,8 @@ class DoctorService {
   }
 
   Map<String, List<Map<String, dynamic>>> groupRoomsByFloor(
-      List<Map<String, dynamic>> rooms,
-      ) {
+    List<Map<String, dynamic>> rooms,
+  ) {
     final Map<String, List<Map<String, dynamic>>> grouped = {
       'Ground Floor': [],
       '1st Floor': [],
@@ -422,10 +416,7 @@ class DoctorService {
     try {
       final response = await _supabase.rpc(
         'start_doctor_session',
-        params: {
-          'p_doctor_id': doctorId,
-          'p_room_number': roomNumber,
-        },
+        params: {'p_doctor_id': doctorId, 'p_room_number': roomNumber},
       );
 
       if (response != null) {
@@ -443,9 +434,7 @@ class DoctorService {
     try {
       final response = await _supabase.rpc(
         'end_doctor_session',
-        params: {
-          'p_session_id': sessionId,
-        },
+        params: {'p_session_id': sessionId},
       );
 
       return response == true;
@@ -521,9 +510,9 @@ class DoctorService {
   }
 
   List<Map<String, dynamic>> filterPatientsByStatus(
-      List<Map<String, dynamic>> patients,
-      String status,
-      ) {
+    List<Map<String, dynamic>> patients,
+    String status,
+  ) {
     return patients.where((patient) {
       final tests = patient['tests_in_room'] as List?;
       if (tests == null || tests.isEmpty) return false;
@@ -545,9 +534,9 @@ class DoctorService {
   }
 
   List<Map<String, dynamic>> sortPatients(
-      List<Map<String, dynamic>> patients,
-      String sortBy,
-      ) {
+    List<Map<String, dynamic>> patients,
+    String sortBy,
+  ) {
     switch (sortBy) {
       case 'time':
         patients.sort((a, b) {
@@ -566,7 +555,12 @@ class DoctorService {
         break;
 
       case 'status':
-        final statusOrder = {'waiting': 1, 'in_progress': 2, 'scheduled': 3, 'completed': 4};
+        final statusOrder = {
+          'waiting': 1,
+          'in_progress': 2,
+          'scheduled': 3,
+          'completed': 4,
+        };
 
         patients.sort((a, b) {
           final statusA = _getPatientStatus(a['tests_in_room']);
@@ -602,8 +596,6 @@ class DoctorService {
     }
   }
 
-
-
   // ============================================================================
   // TEST COMPLETION (from Tier 1)
   // ============================================================================
@@ -629,19 +621,21 @@ class DoctorService {
         if (response == true) return true;
       } catch (rpcError) {
         // RPC may not exist — fall through to direct DB update
-        print('[DoctorService] mark_test_completed RPC not found, using direct update: $rpcError');
+        print(
+          '[DoctorService] mark_test_completed RPC not found, using direct update: $rpcError',
+        );
       }
 
       // Direct DB update fallback — works without any custom RPC
       await _supabase
           .from('appointment_tests')
           .update({
-        'status': 'completed',
-        'attended_by_doctor_id': doctorId,
-        'completed_at': DateTime.now().toIso8601String(),
-        'completed_by_role': 'doctor',
-        if (notes != null) 'notes': notes,
-      })
+            'status': 'completed',
+            'attended_by_doctor_id': doctorId,
+            'completed_at': DateTime.now().toIso8601String(),
+            'completed_by_role': 'doctor',
+            if (notes != null) 'notes': notes,
+          })
           .eq('id', testId);
 
       return true;
@@ -716,7 +710,7 @@ class DoctorService {
   Map<String, dynamic>? getNextPendingTest(List tests) {
     try {
       return tests.firstWhere(
-            (t) => t['status'] == 'pending' || t['status'] == 'reached',
+        (t) => t['status'] == 'pending' || t['status'] == 'reached',
         orElse: () => null,
       );
     } catch (e) {
@@ -745,9 +739,9 @@ class DoctorService {
   // ============================================================================
 
   List<Map<String, dynamic>> searchPatients(
-      List<Map<String, dynamic>> patients,
-      String query,
-      ) {
+    List<Map<String, dynamic>> patients,
+    String query,
+  ) {
     if (query.trim().isEmpty) return patients;
 
     final lowerQuery = query.toLowerCase();
@@ -865,14 +859,14 @@ class DoctorService {
 
       for (var patient in patients) {
         final tests = patient['tests_in_room'] as List? ?? [];
-        final pendingTests = tests.where(
-              (t) => t['status'] != 'completed',
-        ).toList();
+        final pendingTests = tests
+            .where((t) => t['status'] != 'completed')
+            .toList();
 
         if (pendingTests.isNotEmpty) {
-          final testIds = pendingTests.map(
-                (t) => t['test_id'].toString(),
-          ).toList();
+          final testIds = pendingTests
+              .map((t) => t['test_id'].toString())
+              .toList();
 
           final success = await completeMultipleTests(
             testIds: testIds,

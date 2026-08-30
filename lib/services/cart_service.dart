@@ -34,20 +34,18 @@ class CartService extends ChangeNotifier {
         _items = jsonList.map((json) => CartItem.fromJson(json)).toList();
         notifyListeners();
       }
-    } catch (e) {
-      print('Error loading cart: $e');
-    }
+    } catch (e) {}
   }
 
   // Save cart to persistent storage
   Future<void> _saveCart() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final String cartData = json.encode(_items.map((item) => item.toJson()).toList());
+      final String cartData = json.encode(
+        _items.map((item) => item.toJson()).toList(),
+      );
       await prefs.setString('cart_items', cartData);
-    } catch (e) {
-      print('Error saving cart: $e');
-    }
+    } catch (e) {}
   }
 
   // Add item to cart
@@ -76,12 +74,18 @@ class CartService extends ChangeNotifier {
 
   // Get test IDs from cart (for booking)
   List<String> getTestIds() {
-    return _items.where((item) => item.type == 'test').map((item) => item.id).toList();
+    return _items
+        .where((item) => item.type == 'test')
+        .map((item) => item.id)
+        .toList();
   }
 
   // Get package IDs from cart (for booking)
   List<String> getPackageIds() {
-    return _items.where((item) => item.type == 'package').map((item) => item.id).toList();
+    return _items
+        .where((item) => item.type == 'package')
+        .map((item) => item.id)
+        .toList();
   }
 
   // Get all item IDs (both tests and packages)

@@ -30,7 +30,8 @@ class InteractiveFloorMap extends StatefulWidget {
 class _InteractiveFloorMapState extends State<InteractiveFloorMap> {
   String? _svgString;
   bool _isLoading = true;
-  TransformationController _transformationController = TransformationController();
+  TransformationController _transformationController =
+      TransformationController();
 
   @override
   void initState() {
@@ -98,7 +99,10 @@ class _InteractiveFloorMapState extends State<InteractiveFloorMap> {
       // Get current location position
       RoomPosition? currentPos;
       if (widget.currentLocation != null) {
-        currentPos = RoomPositions.getPosition(widget.currentLocation!, widget.floor);
+        currentPos = RoomPositions.getPosition(
+          widget.currentLocation!,
+          widget.floor,
+        );
       }
 
       // ========================================
@@ -108,7 +112,9 @@ class _InteractiveFloorMapState extends State<InteractiveFloorMap> {
           .where((segment) => segment.floor == widget.floor)
           .toList();
 
-      print('🗺️ Highlighting ${currentFloorSegments.length} path segments on ${widget.floor}');
+      print(
+        '🗺️ Highlighting ${currentFloorSegments.length} path segments on ${widget.floor}',
+      );
 
       for (var segment in currentFloorSegments) {
         if (segment.pathId.isEmpty) continue;
@@ -116,11 +122,12 @@ class _InteractiveFloorMapState extends State<InteractiveFloorMap> {
         print('  → Looking for path: ${segment.pathId}');
 
         // Find the path element by ID
-        final pathElement = document.findAllElements('path')
+        final pathElement = document
+            .findAllElements('path')
             .firstWhere(
               (element) => element.getAttribute('id') == segment.pathId,
-          orElse: () => XmlElement(XmlName('path')), // dummy element
-        );
+              orElse: () => XmlElement(XmlName('path')), // dummy element
+            );
 
         if (pathElement.getAttribute('id') == segment.pathId) {
           print('  ✅ Found and highlighting: ${segment.pathId}');
@@ -135,7 +142,9 @@ class _InteractiveFloorMapState extends State<InteractiveFloorMap> {
 
           // Add animation element for moving dashes
           // Remove existing animate elements first
-          pathElement.children.removeWhere((child) => child is XmlElement && child.name.local == 'animate');
+          pathElement.children.removeWhere(
+            (child) => child is XmlElement && child.name.local == 'animate',
+          );
 
           final animateElement = XmlElement(XmlName('animate'));
           animateElement.setAttribute('attributeName', 'stroke-dashoffset');
@@ -156,23 +165,29 @@ class _InteractiveFloorMapState extends State<InteractiveFloorMap> {
         final markerIds = [
           'current_location_marker',
           'current_location_marker_1f',
-          'current_location_marker_2f'
+          'current_location_marker_2f',
         ];
 
         XmlElement? currentMarker;
         for (var markerId in markerIds) {
-          currentMarker = document.findAllElements('g')
+          currentMarker = document
+              .findAllElements('g')
               .firstWhere(
                 (element) => element.getAttribute('id') == markerId,
-            orElse: () => XmlElement(XmlName('g')),
-          );
+                orElse: () => XmlElement(XmlName('g')),
+              );
           if (currentMarker.getAttribute('id') == markerId) break;
         }
 
         if (currentMarker != null && currentMarker.getAttribute('id') != null) {
           currentMarker.setAttribute('opacity', '1');
-          currentMarker.setAttribute('transform', 'translate(${currentPos.x}, ${currentPos.y})');
-          print('📍 Current location marker positioned at (${currentPos.x}, ${currentPos.y})');
+          currentMarker.setAttribute(
+            'transform',
+            'translate(${currentPos.x}, ${currentPos.y})',
+          );
+          print(
+            '📍 Current location marker positioned at (${currentPos.x}, ${currentPos.y})',
+          );
         }
       }
 
@@ -183,23 +198,29 @@ class _InteractiveFloorMapState extends State<InteractiveFloorMap> {
         final markerIds = [
           'destination_marker',
           'destination_marker_1f',
-          'destination_marker_2f'
+          'destination_marker_2f',
         ];
 
         XmlElement? destMarker;
         for (var markerId in markerIds) {
-          destMarker = document.findAllElements('g')
+          destMarker = document
+              .findAllElements('g')
               .firstWhere(
                 (element) => element.getAttribute('id') == markerId,
-            orElse: () => XmlElement(XmlName('g')),
-          );
+                orElse: () => XmlElement(XmlName('g')),
+              );
           if (destMarker.getAttribute('id') == markerId) break;
         }
 
         if (destMarker != null && destMarker.getAttribute('id') != null) {
           destMarker.setAttribute('opacity', '1');
-          destMarker.setAttribute('transform', 'translate(${destPos.x}, ${destPos.y})');
-          print('🎯 Destination marker positioned at (${destPos.x}, ${destPos.y})');
+          destMarker.setAttribute(
+            'transform',
+            'translate(${destPos.x}, ${destPos.y})',
+          );
+          print(
+            '🎯 Destination marker positioned at (${destPos.x}, ${destPos.y})',
+          );
         }
       }
 
@@ -207,11 +228,12 @@ class _InteractiveFloorMapState extends State<InteractiveFloorMap> {
       // HIGHLIGHT DESTINATION ROOM
       // ========================================
       if (destPos != null) {
-        final roomElement = document.findAllElements('rect')
+        final roomElement = document
+            .findAllElements('rect')
             .firstWhere(
               (element) => element.getAttribute('id') == destPos?.roomId,
-          orElse: () => XmlElement(XmlName('rect')),
-        );
+              orElse: () => XmlElement(XmlName('rect')),
+            );
 
         if (roomElement.getAttribute('id') == destPos.roomId) {
           // Add glow effect to destination room
@@ -225,11 +247,12 @@ class _InteractiveFloorMapState extends State<InteractiveFloorMap> {
           }
 
           // Check if glow filter already exists
-          final existingFilter = defs.findAllElements('filter')
+          final existingFilter = defs
+              .findAllElements('filter')
               .firstWhere(
                 (element) => element.getAttribute('id') == 'glow',
-            orElse: () => XmlElement(XmlName('filter')),
-          );
+                orElse: () => XmlElement(XmlName('filter')),
+              );
 
           if (existingFilter.getAttribute('id') != 'glow') {
             // Create glow filter
@@ -308,10 +331,7 @@ class _InteractiveFloorMapState extends State<InteractiveFloorMap> {
               minScale: 0.5,
               maxScale: 3.0,
               boundaryMargin: EdgeInsets.all(20),
-              child: SvgPicture.string(
-                _svgString!,
-                fit: BoxFit.contain,
-              ),
+              child: SvgPicture.string(_svgString!, fit: BoxFit.contain),
             ),
 
             // Zoom controls
@@ -366,7 +386,9 @@ class _InteractiveFloorMapState extends State<InteractiveFloorMap> {
             ),
 
             // Path info indicator (shows active segments)
-            if (widget.pathSegments.where((s) => s.floor == widget.floor).isNotEmpty)
+            if (widget.pathSegments
+                .where((s) => s.floor == widget.floor)
+                .isNotEmpty)
               Positioned(
                 top: 16,
                 right: 16,

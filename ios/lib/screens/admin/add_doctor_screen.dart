@@ -160,10 +160,7 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
                 Text(
                   'Fill in the details to add a new doctor',
                   textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey[600],
-                  ),
+                  style: TextStyle(fontSize: 14, color: Colors.grey[600]),
                 ),
                 SizedBox(height: 30),
 
@@ -197,8 +194,9 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
                     if (value == null || value.isEmpty) {
                       return 'Please enter email';
                     }
-                    if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$')
-                        .hasMatch(value)) {
+                    if (!RegExp(
+                      r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
+                    ).hasMatch(value)) {
                       return 'Please enter a valid email';
                     }
                     return null;
@@ -231,20 +229,23 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
                     labelText: 'Department',
                     prefixIcon: Icon(Icons.business_outlined),
                   ),
-                  items: [
-                    'Cardiology',
-                    'Radiology',
-                    'Pathology',
-                    'Ophthalmology',
-                    'General Medicine',
-                    'Orthopedics',
-                    'Neurology'
-                  ]
-                      .map((dept) => DropdownMenuItem(
-                    value: dept,
-                    child: Text(dept),
-                  ))
-                      .toList(),
+                  items:
+                      [
+                            'Cardiology',
+                            'Radiology',
+                            'Pathology',
+                            'Ophthalmology',
+                            'General Medicine',
+                            'Orthopedics',
+                            'Neurology',
+                          ]
+                          .map(
+                            (dept) => DropdownMenuItem(
+                              value: dept,
+                              child: Text(dept),
+                            ),
+                          )
+                          .toList(),
                   onChanged: (value) {
                     setState(() => _selectedDepartment = value);
                   },
@@ -338,7 +339,9 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
                       ),
                       onPressed: () {
                         setState(
-                                () => _obscureConfirmPassword = !_obscureConfirmPassword);
+                          () => _obscureConfirmPassword =
+                              !_obscureConfirmPassword,
+                        );
                       },
                     ),
                   ),
@@ -365,21 +368,21 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
                     ),
                     child: _isLoading
                         ? SizedBox(
-                      height: 24,
-                      width: 24,
-                      child: CircularProgressIndicator(
-                        color: Colors.white,
-                        strokeWidth: 2,
-                      ),
-                    )
+                            height: 24,
+                            width: 24,
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                              strokeWidth: 2,
+                            ),
+                          )
                         : Text(
-                      'ADD DOCTOR',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 1,
-                      ),
-                    ),
+                            'ADD DOCTOR',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 1,
+                            ),
+                          ),
                   ),
                 ),
                 SizedBox(height: 16),

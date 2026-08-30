@@ -8,10 +8,8 @@ final supabase = Supabase.instance.client;
 class AppointmentDetailScreen extends StatefulWidget {
   final String appointmentId;
 
-  const AppointmentDetailScreen({
-    Key? key,
-    required this.appointmentId,
-  }) : super(key: key);
+  const AppointmentDetailScreen({Key? key, required this.appointmentId})
+    : super(key: key);
 
   @override
   State<AppointmentDetailScreen> createState() =>
@@ -59,7 +57,10 @@ class _AppointmentDetailScreenState extends State<AppointmentDetailScreen> {
     }
   }
 
-  Future<void> _markTestAsCompleted(String appointmentTestId, int testIndex) async {
+  Future<void> _markTestAsCompleted(
+    String appointmentTestId,
+    int testIndex,
+  ) async {
     // Show confirmation dialog
     final confirm = await showDialog<bool>(
       context: context,
@@ -75,7 +76,10 @@ class _AppointmentDetailScreenState extends State<AppointmentDetailScreen> {
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: Text('Yes, Completed', style: TextStyle(color: Colors.green)),
+            child: Text(
+              'Yes, Completed',
+              style: TextStyle(color: Colors.green),
+            ),
           ),
         ],
       ),
@@ -113,7 +117,9 @@ class _AppointmentDetailScreenState extends State<AppointmentDetailScreen> {
         if (_appointment?['status'] == 'completed') {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('🎉 All tests completed! Appointment is now complete.'),
+              content: Text(
+                '🎉 All tests completed! Appointment is now complete.',
+              ),
               backgroundColor: Colors.blue,
               duration: Duration(seconds: 3),
             ),
@@ -148,7 +154,7 @@ class _AppointmentDetailScreenState extends State<AppointmentDetailScreen> {
       'September',
       'October',
       'November',
-      'December'
+      'December',
     ];
     return '${date.day} ${months[date.month - 1]}, ${date.year}';
   }
@@ -212,15 +218,14 @@ class _AppointmentDetailScreenState extends State<AppointmentDetailScreen> {
           backgroundColor: Colors.blue,
           foregroundColor: Colors.white,
         ),
-        body: Center(
-          child: Text('Appointment not found'),
-        ),
+        body: Center(child: Text('Appointment not found')),
       );
     }
 
     final status = _appointment!['status'] as String;
     final statusColor = _getStatusColor(status);
-    final isAppointmentActive = status == 'scheduled' || status == 'in_progress';
+    final isAppointmentActive =
+        status == 'scheduled' || status == 'in_progress';
 
     return WillPopScope(
       onWillPop: () async {
@@ -287,7 +292,11 @@ class _AppointmentDetailScreenState extends State<AppointmentDetailScreen> {
                   children: [
                     Row(
                       children: [
-                        Icon(Icons.calendar_today, color: Colors.white, size: 28),
+                        Icon(
+                          Icons.calendar_today,
+                          color: Colors.white,
+                          size: 28,
+                        ),
                         SizedBox(width: 16),
                         Expanded(
                           child: Column(
@@ -370,10 +379,12 @@ class _AppointmentDetailScreenState extends State<AppointmentDetailScreen> {
               ...List.generate(_tests.length, (index) {
                 final appointmentTest = _tests[index];
                 final test = appointmentTest['tests'] as Map<String, dynamic>?;
-                final testStatus = appointmentTest['status'] as String? ?? 'pending';
+                final testStatus =
+                    appointmentTest['status'] as String? ?? 'pending';
                 final testStatusColor = _getStatusColor(testStatus);
                 final testId = appointmentTest['id'] as String;
-                final canMarkComplete = isAppointmentActive && testStatus != 'completed';
+                final canMarkComplete =
+                    isAppointmentActive && testStatus != 'completed';
 
                 return Container(
                   margin: EdgeInsets.only(bottom: 12),
@@ -407,15 +418,19 @@ class _AppointmentDetailScreenState extends State<AppointmentDetailScreen> {
                             ),
                             child: Center(
                               child: testStatus == 'completed'
-                                  ? Icon(Icons.check, color: Colors.green, size: 24)
+                                  ? Icon(
+                                      Icons.check,
+                                      color: Colors.green,
+                                      size: 24,
+                                    )
                                   : Text(
-                                '${index + 1}',
-                                style: TextStyle(
-                                  color: Colors.blue,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 18,
-                                ),
-                              ),
+                                      '${index + 1}',
+                                      style: TextStyle(
+                                        color: Colors.blue,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 18,
+                                      ),
+                                    ),
                             ),
                           ),
                           SizedBox(width: 12),
@@ -471,8 +486,11 @@ class _AppointmentDetailScreenState extends State<AppointmentDetailScreen> {
                       SizedBox(height: 8),
                       Row(
                         children: [
-                          Icon(Icons.location_on,
-                              size: 16, color: Colors.grey[600]),
+                          Icon(
+                            Icons.location_on,
+                            size: 16,
+                            color: Colors.grey[600],
+                          ),
                           SizedBox(width: 4),
                           Text(
                             test?['room_number'] ?? 'TBD',
@@ -510,7 +528,8 @@ class _AppointmentDetailScreenState extends State<AppointmentDetailScreen> {
                         SizedBox(
                           width: double.infinity,
                           child: ElevatedButton.icon(
-                            onPressed: () => _markTestAsCompleted(testId, index),
+                            onPressed: () =>
+                                _markTestAsCompleted(testId, index),
                             icon: Icon(Icons.check_circle_outline, size: 18),
                             label: Text('Mark as Completed'),
                             style: ElevatedButton.styleFrom(
@@ -539,7 +558,11 @@ class _AppointmentDetailScreenState extends State<AppointmentDetailScreen> {
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Icon(Icons.check_circle, color: Colors.green, size: 18),
+                              Icon(
+                                Icons.check_circle,
+                                color: Colors.green,
+                                size: 18,
+                              ),
                               SizedBox(width: 8),
                               Text(
                                 'Test Completed',
@@ -560,7 +583,8 @@ class _AppointmentDetailScreenState extends State<AppointmentDetailScreen> {
 
               // Special Instructions
               if (_appointment!['special_instructions'] != null &&
-                  (_appointment!['special_instructions'] as String).isNotEmpty) ...[
+                  (_appointment!['special_instructions'] as String)
+                      .isNotEmpty) ...[
                 SizedBox(height: 24),
                 Text(
                   'Special Instructions',
@@ -581,10 +605,7 @@ class _AppointmentDetailScreenState extends State<AppointmentDetailScreen> {
                   ),
                   child: Text(
                     _appointment!['special_instructions'],
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey[800],
-                    ),
+                    style: TextStyle(fontSize: 14, color: Colors.grey[800]),
                   ),
                 ),
               ],
@@ -598,7 +619,9 @@ class _AppointmentDetailScreenState extends State<AppointmentDetailScreen> {
   }
 
   Widget _buildProgressIndicator() {
-    final completedTests = _tests.where((test) => test['status'] == 'completed').length;
+    final completedTests = _tests
+        .where((test) => test['status'] == 'completed')
+        .length;
     final totalTests = _tests.length;
     final progress = totalTests > 0 ? completedTests / totalTests : 0.0;
 

@@ -32,7 +32,6 @@ class _RoomSelectionScreenState extends State<RoomSelectionScreen> {
       _allRooms = rooms;
       _roomsByFloor = _doctorService.groupRoomsByFloor(rooms);
     } catch (e) {
-      print('Error loading rooms: $e');
     } finally {
       setState(() => _isLoading = false);
     }
@@ -64,28 +63,28 @@ class _RoomSelectionScreenState extends State<RoomSelectionScreen> {
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : Column(
-        children: [
-          // Floor Filter
-          _buildFloorFilter(),
+              children: [
+                // Floor Filter
+                _buildFloorFilter(),
 
-          // Room List
-          Expanded(
-            child: _getFilteredRooms().isEmpty
-                ? _buildEmptyState()
-                : RefreshIndicator(
-              onRefresh: _loadRooms,
-              child: ListView.builder(
-                padding: const EdgeInsets.all(16),
-                itemCount: _getFilteredRooms().length,
-                itemBuilder: (context, index) {
-                  final room = _getFilteredRooms()[index];
-                  return _buildRoomCard(room);
-                },
-              ),
+                // Room List
+                Expanded(
+                  child: _getFilteredRooms().isEmpty
+                      ? _buildEmptyState()
+                      : RefreshIndicator(
+                          onRefresh: _loadRooms,
+                          child: ListView.builder(
+                            padding: const EdgeInsets.all(16),
+                            itemCount: _getFilteredRooms().length,
+                            itemBuilder: (context, index) {
+                              final room = _getFilteredRooms()[index];
+                              return _buildRoomCard(room);
+                            },
+                          ),
+                        ),
+                ),
+              ],
             ),
-          ),
-        ],
-      ),
     );
   }
 
@@ -163,9 +162,7 @@ class _RoomSelectionScreenState extends State<RoomSelectionScreen> {
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: InkWell(
         onTap: () => _selectRoom(room),
         borderRadius: BorderRadius.circular(12),
@@ -306,9 +303,9 @@ class _RoomSelectionScreenState extends State<RoomSelectionScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(6),
-        border: Border.all(color: color.withOpacity(0.3)),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -353,10 +350,7 @@ class _RoomSelectionScreenState extends State<RoomSelectionScreen> {
           const SizedBox(height: 8),
           Text(
             'Try selecting a different floor',
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.grey[500],
-            ),
+            style: TextStyle(fontSize: 14, color: Colors.grey[500]),
           ),
         ],
       ),
