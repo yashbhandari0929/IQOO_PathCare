@@ -47,25 +47,28 @@ class DoctorService {
   // DASHBOARD STATISTICS (from Tier 1)
   // ============================================================================
 
-  Future<Map<String, dynamic>?> getDailyStats(String doctorId) async {
+  Future<Map<String, dynamic>?> getDailyStats(String doctorId, [String? date]) async {
     try {
+      final targetDate = date ?? DateTime.now().toIso8601String().split('T')[0];
       final response = await _supabase.rpc(
         'get_doctor_daily_stats',
         params: {
           'p_doctor_id': doctorId,
-          'p_date': DateTime.now().toIso8601String().split('T')[0],
+          'p_date': targetDate,
         },
       );
 
       if (response != null && response is List && response.isNotEmpty) {
-        return response[0] as Map<String, dynamic>;
+        final data = response[0] as Map<String, dynamic>;
+        data['total_minutes'] = data['total_minutes'] ?? data['total_time_minutes'] ?? 0;
+        return data;
       }
 
       return {
         'total_patients': 0,
         'patients_attended': 0,
         'patients_pending': 0,
-        'total_time_minutes': 0,
+        'total_minutes': 0,
         'active_session_room': null,
         'active_session_start': null,
       };
@@ -473,36 +476,56 @@ class DoctorService {
   Future<List<Map<String, dynamic>>> getPatientsForRoom(String roomId) async {
     try {
       final today = DateTime.now().toIso8601String().split('T')[0];
+      
+      String roomNumber = roomId;
+      try {
+        final roomRes = await _supabase.from('test_rooms').select('room_number').eq('id', roomId).maybeSingle();
+        if (roomRes != null) roomNumber = roomRes['room_number'] as String;
+      } catch (_) {}
 
       final response = await _supabase
-          .from('appointments')
+          .from('appointment_tests')
           .select('''
             id,
             status,
-            priority_level,
-            patients ( full_name ),
-            appointment_tests (
+            test_name,
+            queue_joined_at,
+            created_at,
+            appointments!inner(
               id,
-              status,
-              test_id
+              appointment_date,
+              appointment_time,
+              patient_id
             )
           ''')
-          .eq('room_id', roomId)
-          .eq('appointment_date', today)
-          .inFilter('status', const ['scheduled', 'checked_in', 'in_progress']);
+          .eq('assigned_room_id', roomId)
+          .eq('appointments.appointment_date', today);
 
-      final List<Map<String, dynamic>> result = [];
+      final List<Map<String, dynamic>> enriched = [];
+
       for (var row in response as List) {
-        final p = row['patients'] as Map<String, dynamic>?;
-        result.add({
-          'appointment_id': row['id'],
-          'patient_name': p?['full_name'] ?? 'Unknown',
-          'priority_level': row['priority_level'] ?? 'normal',
-          'tests_in_room': row['appointment_tests'] ?? [],
+        final appt = row['appointments'] as Map<String, dynamic>?;
+        if (appt == null) continue;
+        
+        final appointmentId = appt['id'] as String;
+        final patientId = appt['patient_id'] as String;
+        
+        final pRes = await _supabase.from('patients').select('full_name').eq('id', patientId).maybeSingle();
+        
+        enriched.add({
+          'testId': row['id'],
+          'appointmentId': appointmentId,
+          'patientName': pRes?['full_name'] ?? 'Unknown',
+          'appointmentTime': appt['appointment_time'] ?? '',
+          'testName': row['test_name'] ?? 'Unknown Test',
+          'roomNumber': roomNumber,
+          'status': row['status'] ?? 'pending',
+          'queueJoinedAt': row['queue_joined_at'] ?? row['created_at'] ?? '',
         });
       }
 
-      return result;
+      enriched.sort((a, b) => (a['queueJoinedAt'] as String).compareTo(b['queueJoinedAt'] as String));
+      return enriched;
     } catch (e) {
       print('Error getting patients for room: $e');
       return [];
@@ -510,25 +533,21 @@ class DoctorService {
   }
 
   List<Map<String, dynamic>> filterPatientsByStatus(
-    List<Map<String, dynamic>> patients,
+    List<Map<String, dynamic>> tests,
     String status,
   ) {
-    return patients.where((patient) {
-      final tests = patient['tests_in_room'] as List?;
-      if (tests == null || tests.isEmpty) return false;
+    return tests.where((test) {
+      final testStatus = test['status'] as String? ?? 'pending';
 
       switch (status) {
         case 'waiting':
-          return tests.any((t) => t['status'] == 'reached') &&
-              !tests.any((t) => t['status'] == 'in_progress');
+          return testStatus == 'reached' || testStatus == 'pending';
         case 'in_progress':
-          return tests.any((t) => t['status'] == 'in_progress');
+          return testStatus == 'in_progress';
         case 'completed':
-          return tests.every((t) => t['status'] == 'completed');
-        case 'scheduled':
-          return tests.every((t) => t['status'] == 'pending');
+          return testStatus == 'completed';
         default:
-          return true;
+          return testStatus == 'scheduled' || testStatus == 'pending';
       }
     }).toList();
   }
@@ -563,8 +582,8 @@ class DoctorService {
         };
 
         patients.sort((a, b) {
-          final statusA = _getPatientStatus(a['tests_in_room']);
-          final statusB = _getPatientStatus(b['tests_in_room']);
+          final statusA = _getPatientStatus(a['status']);
+          final statusB = _getPatientStatus(b['status']);
 
           final orderA = statusOrder[statusA] ?? 5;
           final orderB = statusOrder[statusB] ?? 5;
@@ -580,16 +599,13 @@ class DoctorService {
     return patients;
   }
 
-  String _getPatientStatus(dynamic tests) {
-    if (tests == null || tests is! List || tests.isEmpty) return 'unknown';
-
-    final testsList = tests as List;
-
-    if (testsList.any((t) => t['status'] == 'in_progress')) {
+  String _getPatientStatus(dynamic statusVal) {
+    final status = statusVal as String? ?? 'pending';
+    if (status == 'in_progress') {
       return 'in_progress';
-    } else if (testsList.any((t) => t['status'] == 'reached')) {
+    } else if (status == 'reached' || status == 'pending') {
       return 'waiting';
-    } else if (testsList.every((t) => t['status'] == 'completed')) {
+    } else if (status == 'completed') {
       return 'completed';
     } else {
       return 'scheduled';
@@ -758,37 +774,32 @@ class DoctorService {
   // STATISTICS (from Tier 1)
   // ============================================================================
 
-  Map<String, int> calculateRoomStats(List<Map<String, dynamic>> patients) {
+  Map<String, int> calculateRoomStats(List<Map<String, dynamic>> tests) {
     int waiting = 0;
     int inProgress = 0;
     int completed = 0;
     int scheduled = 0;
 
-    for (final patient in patients) {
-      final status = _getPatientStatus(patient['tests_in_room']);
+    for (final test in tests) {
+      final status = test['status'] as String? ?? 'pending';
 
-      switch (status) {
-        case 'waiting':
-          waiting++;
-          break;
-        case 'in_progress':
-          inProgress++;
-          break;
-        case 'completed':
-          completed++;
-          break;
-        case 'scheduled':
-          scheduled++;
-          break;
+      if (status == 'pending' || status == 'reached') {
+        waiting++;
+      } else if (status == 'in_progress') {
+        inProgress++;
+      } else if (status == 'completed') {
+        completed++;
+      } else {
+        scheduled++;
       }
     }
 
     return {
-      'total': patients.length,
       'waiting': waiting,
       'in_progress': inProgress,
       'completed': completed,
       'scheduled': scheduled,
+      'total': tests.length,
     };
   }
 
@@ -883,6 +894,223 @@ class DoctorService {
     } catch (e) {
       print('Error completing all waiting patients: $e');
       return 0;
+    }
+  }
+
+  // ============================================================================
+  // TIER 3 NEW: ANALYTICS RPCs
+  // ============================================================================
+
+  Future<dynamic> getMonthlyAnalytics(String doctorId, int month, int year) async {
+    try {
+      return await _supabase.rpc('get_doctor_month_analytics', params: {
+        'p_doctor_id': doctorId,
+        'p_month': month,
+        'p_year': year,
+      });
+    } catch (e) {
+      print('Error getMonthlyAnalytics: $e');
+      return 0;
+    }
+  }
+
+  Future<List<dynamic>> getDailyChart(String doctorId, int month, int year) async {
+    try {
+      final res = await _supabase.rpc('get_doctor_daily_breakdown', params: {
+        'p_doctor_id': doctorId,
+        'p_month': month,
+        'p_year': year,
+      });
+      return res as List<dynamic>? ?? [];
+    } catch (e) {
+      print('Error getDailyChart: $e');
+      return [];
+    }
+  }
+
+  Future<dynamic> getYearlyAnalytics(String doctorId, int year) async {
+    try {
+      return await _supabase.rpc('get_doctor_year_analytics', params: {
+        'p_doctor_id': doctorId,
+        'p_year': year,
+      });
+    } catch (e) {
+      print('Error getYearlyAnalytics: $e');
+      return 0;
+    }
+  }
+
+  Future<List<dynamic>> getMonthlyChart(String doctorId, int year) async {
+    try {
+      final res = await _supabase.rpc('get_doctor_monthly_breakdown', params: {
+        'p_doctor_id': doctorId,
+        'p_year': year,
+      });
+      return res as List<dynamic>? ?? [];
+    } catch (e) {
+      print('Error getMonthlyChart: $e');
+      return [];
+    }
+  }
+  // ============================================================================
+  // TIER 3 NEW: REAL-TIME APPOINTMENTS
+  // ============================================================================
+
+  Stream<List<Map<String, dynamic>>> watchTodayAppointments(String doctorId) {
+    final today = DateTime.now().toIso8601String().split('T')[0];
+    return _supabase
+        .from('appointments')
+        .stream(primaryKey: ['id'])
+        .eq('doctor_id', doctorId)
+        .map((list) {
+      final appointments = list
+          .where((a) => (a['appointment_date'] as String).startsWith(today))
+          .toList();
+      appointments.sort((a, b) => 
+          (a['appointment_time'] as String).compareTo(b['appointment_time'] as String));
+      return appointments;
+    });
+  }
+
+  Stream<List<Map<String, dynamic>>> watchAllRoomsWaitCounts() async* {
+     final roomsRes = await _supabase.from('test_rooms').select('id, room_number');
+     final Map<String, String> roomMap = {};
+     for (final r in roomsRes as List) {
+        roomMap[r['id'] as String] = r['room_number'] as String;
+     }
+     
+     final List<String> allRoomIds = roomMap.keys.toList();
+     
+     await for (final tests in _supabase.from('appointment_tests').stream(primaryKey: ['id'])) {
+         final counts = <String, int>{};
+         for (final r in allRoomIds) {
+            counts[r] = 0;
+         }
+         
+         for (final test in tests) {
+             final status = test['status'] as String? ?? '';
+             if (['reached', 'in_progress'].contains(status)) {
+                 final room = test['assigned_room_id'] as String?;
+                 if (room != null && counts.containsKey(room)) {
+                     counts[room] = (counts[room] ?? 0) + 1;
+                 }
+             }
+         }
+         
+         final result = counts.entries.map((e) => {
+            'room_number': roomMap[e.key],
+            'waiting_count': e.value,
+         }).toList();
+         
+         result.sort((a, b) => (a['room_number'] as String).compareTo(b['room_number'] as String));
+         
+         yield result;
+     }
+  }
+
+  Stream<List<Map<String, dynamic>>> watchRoomQueue(String roomId) async* {
+    final today = DateTime.now().toIso8601String().split('T')[0];
+    
+    // First, fetch the room number for this room ID
+    String roomNumber = roomId;
+    try {
+      final roomRes = await _supabase.from('test_rooms').select('room_number').eq('id', roomId).maybeSingle();
+      if (roomRes != null) roomNumber = roomRes['room_number'] as String;
+    } catch (_) {}
+
+    await for (final tests in _supabase
+        .from('appointment_tests')
+        .stream(primaryKey: ['id'])
+        .eq('assigned_room_id', roomId)) {
+        
+        final enriched = <Map<String, dynamic>>[];
+        for (final test in tests) {
+           final status = test['status'] as String? ?? 'pending';
+           if (!['pending', 'reached', 'in_progress'].contains(status)) continue;
+           
+           final apptRes = await _supabase
+               .from('appointments')
+               .select('appointment_date, appointment_time, patient_id')
+               .eq('id', test['appointment_id'])
+               .maybeSingle();
+           
+           if (apptRes == null) continue;
+           
+           final apptDate = apptRes['appointment_date'] as String? ?? '';
+           if (!apptDate.startsWith(today)) continue;
+           
+           final patientRes = await _supabase
+               .from('patients')
+               .select('full_name')
+               .eq('id', apptRes['patient_id'])
+               .maybeSingle();
+               
+           // test_name is a column on appointment_tests!
+
+           enriched.add({
+             'testId': test['id'],
+             'appointmentId': test['appointment_id'],
+             'patientName': patientRes?['full_name'] ?? 'Unknown',
+             'appointmentTime': apptRes['appointment_time'] ?? '',
+             'testName': test['test_name'] ?? 'Unknown Test',
+             'roomNumber': roomNumber,
+             'status': status,
+             'scheduledTime': test['scheduled_time'] ?? '',
+             'queueJoinedAt': test['queue_joined_at'] ?? test['created_at'] ?? '',
+           });
+        }
+        
+         enriched.sort((a, b) {
+           final aTime = a['queueJoinedAt'] as String? ?? a['scheduledTime'] as String? ?? a['appointmentTime'] as String? ?? '';
+           final bTime = b['queueJoinedAt'] as String? ?? b['scheduledTime'] as String? ?? b['appointmentTime'] as String? ?? '';
+           return aTime.compareTo(bTime);
+         });
+        
+        yield enriched;
+    }
+  }
+
+  Future<bool> startConsultation(String testId) async {
+    try {
+      // STRICT RULE: Only 'reached' patients can be started
+      final res = await _supabase
+          .from('appointment_tests')
+          .select('status')
+          .eq('id', testId)
+          .maybeSingle();
+          
+      if (res == null || res['status'] != 'reached') {
+        print('STRICT RULE ENFORCED: Cannot start consultation unless patient has reached.');
+        return false;
+      }
+
+      await _supabase
+          .from('appointment_tests')
+          .update({
+            'status': 'in_progress',
+          })
+          .eq('id', testId);
+      return true;
+    } catch (e) {
+      print('Error starting consultation: $e');
+      return false;
+    }
+  }
+
+  Future<bool> markConsultationComplete(String testId, String doctorId) async {
+    try {
+      await _supabase
+          .from('appointment_tests')
+          .update({
+            'status': 'completed',
+            'attended_by_doctor_id': doctorId,
+            'completed_at': DateTime.now().toIso8601String(),
+          })
+          .eq('id', testId);
+      return true;
+    } catch (e) {
+      print('Error marking complete: $e');
+      return false;
     }
   }
 }

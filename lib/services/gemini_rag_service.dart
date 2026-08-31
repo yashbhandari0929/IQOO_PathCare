@@ -118,28 +118,37 @@ class GeminiRAGService {
     if (currentDocumentText != null && currentDocumentText.isNotEmpty) {
       // Prompt for Medical Report Analysis
       systemPrompt +=
-          "A MEDICAL REPORT HAS BEEN UPLOADED. You MUST return your response in EXACTLY this Markdown format:\n\n"
+          "A MEDICAL REPORT HAS BEEN UPLOADED. You MUST return your response in EXACTLY this Markdown format. DO NOT USE HTML:\n\n"
           "# 🩺 Report Analysis\n\n"
           "## Overall Summary\n"
-          "* 2–3 sentence overview in simple English.\n\n"
+          "Short 2–3 sentence explanation in simple English.\n\n"
+          "---\n\n"
           "## Key Findings\n"
-          "* ✅ Normal findings\n"
-          "* ⚠️ Abnormal findings\n"
-          "* (Mention actual values and reference ranges)\n\n"
+          "Render as a Markdown table (DO NOT use HTML tags):\n"
+          "| Test | Result | Normal | Status |\n"
+          "| --- | --- | --- | --- |\n"
+          "| (Test Name) | **(Value)** | (Range) | 🔶 (Status) |\n"
+          "Values must appear bold. Use emojis like 🔶 for abnormal and ✅ for normal in the Status column.\n\n"
+          "---\n\n"
           "## Easy Explanation\n"
-          "Explain each abnormal parameter in everyday language.\n\n"
-          "## What Looks Normal\n"
-          "* List all healthy parameters.\n\n"
-          "## General Lifestyle Tips\n"
-          "* Hydration, Nutrition, Sleep, Exercise (Provide safe, general advice)\n\n"
+          "Explain every abnormal value individually using ### for headings.\n\n"
+          "---\n\n"
+          "## What's Normal\n"
+          "List as bullet points.\n"
+          "Show only healthy parameters.\n\n"
+          "---\n\n"
+          "## General Health Tips\n"
+          "List as bullet points.\n"
+          "General advice only.\n\n"
+          "---\n\n"
           "## Disclaimer\n"
-          "> This explanation is educational and does not replace consultation with a qualified doctor.\n\n";
+          "Educational use only. Consult a qualified healthcare professional for diagnosis.\n\n";
     } else {
       // Prompt for Generic Health Queries
       systemPrompt +=
           "NO REPORT UPLOADED. You are acting as a Smart Medical Assistant responding to a general health query.\n"
           "Answer normal health questions (e.g., Headache remedies, Fever care, Diabetes info, Diet, Mental wellness, First aid).\n"
-          "Structure your response nicely with Markdown headings and bullet points.\n\n";
+          "Structure your response nicely with valid GitHub Markdown (headings, bullet points, tables if necessary). DO NOT output HTML.\n\n";
     }
 
     if (userRole == 'doctor') {

@@ -470,20 +470,28 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
           .eq('patient_id', _patientId!)
           .eq('appointment_date', todayStr)
           .eq('status', 'scheduled');
+          
       if (appointments.isNotEmpty) {
-        setState(() {
-          _todayAppointment = appointments[0];
-        });
-        // Show alert after a short delay
-        Future.delayed(Duration(milliseconds: 500), () {
-          if (mounted && _todayAppointment != null) {
-            _showAppointmentAlert();
-          } else {
-          }
-        });
-      } else {
+        final appointment = appointments[0];
+        final tests = appointment['appointment_tests'] as List? ?? [];
+        
+        // Hide if all tests are completed
+        final allCompleted = tests.isNotEmpty && tests.every((t) => t['status'] == 'completed');
+        
+        if (!allCompleted) {
+          setState(() {
+            _todayAppointment = appointment;
+          });
+          // Show alert after a short delay
+          Future.delayed(Duration(milliseconds: 500), () {
+            if (mounted && _todayAppointment != null) {
+              _showAppointmentAlert();
+            }
+          });
+        }
       }
     } catch (e) {
+      debugPrint('Error checking today appointment: $e');
     }
   }
 

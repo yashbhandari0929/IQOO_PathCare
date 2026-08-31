@@ -50,9 +50,11 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
   Map<String, dynamic>? _activeSession;
   bool _isLoading = true;
 
-  // ── The two summary numbers ───────────────────────────────────────────────
-  int _patientsToday = 0; // from patient_treatments
-  int _todayMinutes = 0; // from doctor_room_sessions
+  // Real-time data
+  int _patientsToday = 0;
+  int _todayMinutes = 0;
+  int _totalPatients = 0;
+  int _patientsPending = 0;
 
   // ── Realtime channels ─────────────────────────────────────────────────────
   RealtimeChannel? _treatmentsChannel; // watches patient_treatments INSERTs
@@ -75,81 +77,6 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
   // DATA FETCHING
   // ══════════════════════════════════════════════════════════════════════════
 
-  /// Counts rows in patient_treatments for this doctor today.
-  /// One row = one patient test completed = +1 to the count.
-  Future<int> _fetchPatientsToday(String doctorId) async {
-    try {
-      final today = _todayStr();
-      final rows = await _supabase
-          .from('patient_treatments')
-          .select('id')
-          .eq('doctor_id', doctorId)
-          .gte('completed_at', '${today}T00:00:00.000')
-          .lte('completed_at', '${today}T23:59:59.999');
-      return (rows as List).length;
-    } catch (e) {
-      debugPrint('❌ [Dashboard] _fetchPatientsToday: $e');
-      return 0;
-    }
-  }
-
-  /// Sums time across all doctor_room_sessions rows for today.
-  /// For ended sessions:  end_time   - start_time
-  /// For active sessions: DateTime.now() - start_time
-  /// Result is returned in whole minutes.
-  Future<int> _fetchTodayMinutes(String doctorId) async {
-    try {
-      final today = _todayStr();
-      final rows = await _supabase
-          .from('doctor_room_sessions')
-          .select('start_time, end_time, status')
-          .eq('doctor_id', doctorId)
-          .eq('session_date', today);
-
-      if (rows == null || (rows as List).isEmpty) return 0;
-
-      int totalMinutes = 0;
-      final now = DateTime.now();
-
-      for (final row in rows as List) {
-        final startRaw = row['start_time'];
-        if (startRaw == null) continue;
-
-        // start_time may be a full ISO timestamp or a time-only string.
-        // We normalise to a DateTime either way.
-        DateTime start;
-        try {
-          // Try full ISO first (e.g. "2025-04-22T09:00:00+00:00")
-          start = DateTime.parse(startRaw.toString()).toLocal();
-        } catch (_) {
-          // Fallback: time-only string (e.g. "09:00:00") → attach today's date
-          start = DateTime.parse('${today}T${startRaw}').toLocal();
-        }
-
-        final endRaw = row['end_time'];
-        DateTime end;
-        if (endRaw != null) {
-          try {
-            end = DateTime.parse(endRaw.toString()).toLocal();
-          } catch (_) {
-            end = DateTime.parse('${today}T${endRaw}').toLocal();
-          }
-        } else {
-          // Session still active — count up to right now
-          end = now;
-        }
-
-        final diff = end.difference(start).inMinutes;
-        if (diff > 0) totalMinutes += diff;
-      }
-
-      return totalMinutes;
-    } catch (e) {
-      debugPrint('❌ [Dashboard] _fetchTodayMinutes: $e');
-      return 0;
-    }
-  }
-
   // ── Main load ─────────────────────────────────────────────────────────────
 
   Future<void> _loadDashboardData() async {
@@ -162,14 +89,18 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
 
         // Run both summary queries in parallel for speed
         final results = await Future.wait([
-          _fetchPatientsToday(doctorId),
-          _fetchTodayMinutes(doctorId),
+          _doctorService.getDailyStats(doctorId, _todayStr()),
           _doctorService.getActiveSession(doctorId),
         ]);
 
-        _patientsToday = results[0] as int;
-        _todayMinutes = results[1] as int;
-        _activeSession = results[2] as Map<String, dynamic>?;
+        final stats = results[0] as Map<String, dynamic>?;
+        if (stats != null) {
+          _patientsToday = (stats['patients_attended'] as num?)?.toInt() ?? 0;
+          _todayMinutes = (stats['total_minutes'] as num?)?.toInt() ?? 0;
+          _totalPatients = (stats['total_patients'] as num?)?.toInt() ?? 0;
+          _patientsPending = (stats['patients_pending'] as num?)?.toInt() ?? 0;
+        }
+        _activeSession = results[1] as Map<String, dynamic>?;
 
         // Start realtime listeners after the first fetch
         _subscribeRealtime(doctorId);
@@ -201,10 +132,16 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
             column: 'doctor_id',
             value: doctorId,
           ),
-          callback: (_) async {
-            debugPrint('🔔 [Dashboard] New treatment — refreshing count');
-            final count = await _fetchPatientsToday(doctorId);
-            if (mounted) setState(() => _patientsToday = count);
+          callback: (payload) async {
+            final stats = await _doctorService.getDailyStats(doctorId, _todayStr());
+            if (mounted && stats != null) {
+              setState(() {
+                _patientsToday = (stats['patients_attended'] as num?)?.toInt() ?? 0;
+                _todayMinutes = (stats['total_minutes'] as num?)?.toInt() ?? 0;
+                _totalPatients = (stats['total_patients'] as num?)?.toInt() ?? 0;
+                _patientsPending = (stats['patients_pending'] as num?)?.toInt() ?? 0;
+              });
+            }
           },
         )
         .subscribe();
@@ -224,10 +161,16 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
             column: 'doctor_id',
             value: doctorId,
           ),
-          callback: (_) async {
-            debugPrint('🔔 [Dashboard] Session changed — refreshing time');
-            final minutes = await _fetchTodayMinutes(doctorId);
-            if (mounted) setState(() => _todayMinutes = minutes);
+          callback: (payload) async {
+            final stats = await _doctorService.getDailyStats(doctorId, _todayStr());
+            if (mounted && stats != null) {
+              setState(() {
+                _patientsToday = (stats['patients_attended'] as num?)?.toInt() ?? 0;
+                _todayMinutes = (stats['total_minutes'] as num?)?.toInt() ?? 0;
+                _totalPatients = (stats['total_patients'] as num?)?.toInt() ?? 0;
+                _patientsPending = (stats['patients_pending'] as num?)?.toInt() ?? 0;
+              });
+            }
           },
         )
         .subscribe();
@@ -416,6 +359,8 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
                   _buildSummaryStats(), // ← the fixed section
                   const SizedBox(height: 24),
                   _buildGoToAnalyticsBanner(),
+                  const SizedBox(height: 24),
+                  _buildUpcomingAppointments(), // ← Re-added queue
                   const SizedBox(height: 24),
                   if (_activeSession == null) _buildQuickTip(),
                 ],
@@ -645,29 +590,47 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
         const SizedBox(height: 12),
         Row(
           children: [
-            // ── Card 1: Time spent in rooms today ──────────────────────────
+            Expanded(
+              child: _StatCard(
+                icon: Icons.person_outline,
+                iconColor: Colors.purple,
+                value: '$_totalPatients',
+                label: 'Total Patients',
+                subtitle: 'Scheduled',
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: _StatCard(
+                icon: Icons.people_alt_rounded,
+                iconColor: Colors.blue,
+                value: '$_patientsToday',
+                label: 'Treated Today',
+                subtitle: 'Attended',
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        Row(
+          children: [
             Expanded(
               child: _StatCard(
                 icon: Icons.access_time_rounded,
                 iconColor: Colors.orange,
-                // Summed from doctor_room_sessions rows today.
-                // Active session counts up to NOW() — pull-to-refresh to see latest.
                 value: _formatMinutes(_todayMinutes),
                 label: 'Time Today',
                 subtitle: 'In rooms',
               ),
             ),
             const SizedBox(width: 12),
-            // ── Card 2: Patients treated today ─────────────────────────────
             Expanded(
               child: _StatCard(
-                icon: Icons.people_alt_rounded,
-                iconColor: Colors.blue,
-                // Counted from patient_treatments rows today.
-                // Increments instantly when a patient completes a test.
-                value: '$_patientsToday',
-                label: 'Treated Today',
-                subtitle: 'Patients',
+                icon: Icons.hourglass_empty,
+                iconColor: Colors.red,
+                value: '$_patientsPending',
+                label: 'Pending',
+                subtitle: 'Waiting',
               ),
             ),
           ],
@@ -764,6 +727,126 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // TODAY'S PATIENTS QUEUE
+  // ══════════════════════════════════════════════════════════════════════════
+
+  Widget _buildUpcomingAppointments() {
+    return StreamBuilder<List<Map<String, dynamic>>>(
+      stream: _doctorService.watchAllRoomsWaitCounts(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting && !snapshot.hasData) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        if (snapshot.hasError) {
+          return Center(child: Text('Error: ${snapshot.error}'));
+        }
+
+        final roomCounts = snapshot.data ?? [];
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Active Rooms',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 16),
+            if (roomCounts.isEmpty)
+               const Text('No rooms available.', style: TextStyle(color: Colors.grey)),
+            GridView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                crossAxisSpacing: 16,
+                mainAxisSpacing: 16,
+                childAspectRatio: 1.5,
+              ),
+              itemCount: roomCounts.length,
+              itemBuilder: (context, index) {
+                final room = roomCounts[index];
+                final waiting = room['waiting_count'] as int? ?? 0;
+                final roomNumber = room['room_number'] as String? ?? 'Unknown';
+
+                return InkWell(
+                  onTap: () {
+                    if (_doctorProfile != null) {
+                      final doctorId = _doctorProfile!['id'] as String;
+                      _doctorService.startSession(doctorId, roomNumber).then((_) {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => PatientListScreen(
+                              roomNumber: roomNumber,
+                              roomName: roomNumber,
+                              floor: '',
+                            ),
+                          ),
+                        ).then((_) {
+                           // Refresh dashboard if needed when coming back
+                           _loadDashboardData();
+                        });
+                      });
+                    }
+                  },
+                  borderRadius: BorderRadius.circular(16),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: Colors.grey.shade200),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.05),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          'Room $roomNumber',
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: waiting > 0 ? Colors.orange.shade100 : Colors.green.shade100,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(
+                            '$waiting Waiting',
+                            style: TextStyle(
+                              color: waiting > 0 ? Colors.orange.shade800 : Colors.green.shade800,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
+          ],
+        );
+      },
     );
   }
 

@@ -34,7 +34,6 @@ class _DoctorAnalysisScreenState extends State<DoctorAnalysisScreen>
 
   // Doctor info — populated instantly from widget.doctorProfile in initState()
   String? _doctorId;
-  String _doctorName = '';
   bool _initLoading = true;
   String? _initError;
 
@@ -152,10 +151,6 @@ class _DoctorAnalysisScreenState extends State<DoctorAnalysisScreen>
       }
 
       _doctorId = id;
-      _doctorName =
-          (profile['full_name'] as String?) ??
-          (profile['name'] as String?) ??
-          'Doctor';
 
       if (!mounted) return;
       setState(() => _initLoading = false);
@@ -425,22 +420,9 @@ class _DoctorAnalysisScreenState extends State<DoctorAnalysisScreen>
     return Scaffold(
       backgroundColor: const Color(0xFFF4F6FB),
       appBar: AppBar(
+        toolbarHeight: 0,
         backgroundColor: Colors.blue,
-        foregroundColor: Colors.white,
         elevation: 0,
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'My Analytics',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            Text(
-              _doctorName,
-              style: const TextStyle(fontSize: 12, color: Colors.white70),
-            ),
-          ],
-        ),
         bottom: TabBar(
           controller: _tabController,
           indicatorColor: Colors.white,

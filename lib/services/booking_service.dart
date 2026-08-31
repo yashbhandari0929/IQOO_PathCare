@@ -74,15 +74,15 @@ class BookingService {
         }
       }
 
-      // Generate all possible time slots 9 AM → 9:30 PM every 15 min
+      // Generate all possible time slots 8 AM → 11:00 PM every 15 min
       final List<String> availableSlots = [];
-      final DateTime lastSlotStart = DateTime(2000, 1, 1, 21, 30, 0);
+      final DateTime lastSlotStart = DateTime(2000, 1, 1, 23, 0, 0);
 
-      for (int hour = 9; hour < 22; hour++) {
+      for (int hour = 8; hour <= 23; hour++) {
         for (int minute = 0; minute < 60; minute += 15) {
           final slotStart = DateTime(2000, 1, 1, hour, minute, 0);
 
-          // Cut off any slot that STARTS after 9:30 PM
+          // Cut off any slot that STARTS after 11:00 PM
           if (slotStart.isAfter(lastSlotStart)) continue;
 
           final bool slotAvailable = _checkAvailabilityLocally(

@@ -12,6 +12,7 @@ import 'dart:io';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
 import 'package:pdfx/pdfx.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:flutter_markdown/flutter_markdown.dart';
 import '../../services/gemini_rag_service.dart';
 
 class ChatbotScreen extends StatefulWidget {
@@ -257,9 +258,7 @@ class _ChatbotScreenState extends State<ChatbotScreen>
     setState(() {
       _messages.add(userMessage);
       _isTyping = true;
-      _loadingText = hasAttachment
-          ? '📄 Extracting text from report...'
-          : '🤖 Analyzing report...';
+      _loadingText = hasAttachment ? 'Extracting report...' : 'Thinking...';
       _pendingFilePath = null;
       _pendingFileName = null;
     });
@@ -299,7 +298,7 @@ class _ChatbotScreenState extends State<ChatbotScreen>
 
         if (mounted) {
           setState(() {
-            _loadingText = '🤖 Analyzing report...';
+            _loadingText = 'Retrieving medical context...';
           });
         }
 
@@ -309,6 +308,12 @@ class _ChatbotScreenState extends State<ChatbotScreen>
           documentText,
           storagePath,
         );
+
+        if (mounted) {
+          setState(() {
+            _loadingText = 'Analyzing report...';
+          });
+        }
       }
 
       // Call Gemini RAG API
@@ -720,13 +725,46 @@ class _ChatbotScreenState extends State<ChatbotScreen>
                       ),
                     ],
                   ),
-                  child: Text(
-                    message.text,
-                    style: TextStyle(
-                      color: isUser ? Colors.white : Colors.grey[800],
-                      fontSize: 15,
-                    ),
-                  ),
+                  child: isUser
+                      ? Text(
+                          message.text,
+                          style: TextStyle(color: Colors.white, fontSize: 15),
+                        )
+                      : MarkdownBody(
+                          data: message.text,
+                          styleSheet: MarkdownStyleSheet(
+                            p: TextStyle(color: Colors.grey[800], fontSize: 15),
+                            h1: TextStyle(
+                              color: Colors.grey[900],
+                              fontSize: 22,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            h2: TextStyle(
+                              color: Colors.grey[900],
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            h3: TextStyle(
+                              color: Colors.grey[900],
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            listBullet: TextStyle(color: Colors.grey[800]),
+                            tableBody: TextStyle(color: Colors.grey[800]),
+                            tableHead: TextStyle(
+                              color: Colors.grey[900],
+                              fontWeight: FontWeight.bold,
+                            ),
+                            horizontalRuleDecoration: BoxDecoration(
+                              border: Border(
+                                top: BorderSide(
+                                  color: Colors.grey[300]!,
+                                  width: 1.0,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
                 ),
                 SizedBox(height: 4),
                 Text(
