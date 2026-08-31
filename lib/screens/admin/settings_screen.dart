@@ -29,17 +29,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
               });
             },
           ),
-          _buildSettingsTile(
-            '3D Digital Twin',
-            'View interactive 3D hospital model',
-            Icons.view_in_ar,
-            () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const Hospital3DScreen()),
-              );
-            },
-          ),
 
           SizedBox(height: 20),
           _buildSectionHeader('Data'),
@@ -79,7 +68,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
             Icons.info,
             null,
           ),
-
         ],
       ),
     );

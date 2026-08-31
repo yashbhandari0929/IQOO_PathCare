@@ -56,27 +56,25 @@ class _AdminDashboardState extends State<AdminDashboard> {
   Future<void> _loadStats() async {
     try {
       // Load total doctors
-      final doctorsData = await supabase
-          .from('doctors')
-          .select('id');
+      final doctorsData = await supabase.from('doctors').select('id');
 
       // Load total patients (if you have a patients table)
       final patientsData = await supabase
           .from('patients')
           .select('id')
           .catchError((e) {
-        print('No patients table: $e');
-        return [] as List<Map<String, dynamic>>;
-      });
+            print('No patients table: $e');
+            return [] as List<Map<String, dynamic>>;
+          });
 
       // Load total appointments (if you have an appointments table)
       final appointmentsData = await supabase
           .from('appointments')
           .select('id')
           .catchError((e) {
-        print('No appointments table: $e');
-        return [] as List<Map<String, dynamic>>;
-      });
+            print('No appointments table: $e');
+            return [] as List<Map<String, dynamic>>;
+          });
 
       setState(() {
         totalDoctors = doctorsData.length;
@@ -95,7 +93,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
       Navigator.pushNamedAndRemoveUntil(
         context,
         '/role-selection',
-            (route) => false,
+        (route) => false,
       );
     }
   }
@@ -114,10 +112,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
               _loadStats();
             },
           ),
-          IconButton(
-            icon: Icon(Icons.logout),
-            onPressed: _logout,
-          ),
+          IconButton(icon: Icon(Icons.logout), onPressed: _logout),
         ],
       ),
       body: Stack(
@@ -125,204 +120,216 @@ class _AdminDashboardState extends State<AdminDashboard> {
           isLoading
               ? Center(child: CircularProgressIndicator())
               : RefreshIndicator(
-            onRefresh: () async {
-              await _loadAdminData();
-              await _loadStats();
-            },
-            child: SingleChildScrollView(
-              padding: EdgeInsets.all(16),
-              child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Welcome Card
-              Container(
-                width: double.infinity,
-                padding: EdgeInsets.all(24),
+                  onRefresh: () async {
+                    await _loadAdminData();
+                    await _loadStats();
+                  },
+                  child: SingleChildScrollView(
+                    padding: EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Welcome Card
+                        Container(
+                          width: double.infinity,
+                          padding: EdgeInsets.all(24),
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [
+                                Colors.orange.shade400,
+                                Colors.amber.shade400,
+                              ],
+                            ),
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Welcome, $adminUsername!',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              SizedBox(height: 8),
+                              Text(
+                                'Hospital Management System',
+                                style: TextStyle(
+                                  color: Colors.white70,
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        SizedBox(height: 24),
+
+                        // Stats Grid
+                        GridView.count(
+                          crossAxisCount: 2,
+                          shrinkWrap: true,
+                          physics: NeverScrollableScrollPhysics(),
+                          mainAxisSpacing: 12,
+                          crossAxisSpacing: 12,
+                          childAspectRatio: 1.5,
+                          children: [
+                            _buildStatCard(
+                              totalDoctors.toString(),
+                              'Total Doctors',
+                              Colors.blue,
+                            ),
+                            _buildStatCard(
+                              totalPatients.toString(),
+                              'Patients',
+                              Colors.green,
+                            ),
+                            _buildStatCard(
+                              totalAppointments.toString(),
+                              'Appointments',
+                              Colors.purple,
+                            ),
+                            _buildStatCard(
+                              activeRooms.toString(),
+                              'Active Rooms',
+                              Colors.orange,
+                            ),
+                          ],
+                        ),
+                        SizedBox(height: 24),
+
+                        Text(
+                          'Management',
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        SizedBox(height: 16),
+
+                        // Add Doctor Card
+                        _buildActionCard(
+                          'Add New Doctor',
+                          'Register a new doctor in the system',
+                          Icons.person_add,
+                          Colors.pink,
+                          onTap: () async {
+                            final result = await Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => AddDoctorScreen(),
+                              ),
+                            );
+
+                            if (result == true && mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    'Doctor has been successfully added to the system!',
+                                  ),
+                                  backgroundColor: Colors.green,
+                                  behavior: SnackBarBehavior.floating,
+                                ),
+                              );
+                              _loadStats(); // Refresh stats
+                            }
+                          },
+                        ),
+
+                        // Manage Doctors Card - NOW FUNCTIONAL
+                        _buildActionCard(
+                          'Manage Doctors',
+                          'View, edit, or remove doctors',
+                          Icons.people,
+                          Colors.blue,
+                          onTap: () async {
+                            await Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => ManageDoctorsScreen(),
+                              ),
+                            );
+
+                            // Refresh stats when returning from manage doctors screen
+                            if (mounted) {
+                              _loadStats();
+                            }
+                          },
+                        ),
+                        _buildActionCard(
+                          'Blood Banks',
+                          'View blood banks near hospital',
+                          Icons.bloodtype,
+                          Colors.purple,
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => BloodBankScreen(),
+                              ),
+                            );
+                          },
+                        ),
+                        _buildActionCard(
+                          'Settings',
+                          'System configuration',
+                          Icons.settings,
+                          Colors.orange,
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => SettingsScreen(),
+                              ),
+                            );
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+          // Floating Chatbot Button
+          Positioned(
+            bottom: 20,
+            right: 20,
+            child: GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) =>
+                        ChatbotScreen(patientName: adminUsername),
+                  ),
+                );
+              },
+              child: Container(
+                width: 60,
+                height: 60,
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
-                    colors: [Colors.orange.shade400, Colors.amber.shade400],
+                    colors: [Colors.blue.shade400, Colors.blue.shade700],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
                   ),
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Welcome, $adminUsername!',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    SizedBox(height: 8),
-                    Text(
-                      'Hospital Management System',
-                      style: TextStyle(
-                        color: Colors.white70,
-                        fontSize: 14,
-                      ),
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.blue.withOpacity(0.5),
+                      blurRadius: 12,
+                      offset: Offset(0, 4),
                     ),
                   ],
                 ),
-              ),
-              SizedBox(height: 24),
-
-              // Stats Grid
-              GridView.count(
-                crossAxisCount: 2,
-                shrinkWrap: true,
-                physics: NeverScrollableScrollPhysics(),
-                mainAxisSpacing: 12,
-                crossAxisSpacing: 12,
-                childAspectRatio: 1.5,
-                children: [
-                  _buildStatCard(totalDoctors.toString(), 'Total Doctors', Colors.blue),
-                  _buildStatCard(totalPatients.toString(), 'Patients', Colors.green),
-                  _buildStatCard(totalAppointments.toString(), 'Appointments', Colors.purple),
-                  _buildStatCard(activeRooms.toString(), 'Active Rooms', Colors.orange),
-                ],
-              ),
-              SizedBox(height: 24),
-
-              Text(
-                'Management',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
+                child: Icon(
+                  Icons.smart_toy_rounded,
+                  color: Colors.white,
+                  size: 32,
                 ),
               ),
-              SizedBox(height: 16),
-
-              // Add Doctor Card
-              _buildActionCard(
-                'Add New Doctor',
-                'Register a new doctor in the system',
-                Icons.person_add,
-                Colors.pink,
-                onTap: () async {
-                  final result = await Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => AddDoctorScreen(),
-                    ),
-                  );
-
-                  if (result == true && mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('Doctor has been successfully added to the system!'),
-                        backgroundColor: Colors.green,
-                        behavior: SnackBarBehavior.floating,
-                      ),
-                    );
-                    _loadStats(); // Refresh stats
-                  }
-                },
-              ),
-
-              // Manage Doctors Card - NOW FUNCTIONAL
-              _buildActionCard(
-                'Manage Doctors',
-                'View, edit, or remove doctors',
-                Icons.people,
-                Colors.blue,
-                onTap: () async {
-                  await Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => ManageDoctorsScreen(),
-                    ),
-                  );
-
-                  // Refresh stats when returning from manage doctors screen
-                  if (mounted) {
-                    _loadStats();
-                  }
-                },
-              ),
-              _buildActionCard(
-                'Blood Banks',
-                'View blood banks near hospital',
-                Icons.bloodtype,
-                Colors.purple,
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => BloodBankScreen()),
-                  );
-                },
-              ),
-              _buildActionCard(
-                '3D Hospital Digital Twin',
-                'Live interactive hospital visualization',
-                Icons.view_in_ar,
-                Colors.indigo,
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const Hospital3DScreen()),
-                  );
-                },
-              ),
-              _buildActionCard(
-                'Settings',
-                'System configuration',
-                Icons.settings,
-                Colors.orange,
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => SettingsScreen()),
-                  );
-                },
-              ),
-            ],
-          ),
-        ),
-      ),
-      // Floating Chatbot Button
-      Positioned(
-        bottom: 20,
-        right: 20,
-        child: GestureDetector(
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => ChatbotScreen(
-                  patientName: adminUsername,
-                ),
-              ),
-            );
-          },
-          child: Container(
-            width: 60,
-            height: 60,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [Colors.blue.shade400, Colors.blue.shade700],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.blue.withOpacity(0.5),
-                  blurRadius: 12,
-                  offset: Offset(0, 4),
-                ),
-              ],
-            ),
-            child: Icon(
-              Icons.smart_toy_rounded,
-              color: Colors.white,
-              size: 32,
             ),
           ),
-        ),
-      ),
-      ],
+        ],
       ),
     );
   }
@@ -349,10 +356,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
           Text(
             label,
             textAlign: TextAlign.center,
-            style: TextStyle(
-              color: Colors.white70,
-              fontSize: 12,
-            ),
+            style: TextStyle(color: Colors.white70, fontSize: 12),
           ),
         ],
       ),
@@ -360,12 +364,12 @@ class _AdminDashboardState extends State<AdminDashboard> {
   }
 
   Widget _buildActionCard(
-      String title,
-      String subtitle,
-      IconData icon,
-      Color color,
-      {VoidCallback? onTap}
-      ) {
+    String title,
+    String subtitle,
+    IconData icon,
+    Color color, {
+    VoidCallback? onTap,
+  }) {
     return Card(
       margin: EdgeInsets.only(bottom: 12),
       child: ListTile(
@@ -377,17 +381,16 @@ class _AdminDashboardState extends State<AdminDashboard> {
           ),
           child: Icon(icon, color: color),
         ),
-        title: Text(
-          title,
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
+        title: Text(title, style: TextStyle(fontWeight: FontWeight.bold)),
         subtitle: Text(subtitle),
         trailing: Icon(Icons.arrow_forward_ios, size: 16),
-        onTap: onTap ?? () {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('$title - Coming soon!')),
-          );
-        },
+        onTap:
+            onTap ??
+            () {
+              ScaffoldMessenger.of(
+                context,
+              ).showSnackBar(SnackBar(content: Text('$title - Coming soon!')));
+            },
       ),
     );
   }
