@@ -395,7 +395,7 @@ class _HospitalNavigationScreenState
           .limit(1);
 
       if (!mounted) return;
-      if (rows == null || (rows as List).isEmpty) return;
+      if ((rows as List).isEmpty) return;
 
       final roomId = rows[0]['id'] as String;
       _currentRoomId = roomId;
@@ -557,7 +557,7 @@ class _HospitalNavigationScreenState
           .order('start_time', ascending: false)
           .limit(1);
 
-      if (rows == null || (rows as List).isEmpty) return null;
+      if ((rows as List).isEmpty) return null;
       return rows[0]['doctor_id'] as String?;
     } catch (e) {
       print('❌ _getDoctorIdForRoom error: $e');

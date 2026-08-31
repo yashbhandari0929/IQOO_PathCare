@@ -109,27 +109,25 @@ class DoctorService {
       int longestTest = 0;
       List<int> testDurations = [];
 
-      if (completedTests is List) {
-        totalTests = completedTests.length;
+      totalTests = completedTests.length;
 
-        for (var test in completedTests) {
-          final duration = test['test_duration_minutes'] as int? ?? 0;
-          if (duration > 0) {
-            testDurations.add(duration);
-            totalMinutes += duration;
-            if (duration < shortestTest) shortestTest = duration;
-            if (duration > longestTest) longestTest = duration;
-          }
+      for (var test in completedTests) {
+        final duration = test['test_duration_minutes'] as int? ?? 0;
+        if (duration > 0) {
+          testDurations.add(duration);
+          totalMinutes += duration;
+          if (duration < shortestTest) shortestTest = duration;
+          if (duration > longestTest) longestTest = duration;
         }
       }
-
+    
       final avgTestTime = testDurations.isNotEmpty
           ? (testDurations.reduce((a, b) => a + b) / testDurations.length)
                 .round()
           : 0;
 
       return {
-        'total_sessions': sessions is List ? sessions.length : 0,
+        'total_sessions': sessions.length,
         'total_tests_completed': totalTests,
         'total_time_minutes': totalMinutes,
         'average_test_time': avgTestTime,
@@ -458,8 +456,8 @@ class DoctorService {
           .order('start_time', ascending: false)
           .limit(1);
 
-      if (response != null && response is List && response.isNotEmpty) {
-        return response[0] as Map<String, dynamic>;
+      if (response.isNotEmpty) {
+        return response[0];
       }
 
       return null;
@@ -1008,63 +1006,93 @@ class DoctorService {
      }
   }
 
-  Stream<List<Map<String, dynamic>>> watchRoomQueue(String roomId) async* {
+  Stream<List<Map<String, dynamic>>> watchRoomQueue(String roomNumberParam) async* {
     final today = DateTime.now().toIso8601String().split('T')[0];
     
-    // First, fetch the room number for this room ID
-    String roomNumber = roomId;
-    try {
-      final roomRes = await _supabase.from('test_rooms').select('room_number').eq('id', roomId).maybeSingle();
-      if (roomRes != null) roomNumber = roomRes['room_number'] as String;
-    } catch (_) {}
+    // Normalize room number
+    String normalizedRoom = roomNumberParam;
+    if (!normalizedRoom.startsWith('Room ')) {
+      normalizedRoom = 'Room $normalizedRoom';
+    }
+
+    // Resolve test_rooms.id from room_number
+    final roomRes = await _supabase
+        .from('test_rooms')
+        .select('id, room_number')
+        .eq('room_number', normalizedRoom)
+        .maybeSingle();
+
+    if (roomRes == null) {
+      yield [];
+      return;
+    }
+
+    final roomId = roomRes['id'] as String;
+    final roomNumber = roomRes['room_number'] as String;
 
     await for (final tests in _supabase
         .from('appointment_tests')
         .stream(primaryKey: ['id'])
         .eq('assigned_room_id', roomId)) {
         
-        final enriched = <Map<String, dynamic>>[];
-        for (final test in tests) {
+        final validTests = tests.where((test) {
            final status = test['status'] as String? ?? 'pending';
-           if (!['pending', 'reached', 'in_progress'].contains(status)) continue;
+           return ['reached', 'in_progress', 'completed'].contains(status);
+        }).toList();
+
+        if (validTests.isEmpty) {
+          yield [];
+          continue;
+        }
+        
+        // Fetch all appointments in one query
+        final apptIds = validTests.map((t) => t['appointment_id']).toSet().toList();
+        final apptsRes = await _supabase
+            .from('appointments')
+            .select('id, appointment_date, appointment_time, patient_id')
+            .inFilter('id', apptIds);
+            
+        final apptsMap = {for (var item in apptsRes) item['id']: item};
+        
+        // Fetch all patients in one query
+        final patientIds = apptsRes.map((a) => a['patient_id']).toSet().toList();
+        final patientsRes = await _supabase
+            .from('patients')
+            .select('id, full_name')
+            .inFilter('id', patientIds);
+            
+        final patientsMap = {for (var item in patientsRes) item['id']: item};
+
+        final enriched = <Map<String, dynamic>>[];
+        
+        for (final test in validTests) {
+           final appt = apptsMap[test['appointment_id']];
+           if (appt == null) continue;
            
-           final apptRes = await _supabase
-               .from('appointments')
-               .select('appointment_date, appointment_time, patient_id')
-               .eq('id', test['appointment_id'])
-               .maybeSingle();
-           
-           if (apptRes == null) continue;
-           
-           final apptDate = apptRes['appointment_date'] as String? ?? '';
+           final apptDate = appt['appointment_date'] as String? ?? '';
            if (!apptDate.startsWith(today)) continue;
            
-           final patientRes = await _supabase
-               .from('patients')
-               .select('full_name')
-               .eq('id', apptRes['patient_id'])
-               .maybeSingle();
-               
-           // test_name is a column on appointment_tests!
-
+           final patient = patientsMap[appt['patient_id']];
+           
            enriched.add({
              'testId': test['id'],
              'appointmentId': test['appointment_id'],
-             'patientName': patientRes?['full_name'] ?? 'Unknown',
-             'appointmentTime': apptRes['appointment_time'] ?? '',
+             'patientName': patient?['full_name'] ?? 'Unknown',
+             'appointmentTime': appt['appointment_time'] ?? '',
              'testName': test['test_name'] ?? 'Unknown Test',
              'roomNumber': roomNumber,
-             'status': status,
+             'status': test['status'] ?? 'pending',
              'scheduledTime': test['scheduled_time'] ?? '',
              'queueJoinedAt': test['queue_joined_at'] ?? test['created_at'] ?? '',
+             'completedAt': test['completed_at'] ?? '',
            });
         }
         
-         enriched.sort((a, b) {
+        enriched.sort((a, b) {
            final aTime = a['queueJoinedAt'] as String? ?? a['scheduledTime'] as String? ?? a['appointmentTime'] as String? ?? '';
            final bTime = b['queueJoinedAt'] as String? ?? b['scheduledTime'] as String? ?? b['appointmentTime'] as String? ?? '';
            return aTime.compareTo(bTime);
-         });
+        });
         
         yield enriched;
     }
@@ -1099,6 +1127,28 @@ class DoctorService {
 
   Future<bool> markConsultationComplete(String testId, String doctorId) async {
     try {
+      // 1. Fetch current test details to get appointment_id and assigned_room_id
+      final currentTestRes = await _supabase
+          .from('appointment_tests')
+          .select('appointment_id, assigned_room_id, status')
+          .eq('id', testId)
+          .maybeSingle();
+
+      if (currentTestRes == null) {
+        print('Error: Test not found');
+        return false;
+      }
+      
+      // STRICT RULE: Only 'in_progress' patients can be completed
+      if (currentTestRes['status'] != 'in_progress') {
+        print('STRICT RULE ENFORCED: Cannot complete consultation unless patient is in_progress.');
+        return false;
+      }
+
+      final appointmentId = currentTestRes['appointment_id'];
+      final assignedRoomId = currentTestRes['assigned_room_id'];
+
+      // 2. Mark current test as completed
       await _supabase
           .from('appointment_tests')
           .update({
@@ -1107,6 +1157,30 @@ class DoctorService {
             'completed_at': DateTime.now().toIso8601String(),
           })
           .eq('id', testId);
+
+      // 3. Check if there is another pending test in the SAME room for this appointment.
+      // We look specifically for the same room to auto-promote it.
+      final nextTestInSameRoom = await _supabase
+          .from('appointment_tests')
+          .select('id')
+          .eq('appointment_id', appointmentId)
+          .eq('assigned_room_id', assignedRoomId)
+          .eq('status', 'pending')
+          .limit(1)
+          .maybeSingle();
+
+      // 4. If found, auto-promote it to reached
+      if (nextTestInSameRoom != null) {
+        await _supabase
+            .from('appointment_tests')
+            .update({
+              'status': 'reached',
+              // We intentionally do NOT modify queue_joined_at 
+              // so it preserves the existing queue order
+            })
+            .eq('id', nextTestInSameRoom['id']);
+      }
+
       return true;
     } catch (e) {
       print('Error marking complete: $e');

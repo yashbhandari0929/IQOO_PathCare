@@ -64,6 +64,8 @@ dependencies:
   google_generative_ai: ^0.4.7
   flutter_dotenv: ^6.0.1
   flutter_markdown: ^0.7.7+1
+  flutter_inappwebview: ^6.1.5
+  model_viewer_plus: ^1.10.0
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -94,6 +96,7 @@ flutter:
   assets:
     - assets/maps/
     - .env
+    - assets/3d/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

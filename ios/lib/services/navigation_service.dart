@@ -216,7 +216,7 @@ class NavigationService {
 
       print('   Database response: $response');
 
-      if (response == null || (response is List && response.isEmpty)) {
+      if ((response.isEmpty)) {
         print(
           '❌ No rows updated - test ID might not exist: $appointmentTestId',
         );

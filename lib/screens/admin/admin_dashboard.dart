@@ -5,6 +5,7 @@ import 'add_doctor_screen.dart';
 import 'manage_doctors_screen.dart';
 import 'blood_bank.dart';
 import 'settings_screen.dart';
+import 'hospital_3d_screen.dart';
 import '../patient/chatbot_screen.dart'; // Added chatbot screen import
 
 final supabase = Supabase.instance.client;
@@ -249,6 +250,18 @@ class _AdminDashboardState extends State<AdminDashboard> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(builder: (context) => BloodBankScreen()),
+                  );
+                },
+              ),
+              _buildActionCard(
+                '3D Hospital Digital Twin',
+                'Live interactive hospital visualization',
+                Icons.view_in_ar,
+                Colors.indigo,
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const Hospital3DScreen()),
                   );
                 },
               ),

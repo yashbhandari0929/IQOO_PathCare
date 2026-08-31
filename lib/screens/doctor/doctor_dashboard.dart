@@ -93,14 +93,14 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
           _doctorService.getActiveSession(doctorId),
         ]);
 
-        final stats = results[0] as Map<String, dynamic>?;
+        final stats = results[0];
         if (stats != null) {
           _patientsToday = (stats['patients_attended'] as num?)?.toInt() ?? 0;
           _todayMinutes = (stats['total_minutes'] as num?)?.toInt() ?? 0;
           _totalPatients = (stats['total_patients'] as num?)?.toInt() ?? 0;
           _patientsPending = (stats['patients_pending'] as num?)?.toInt() ?? 0;
         }
-        _activeSession = results[1] as Map<String, dynamic>?;
+        _activeSession = results[1];
 
         // Start realtime listeners after the first fetch
         _subscribeRealtime(doctorId);

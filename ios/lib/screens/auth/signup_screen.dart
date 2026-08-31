@@ -416,7 +416,7 @@ class _SignupScreenState extends State<SignupScreen> {
                   SizedBox(height: 16),
                   // Gender
                   DropdownButtonFormField<String>(
-                    value: _selectedGender,
+                    initialValue: _selectedGender,
                     decoration: InputDecoration(
                       labelText: 'Gender',
                       prefixIcon: Icon(Icons.wc_outlined),
@@ -456,7 +456,7 @@ class _SignupScreenState extends State<SignupScreen> {
                 if (widget.userType == 'doctor') ...[
                   // Department
                   DropdownButtonFormField<String>(
-                    value: _selectedDepartment,
+                    initialValue: _selectedDepartment,
                     decoration: InputDecoration(
                       labelText: 'Department',
                       prefixIcon: Icon(Icons.business_outlined),

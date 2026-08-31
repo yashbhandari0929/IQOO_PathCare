@@ -1,6 +1,7 @@
 // lib/screens/doctor/room_selection_screen.dart
 
 import 'package:flutter/material.dart';
+import 'dart:async';
 import '../../services/doctor_service.dart';
 
 class RoomSelectionScreen extends StatefulWidget {
@@ -17,6 +18,7 @@ class _RoomSelectionScreenState extends State<RoomSelectionScreen> {
   Map<String, List<Map<String, dynamic>>> _roomsByFloor = {};
   String _selectedFilter = 'All';
   bool _isLoading = true;
+  StreamSubscription? _queueSubscription;
 
   @override
   void initState() {
@@ -24,16 +26,54 @@ class _RoomSelectionScreenState extends State<RoomSelectionScreen> {
     _loadRooms();
   }
 
+  @override
+  void dispose() {
+    _queueSubscription?.cancel();
+    super.dispose();
+  }
+
   Future<void> _loadRooms() async {
     setState(() => _isLoading = true);
 
     try {
       final rooms = await _doctorService.getRoomStats();
-      _allRooms = rooms;
-      _roomsByFloor = _doctorService.groupRoomsByFloor(rooms);
+      
+      if (!mounted) return;
+      
+      setState(() {
+        _allRooms = rooms;
+        _roomsByFloor = _doctorService.groupRoomsByFloor(rooms);
+        _isLoading = false;
+      });
+
+      _queueSubscription?.cancel();
+      _queueSubscription = _doctorService.watchAllRoomsWaitCounts().listen((waitCounts) {
+        if (!mounted) return;
+        
+        setState(() {
+          for (var room in _allRooms) {
+             final matchingCount = waitCounts.firstWhere(
+                (wc) => wc['room_number'] == room['room_number'],
+                orElse: () => <String, dynamic>{'waiting_count': 0},
+             );
+             
+             final waitingCount = matchingCount['waiting_count'] as int? ?? 0;
+             room['current_queue'] = waitingCount;
+             room['estimated_wait_minutes'] = waitingCount * 15;
+             
+             if (waitingCount == 0) {
+                 room['status'] = 'normal';
+             } else if (waitingCount <= 2) {
+                 room['status'] = 'busy';
+             } else {
+                 room['status'] = 'very_busy';
+             }
+          }
+          _roomsByFloor = _doctorService.groupRoomsByFloor(_allRooms);
+        });
+      });
     } catch (e) {
-    } finally {
-      setState(() => _isLoading = false);
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 

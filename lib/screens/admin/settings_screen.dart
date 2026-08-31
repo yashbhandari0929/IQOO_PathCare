@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'hospital_3d_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   @override
@@ -7,7 +8,6 @@ class SettingsScreen extends StatefulWidget {
 
 class _SettingsScreenState extends State<SettingsScreen> {
   bool notificationsEnabled = true;
-  bool darkModeEnabled = false;
   bool autoBackup = true;
 
   @override
@@ -29,17 +29,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
               });
             },
           ),
-          _buildSwitchTile(
-            'Dark Mode',
-            'Enable dark theme',
-            Icons.dark_mode,
-            darkModeEnabled,
-            (value) {
-              setState(() {
-                darkModeEnabled = value;
-              });
+          _buildSettingsTile(
+            '3D Digital Twin',
+            'View interactive 3D hospital model',
+            Icons.view_in_ar,
+            () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const Hospital3DScreen()),
+              );
             },
           ),
+
           SizedBox(height: 20),
           _buildSectionHeader('Data'),
           _buildSwitchTile(
@@ -69,12 +70,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             Icons.person,
             () {},
           ),
-          _buildSettingsTile(
-            'Change Password',
-            'Update your password',
-            Icons.lock,
-            () {},
-          ),
+
           SizedBox(height: 20),
           _buildSectionHeader('About'),
           _buildSettingsTile(
@@ -83,12 +79,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             Icons.info,
             null,
           ),
-          _buildSettingsTile(
-            'Privacy Policy',
-            'View privacy policy',
-            Icons.privacy_tip,
-            () {},
-          ),
+
         ],
       ),
     );
@@ -123,7 +114,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         subtitle: Text(subtitle),
         value: value,
         onChanged: onChanged,
-        activeColor: Colors.orange,
+        activeThumbColor: Colors.orange,
       ),
     );
   }

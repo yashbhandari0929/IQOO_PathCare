@@ -238,7 +238,7 @@ class _EditDoctorScreenState extends State<EditDoctorScreen> {
 
                 // Department
                 DropdownButtonFormField<String>(
-                  value: _selectedDepartment,
+                  initialValue: _selectedDepartment,
                   decoration: const InputDecoration(
                     labelText: 'Department',
                     prefixIcon: Icon(Icons.business_outlined),

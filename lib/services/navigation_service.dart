@@ -272,7 +272,7 @@ class NavigationService {
           .eq('id', appointmentTestId)
           .select();
 
-      if (response == null || (response is List && response.isEmpty)) {
+      if ((response.isEmpty)) {
         return false;
       }
       // ── ADDED ─────────────────────────────────────────────────────────────
@@ -286,7 +286,7 @@ class NavigationService {
       // ─────────────────────────────────────────────────────────────────────
 
       return true;
-    } catch (e, st) {
+    } catch (e) {
       return false;
     }
   }

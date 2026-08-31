@@ -224,7 +224,7 @@ class _AddDoctorScreenState extends State<AddDoctorScreen> {
 
                 // Department
                 DropdownButtonFormField<String>(
-                  value: _selectedDepartment,
+                  initialValue: _selectedDepartment,
                   decoration: InputDecoration(
                     labelText: 'Department',
                     prefixIcon: Icon(Icons.business_outlined),

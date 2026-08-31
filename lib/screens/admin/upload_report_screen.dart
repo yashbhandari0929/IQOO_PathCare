@@ -376,7 +376,7 @@ class _UploadReportScreenState extends State<UploadReportScreen> {
               _isLoadingPatients
                   ? Center(child: CircularProgressIndicator())
                   : DropdownButtonFormField<String>(
-                      value: _selectedPatientId,
+                      initialValue: _selectedPatientId,
                       decoration: _dec('Select Patient', Icons.person),
                       isExpanded: true,
                       items: _patients
@@ -409,7 +409,7 @@ class _UploadReportScreenState extends State<UploadReportScreen> {
 
               // Report type
               DropdownButtonFormField<String>(
-                value: _selectedReportType,
+                initialValue: _selectedReportType,
                 decoration: _dec('Report Type', Icons.category),
                 items: _reportTypes
                     .map((t) => DropdownMenuItem(value: t, child: Text(t)))

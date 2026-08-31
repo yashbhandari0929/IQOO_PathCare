@@ -61,6 +61,7 @@ class _PatientListScreenState extends State<PatientListScreen>
   @override
   void initState() {
     super.initState();
+    _roomQueueStream = _doctorService.watchRoomQueue(widget.roomNumber);
     _animationController = AnimationController(
       duration: const Duration(milliseconds: 300),
       vsync: this,
@@ -123,9 +124,7 @@ class _PatientListScreenState extends State<PatientListScreen>
       }
 
       if (_activeSession != null) {
-        setState(() {
-          _roomQueueStream = _doctorService.watchRoomQueue(_activeSession!['room_id']);
-        });
+        // Stream is already initialized in initState using widget.roomNumber
       }
 
       debugPrint(
@@ -829,18 +828,24 @@ class _PatientListScreenState extends State<PatientListScreen>
           : StreamBuilder<List<Map<String, dynamic>>>(
               stream: _roomQueueStream,
               builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
+                if (snapshot.connectionState == ConnectionState.waiting &&
+                    !snapshot.hasData) {
                   return const Center(child: CircularProgressIndicator());
                 }
-                
+
+                if (snapshot.hasError) {
+                  return Center(
+                    child: Text('Error loading queue: ${snapshot.error}'),
+                  );
+                }
                 final patients = snapshot.data ?? [];
-                
+
                 // Active patients are those not completed or cancelled
                 final active = patients.where((p) {
-                   final status = p['status'] as String? ?? '';
-                   return status != 'completed' && status != 'cancelled';
+                  final status = p['status'] as String? ?? '';
+                  return status != 'completed' && status != 'cancelled';
                 }).toList();
-                
+
                 // For stats, we fake it slightly to keep UI from crashing if it expects tests
                 final activeStats = _doctorService.calculateRoomStats(active);
                 final totalStats = _doctorService.calculateRoomStats(patients);
@@ -1495,7 +1500,6 @@ class _PatientListScreenState extends State<PatientListScreen>
     );
   }
 
-
   void _showConsultationSheet(Map<String, dynamic> patient, int index) {
     final patientName = patient['patientName'] as String? ?? 'Unknown';
     final scheduledTime = patient['appointmentTime'] as String? ?? '';
@@ -1505,18 +1509,23 @@ class _PatientListScreenState extends State<PatientListScreen>
     final roomNumber = patient['roomNumber'] as String? ?? widget.roomNumber;
 
     // Queue Protection Logic
-    // Check if anyone is in progress
-    final hasInProgress = _activePatients.any((p) => p['status'] == 'in_progress');
-    
-    // Find the first reached patient
-    final firstReached = _activePatients.firstWhere(
-      (p) => p['status'] == 'reached',
-      orElse: () => <String, dynamic>{},
-    );
-    final isFirstReached = firstReached.isNotEmpty && firstReached['testId'] == testId;
+    final reachedPatients = _activePatients
+        .where((p) => p['status'] == 'reached')
+        .toList();
 
-    bool canStart = dbStatus == 'reached' && !hasInProgress && isFirstReached;
-    bool waitingForPrevious = dbStatus == 'reached' && !canStart;
+    final firstReached = reachedPatients.isNotEmpty
+        ? reachedPatients.first
+        : null;
+
+    final hasInProgress = _activePatients.any(
+      (p) => p['status'] == 'in_progress',
+    );
+
+    final waitingForPrevious =
+        patient['status'] == 'reached' &&
+        (hasInProgress ||
+            (firstReached != null &&
+                patient['testId'] != firstReached['testId']));
 
     showModalBottomSheet(
       context: context,
@@ -1542,7 +1551,10 @@ class _PatientListScreenState extends State<PatientListScreen>
                     children: [
                       Text(
                         patientName,
-                        style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                        style: const TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                       const SizedBox(height: 4),
                       Text(
@@ -1552,18 +1564,29 @@ class _PatientListScreenState extends State<PatientListScreen>
                     ],
                   ),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
                     decoration: BoxDecoration(
-                      color: dbStatus == 'in_progress' ? Colors.purple.shade50 : Colors.green.shade50,
+                      color: dbStatus == 'in_progress'
+                          ? Colors.purple.shade50
+                          : Colors.green.shade50,
                       borderRadius: BorderRadius.circular(20),
                       border: Border.all(
-                        color: dbStatus == 'in_progress' ? Colors.purple.shade200 : Colors.green.shade200,
+                        color: dbStatus == 'in_progress'
+                            ? Colors.purple.shade200
+                            : Colors.green.shade200,
                       ),
                     ),
                     child: Text(
-                      dbStatus == 'in_progress' ? 'In Progress' : (dbStatus == 'reached' ? 'Reached' : dbStatus),
+                      dbStatus == 'in_progress'
+                          ? 'In Progress'
+                          : (dbStatus == 'reached' ? 'Reached' : dbStatus),
                       style: TextStyle(
-                        color: dbStatus == 'in_progress' ? Colors.purple.shade700 : Colors.green.shade700,
+                        color: dbStatus == 'in_progress'
+                            ? Colors.purple.shade700
+                            : Colors.green.shade700,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -1585,24 +1608,48 @@ class _PatientListScreenState extends State<PatientListScreen>
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Test', style: TextStyle(color: Colors.grey[600], fontSize: 12)),
+                        Text(
+                          'Test',
+                          style: TextStyle(
+                            color: Colors.grey[600],
+                            fontSize: 12,
+                          ),
+                        ),
                         const SizedBox(height: 4),
-                        Text(testName, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
+                        Text(
+                          testName,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 16,
+                          ),
+                        ),
                       ],
                     ),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
-                        Text('Time', style: TextStyle(color: Colors.grey[600], fontSize: 12)),
+                        Text(
+                          'Time',
+                          style: TextStyle(
+                            color: Colors.grey[600],
+                            fontSize: 12,
+                          ),
+                        ),
                         const SizedBox(height: 4),
-                        Text(_doctorService.formatTime(scheduledTime), style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
+                        Text(
+                          _doctorService.formatTime(scheduledTime),
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 16,
+                          ),
+                        ),
                       ],
                     ),
                   ],
                 ),
               ),
               const SizedBox(height: 24),
-              
+
               // Actions
               if (dbStatus == 'pending')
                 Container(
@@ -1616,7 +1663,10 @@ class _PatientListScreenState extends State<PatientListScreen>
                   child: Center(
                     child: Text(
                       "Patient hasn't reached the room yet",
-                      style: TextStyle(color: Colors.orange.shade900, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        color: Colors.orange.shade900,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 )
@@ -1631,7 +1681,10 @@ class _PatientListScreenState extends State<PatientListScreen>
                   child: Center(
                     child: Text(
                       'Waiting for previous patient',
-                      style: TextStyle(color: Colors.grey[600], fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        color: Colors.grey[600],
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 )
@@ -1644,12 +1697,17 @@ class _PatientListScreenState extends State<PatientListScreen>
                       await _doctorService.startConsultation(testId);
                     },
                     icon: const Icon(Icons.play_arrow),
-                    label: const Text('Start Test', style: TextStyle(fontSize: 16)),
+                    label: const Text(
+                      'Start Test',
+                      style: TextStyle(fontSize: 16),
+                    ),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.blue,
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                     ),
                   ),
                 )
@@ -1659,19 +1717,29 @@ class _PatientListScreenState extends State<PatientListScreen>
                   child: ElevatedButton.icon(
                     onPressed: () {
                       Navigator.pop(context);
-                      _showCompletionDialog(patientName, testName, roomNumber, testId);
+                      _showCompletionDialog(
+                        patientName,
+                        testName,
+                        roomNumber,
+                        testId,
+                      );
                     },
                     icon: const Icon(Icons.check),
-                    label: const Text('Complete Test', style: TextStyle(fontSize: 16)),
+                    label: const Text(
+                      'Complete Test',
+                      style: TextStyle(fontSize: 16),
+                    ),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.green,
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                     ),
                   ),
                 ),
-                
+
               const SizedBox(height: 16),
             ],
           ),
@@ -1680,7 +1748,12 @@ class _PatientListScreenState extends State<PatientListScreen>
     );
   }
 
-  void _showCompletionDialog(String patientName, String testName, String roomNumber, String testId) {
+  void _showCompletionDialog(
+    String patientName,
+    String testName,
+    String roomNumber,
+    String testId,
+  ) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -1729,13 +1802,14 @@ class _PatientListScreenState extends State<PatientListScreen>
     final dbStatus = patient['status'] as String? ?? 'pending';
     final testName = patient['testName'] as String? ?? '';
     final testId = patient['testId'] as String?;
-    
+
     String status = 'Waiting';
     if (dbStatus == 'in_progress') status = 'In Progress';
     if (dbStatus == 'completed') status = 'Completed';
-    
+
     final priorityLevel = patient['priority_level'] as String? ?? 'normal';
-    final specialInstructions = patient['special_instructions'] as String? ?? '';
+    final specialInstructions =
+        patient['special_instructions'] as String? ?? '';
 
     Color statusColor;
     IconData statusIcon;
@@ -1934,8 +2008,6 @@ class _PatientListScreenState extends State<PatientListScreen>
                     ),
                 ],
               ),
-
-
 
               if (specialInstructions.isNotEmpty) ...[
                 const SizedBox(height: 12),
@@ -2254,7 +2326,7 @@ class _PatientListScreenState extends State<PatientListScreen>
           Icon(Icons.people_outline, size: 64, color: Colors.grey[400]),
           const SizedBox(height: 16),
           Text(
-            'No patients today',
+            'No patients waiting',
             style: TextStyle(
               fontSize: 18,
               color: Colors.grey[600],
