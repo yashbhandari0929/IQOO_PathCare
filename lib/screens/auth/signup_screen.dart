@@ -113,7 +113,8 @@ class _SignupScreenState extends State<SignupScreen> {
               } catch (e) {}
             }
 
-            await supabase.from('patients').insert({
+            await supabase.from('patients').upsert({
+              'id': userId,
               'auth_id': userId,
               'full_name': _nameController.text.trim(),
               'email': _emailController.text.trim(),
@@ -128,7 +129,8 @@ class _SignupScreenState extends State<SignupScreen> {
                   : _bloodGroupController.text.trim(),
             });
           } else if (widget.userType == 'doctor') {
-            await supabase.from('doctors').insert({
+            await supabase.from('doctors').upsert({
+              'id': userId,
               'auth_id': userId,
               'full_name': _nameController.text.trim(),
               'email': _emailController.text.trim(),
@@ -138,7 +140,8 @@ class _SignupScreenState extends State<SignupScreen> {
               'license_number': _licenseController.text.trim(),
             });
           } else if (widget.userType == 'admin') {
-            await supabase.from('admins').insert({
+            await supabase.from('admins').upsert({
+              'id': userId,
               'auth_id': userId,
               'username': _usernameController.text.trim(),
               'email': _emailController.text.trim(),

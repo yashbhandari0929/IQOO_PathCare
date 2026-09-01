@@ -118,10 +118,9 @@ class BloodBank {
     this.bloodStock,
   });
 
-  String get effectivePhone =>
-      (phone == 'N/A' || phone.isEmpty) ? _demoPhone : phone;
+  String get effectivePhone => phone;
 
-  bool get hasRealPhone => phone != 'N/A' && phone.isNotEmpty;
+  bool get hasRealPhone => phone.isNotEmpty && phone != 'N/A';
 
   // JSON serialization for cache
   Map<String, dynamic> toJson() => {
@@ -158,7 +157,11 @@ class BloodBank {
     final name =
         tags['name'] as String? ?? tags['name:en'] as String? ?? 'Blood Bank';
     final phone =
-        tags['phone'] as String? ?? tags['contact:phone'] as String? ?? 'N/A';
+        tags['contact:phone'] as String? ??
+        tags['phone'] as String? ??
+        tags['contact:mobile'] as String? ??
+        tags['mobile'] as String? ??
+        '';
     final area =
         tags['addr:suburb'] as String? ?? tags['addr:city'] as String? ?? '';
 
@@ -606,21 +609,29 @@ class OverpassService {
       '('
       'node["amenity"="blood_bank"](around:$radius,$lat,$lon);'
       'way["amenity"="blood_bank"](around:$radius,$lat,$lon);'
+      'relation["amenity"="blood_bank"](around:$radius,$lat,$lon);'
       'node["healthcare"="blood_bank"](around:$radius,$lat,$lon);'
       'way["healthcare"="blood_bank"](around:$radius,$lat,$lon);'
+      'relation["healthcare"="blood_bank"](around:$radius,$lat,$lon);'
       ');'
       'out center tags;';
 
   /// Fires all mirrors at once — returns the first successful response.
   static Future<List<BloodBank>> fetchNearby({
     required LatLng center,
-    int radiusMeters = 15000,
+    int radiusMeters = 50000,
   }) async {
     final query = _buildQuery(center.latitude, center.longitude, radiusMeters);
 
     final futures = _overpassMirrors.map((mirror) async {
       final res = await _client
-          .post(Uri.parse(mirror), body: {'data': query})
+          .post(
+            Uri.parse(mirror),
+            body: {'data': query},
+            headers: {
+              'User-Agent': 'BloodBankFinderApp/1.0 (contact@example.com)',
+            },
+          )
           .timeout(const Duration(seconds: 12));
       if (res.statusCode != 200) {
         throw Exception('HTTP ${res.statusCode} from $mirror');
@@ -706,7 +717,7 @@ class BloodBankScreen extends StatefulWidget {
 class _BloodBankScreenState extends State<BloodBankScreen>
     with SingleTickerProviderStateMixin {
   // ── Constants ─────────────────────────────────────────────────────────────
-  static const LatLng _mumbaiCenter = LatLng(19.0760, 72.8777);
+  static const LatLng _testHospitalLoc = LatLng(19.0522, 72.9005);
 
   // ── Controllers ───────────────────────────────────────────────────────────
   late final TabController _tabController;
@@ -767,7 +778,7 @@ class _BloodBankScreenState extends State<BloodBankScreen>
 
   // ── Location ──────────────────────────────────────────────────────────────
   bool _locationGranted = false;
-  LatLng _userLocation = _mumbaiCenter;
+  LatLng _userLocation = _testHospitalLoc;
 
   // ── Nominatim suggestions ─────────────────────────────────────────────────
   List<NominatimResult> _suggestions = [];
@@ -808,7 +819,7 @@ class _BloodBankScreenState extends State<BloodBankScreen>
     // Fire cache load, GPS, and Overpass ALL AT ONCE — true parallel
     final cacheF = _CacheService.load();
     final locationF = _resolveLocation();
-    final overpassF = _fetchAndApply(_mumbaiCenter, skipIfSamePos: false);
+    final overpassF = _fetchAndApply(_testHospitalLoc, skipIfSamePos: false);
 
     // Apply cache the moment it resolves (usually < 50 ms)
     final cached = await cacheF;
@@ -858,7 +869,7 @@ class _BloodBankScreenState extends State<BloodBankScreen>
       final dist = const Distance().as(
         LengthUnit.Meter,
         _userLocation,
-        _mumbaiCenter,
+        _testHospitalLoc,
       );
       if (dist > 2000) {
         unawaited(_fetchAndApply(_userLocation, skipIfSamePos: true));
@@ -953,8 +964,30 @@ class _BloodBankScreenState extends State<BloodBankScreen>
           b.address.toLowerCase().contains(q) ||
           b.type.toLowerCase().contains(q);
       final matchType = _selectedType == 'All' || b.type == _selectedType;
-      return matchSearch && matchType;
+
+      final d = const Distance().as(
+        LengthUnit.Meter,
+        _userLocation,
+        LatLng(b.latitude, b.longitude),
+      );
+      final matchDist = d <= 50000;
+
+      return matchSearch && matchType && matchDist;
     }).toList();
+
+    result.sort((a, b) {
+      final distA = const Distance().as(
+        LengthUnit.Kilometer,
+        _userLocation,
+        LatLng(a.latitude, a.longitude),
+      );
+      final distB = const Distance().as(
+        LengthUnit.Kilometer,
+        _userLocation,
+        LatLng(b.latitude, b.longitude),
+      );
+      return distA.compareTo(distB);
+    });
 
     _filteredCache = result;
     _filterCacheQuery = _searchQuery;
@@ -1689,8 +1722,8 @@ class _BloodBankScreenState extends State<BloodBankScreen>
         FlutterMap(
           mapController: _mapController,
           options: MapOptions(
-            initialCenter: _userLocation,
-            initialZoom: 12.5,
+            initialCenter: _testHospitalLoc,
+            initialZoom: 9.0,
             minZoom: 8.0,
             maxZoom: 18.0,
             onTap: (_, __) {
@@ -1718,6 +1751,70 @@ class _BloodBankScreenState extends State<BloodBankScreen>
               alignment: AttributionAlignment.bottomLeft,
             ),
             if (_locationGranted) const CurrentLocationLayer(),
+            CircleLayer(
+              circles: [
+                CircleMarker(
+                  point: _testHospitalLoc,
+                  radius: 20050,
+                  useRadiusInMeter: true,
+                  color: Colors.teal.withValues(alpha: 0.1),
+                  borderColor: Colors.teal.withValues(alpha: 0.6),
+                  borderStrokeWidth: 2,
+                ),
+              ],
+            ),
+            MarkerLayer(
+              markers: [
+                Marker(
+                  point: _testHospitalLoc,
+                  width: 90,
+                  height: 90,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        width: 40,
+                        height: 40,
+                        decoration: const BoxDecoration(
+                          color: Colors.white,
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(blurRadius: 10, color: Colors.black26),
+                          ],
+                        ),
+                        child: const Center(
+                          child: Icon(
+                            Icons.local_hospital,
+                            color: Colors.teal,
+                            size: 28,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 4,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.9),
+                          borderRadius: BorderRadius.circular(4),
+                          border: Border.all(color: Colors.teal, width: 1),
+                        ),
+                        child: const Text(
+                          'TEST_HOSPITAL',
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.teal,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
             MarkerLayer(markers: _buildMarkers(filtered)),
           ],
         ),

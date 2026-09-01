@@ -265,48 +265,7 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
       body: Stack(
         children: [
           _currentTabIndex == 0 ? _buildHomeTab() : _buildAnalyticsTab(),
-          // Floating Chatbot Button
-          if (_currentTabIndex == 0)
-            Positioned(
-              bottom: 20,
-              right: 20,
-              child: GestureDetector(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => ChatbotScreen(
-                        patientName: _doctorProfile?['full_name'] ?? 'Doctor',
-                      ),
-                    ),
-                  );
-                },
-                child: Container(
-                  width: 60,
-                  height: 60,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [Colors.blue.shade400, Colors.blue.shade700],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.blue.withValues(alpha: 0.5),
-                        blurRadius: 12,
-                        offset: Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: Icon(
-                    Icons.smart_toy_rounded,
-                    color: Colors.white,
-                    size: 32,
-                  ),
-                ),
-              ),
-            ),
+
         ],
       ),
       bottomNavigationBar: BottomNavigationBar(
