@@ -1,6 +1,8 @@
+import 'package:flutter/foundation.dart';
 import 'package:google_generative_ai/google_generative_ai.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../config/env_config.dart';
 
 class GeminiRAGService {
   late final GenerativeModel _chatModel;
@@ -8,9 +10,9 @@ class GeminiRAGService {
   final _supabase = Supabase.instance.client;
 
   GeminiRAGService() {
-    final apiKey = dotenv.env['GEMINI_API_KEY'];
-    if (apiKey == null || apiKey.isEmpty) {
-      throw Exception('GEMINI_API_KEY not found in .env');
+    final apiKey = EnvConfig.geminiApiKey;
+    if (apiKey.isEmpty) {
+      throw Exception('GEMINI_API_KEY not found in EnvConfig');
     }
 
     _chatModel = GenerativeModel(model: 'gemini-3.6-flash', apiKey: apiKey);
